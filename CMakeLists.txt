@@ -28,9 +28,4 @@ set_target_properties(
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
     )
 
-add_custom_command(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    COMMAND cp ./platform/emscripten/index.html ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
-    )
+include(platform/emscripten/CMakeLists.txt)
