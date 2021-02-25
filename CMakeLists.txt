@@ -3,8 +3,12 @@ project(yapre)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(SDL2_DIR "external/SDL")
+add_subdirectory(${SDL2_DIR})
+
 include_directories(
     include/
+    ${SDL2_DIR}/include
     )
 
 file(GLOB PROJECT_INCLUDE include/*.hpp
@@ -20,7 +24,9 @@ file(GLOB PROJECT_CONFIG CMakeLists.txt
 source_group("include" FILES ${PROJECT_INCLUDE})
 source_group("src" FILES ${PROJECT_SRC})
 
+
 add_executable(${PROJECT_NAME} ${PROJECT_INCLUDE} ${PROJECT_SRC})
+target_link_libraries(${PROJECT_NAME} SDL2main SDL2-static)
 
 set_target_properties(
     ${PROJECT_NAME} 
@@ -28,4 +34,4 @@ set_target_properties(
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
     )
 
-include(platform/emscripten/CMakeLists.txt)
+# include(platform/emscripten/CMakeLists.txt)
