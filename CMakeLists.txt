@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(yapre)
 
+function(platform_setup_target)
+endfunction()
+
 option(YAPRE_BUILD_PLATFORM "Platform" "") #"" by default
 if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
     include(platform/emscripten/CMakeLists.txt)
