@@ -1,9 +1,9 @@
-[submodule "./external/SDL"]
-	path = ./external/SDL
-	url = git@github.com:SDL-mirror/SDL.git
 [submodule "external/SDL"]
 	path = external/SDL
 	url = git@github.com:SDL-mirror/SDL.git
 [submodule "external/glm"]
 	path = external/glm
-	url = ../../g-truc/glm.git
+	url = git@github.com:g-truc/glm.git
+[submodule "external/glad"]
+	path = external/glad
+	url = git@github.com:Dav1dde/glad.git
