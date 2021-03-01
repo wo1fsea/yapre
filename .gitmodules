@@ -4,3 +4,6 @@
 [submodule "external/SDL"]
 	path = external/SDL
 	url = git@github.com:SDL-mirror/SDL.git
+[submodule "external/glm"]
+	path = external/glm
+	url = ../../g-truc/glm.git
