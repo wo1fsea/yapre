@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(yapre)
+set(CMAKE_CXX_STANDARD 17)
 
 function(platform_setup_target)
 endfunction()
@@ -15,8 +16,6 @@ else()
         include(platform/ios/CMakeLists.txt)
     endif()
 endif()
-
-set(CMAKE_CXX_STANDARD 17)
 
 include_directories(
     include/
