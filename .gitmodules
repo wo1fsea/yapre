@@ -7,3 +7,6 @@
 [submodule "external/glad"]
 	path = external/glad
 	url = git@github.com:Dav1dde/glad.git
+[submodule "external/assimp"]
+	path = external/assimp
+	url = git@github.com:assimp/assimp.git
