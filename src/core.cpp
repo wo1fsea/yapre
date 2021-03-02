@@ -41,8 +41,8 @@ namespace yapre
         void setup_sdl_gl() {
             // Request an OpenGL 4.5 context (should be core)
             SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+            // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
             // Also request a depth buffer
@@ -71,16 +71,18 @@ namespace yapre
             setup_sdl_gl();
 
             // Create the window
-            if (SCREEN_FULLSCREEN) {
-                window = SDL_CreateWindow(
-                        WINDOW_CAPTION, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 0, 0,
-                        SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_OPENGL);
-            } else {
+            //if (SCREEN_FULLSCREEN) {
+            //    window = SDL_CreateWindow(
+            //            WINDOW_CAPTION, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 0, 0,
+            //            SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_OPENGL);
+            //} else {
                 window = SDL_CreateWindow(WINDOW_CAPTION, 
                         SDL_WINDOWPOS_UNDEFINED,
                         SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
-                        SCREEN_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_ALWAYS_ON_TOP);
-            }
+                        SCREEN_HEIGHT,
+                        SDL_WINDOW_OPENGL);
+                 //| SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_ALWAYS_ON_TOP)
+            //}
 
             if (window == NULL) {
                 PrintSdlError();
@@ -99,7 +101,7 @@ namespace yapre
             PrintSdlInfo();
 
             // Use v-sync
-            SDL_GL_SetSwapInterval(1);
+            // SDL_GL_SetSwapInterval(1);
 
             // tell stb_image.h to flip loaded texture's on the y-axis (before loading
             // model).
@@ -110,16 +112,17 @@ namespace yapre
             glEnable(GL_DEPTH_TEST);
 
             int w, h;
-            SDL_GL_GetDrawableSize(window, &w, &h);
-            glViewport(0, 0, w, h);
+            // SDL_GL_GetDrawableSize(window, &w, &h);
+            glViewport(0, 0, SCREEN_WIDTH
+                    , SCREEN_HEIGHT);
 
             // build and compile shaders
             // -------------------------
-            ourShader = new Shader("../data/shaders/model.vs", "../data/shaders/model.fs");
+            ourShader = new Shader("data/shaders/model.vs", "data/shaders/model.fs");
 
             // load models
             // -----------
-            ourModel = new Model("../data/model/backpack/backpack.obj");
+            ourModel = new Model("data/model/backpack/backpack.obj");
 
             return true;
         }
@@ -155,7 +158,6 @@ namespace yapre
                         1.0f)); // it's a bit too big for our scene, so scale it down
             ourShader->setMat4("model", model);
             ourModel->Draw(*ourShader);
-
             SDL_GL_SwapWindow(window);
         }
 
