@@ -1,6 +1,5 @@
 #include "core.h"
-
-#define GLM_FORCE_RADIANS 1
+#include "audio.h"
 
 #include <iostream>
 
@@ -16,9 +15,14 @@ namespace yapre
         void Deinit() {}
 
         bool Update() {
+            static bool a = false;
+            if(!a)
+            {
+                yapre::audio::Beep(440., 10000);
+                a = true;
+            }
             SDL_Event event;
             SDL_PollEvent(&event);
-
             return event.type != SDL_QUIT;
         }
     } // namespace pinhole

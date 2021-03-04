@@ -16,12 +16,13 @@ namespace yapre
     {
         bool Init()
         {
+            /*
             shader = new Shader (
                     "data/shaders/shader.vs",
                     "data/shaders/shader.fs"
                     ); 
-
-
+            */
+            return true;
             glGenVertexArrays(1, &VAO);
             glGenBuffers(1, &VBO);
             // bind the Vertex Array Object first, then bind and set vertex buffer(s), and
@@ -47,7 +48,8 @@ namespace yapre
         }
 
         void RenderFrame()
-        {
+        {   
+            return;
             glClearColor(0.f, 0.f, 0.f, 0.f);
             glClear(GL_COLOR_BUFFER_BIT);
             shader->use();

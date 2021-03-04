@@ -8,6 +8,7 @@
 #include <glad/glad.h>
 
 #include "core.h"
+#include "audio.h"
 #include "renderer.h"
 
 static const int SCREEN_FULLSCREEN = 0;
@@ -33,6 +34,7 @@ void PrintSdlInfo() {
 }
 
 void SetupSdlGl() {
+    /*
     // Request an OpenGL 4.5 context (should be core)
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -45,6 +47,7 @@ void SetupSdlGl() {
 
     // Default OpenGL is fine.
     SDL_GL_LoadLibrary(NULL);
+    */
 }
 
 
@@ -56,19 +59,20 @@ int main(int argc, char *args[]) {
     atexit(SDL_Quit);
 
     SetupSdlGl();
-    // Create the window
+    
     if (SCREEN_FULLSCREEN) {
         window = SDL_CreateWindow(
                 WINDOW_CAPTION, 
                 SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
                 0, 0,
-                SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_OPENGL);
+                SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
     } else {
         window = SDL_CreateWindow(
                 WINDOW_CAPTION, 
                 SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
                 SCREEN_WIDTH,SCREEN_HEIGHT,
-                SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_ALWAYS_ON_TOP);
+                SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+                // SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
     }
 
     if (window == NULL) {
@@ -84,22 +88,23 @@ int main(int argc, char *args[]) {
 
     gladLoadGLLoader(SDL_GL_GetProcAddress);
 
-    // Check OpenGL properties
     PrintSdlInfo();
 
-    // Use v-sync
     SDL_GL_SetSwapInterval(1);
-
-    // configure global opengl state
-    // -----------------------------
-    // glEnable(GL_DEPTH_TEST);
+    
+    glEnable(GL_DEPTH_TEST);
 
     int w, h;
-    SDL_GL_GetDrawableSize(window, &w, &h);
-    glViewport(0, 0, w, h);
+    // SDL_GL_GetDrawableSize(window, &w, &h);
+    glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     
 
     if(! yapre::renderer::Init())
+    {
+        return 0;
+    }
+   
+    if(! yapre::audio::Init())
     {
         return 0;
     }
@@ -114,9 +119,10 @@ int main(int argc, char *args[]) {
             [](){
                 yapre::core::Update();
                 yapre::renderer::RenderFrame();
+                
+                SDL_GL_SwapWindow(window);
             },
             0, 1);
-    //yapre::core::Update();
 #else
     while (yapre::core::Update()) {
         yapre::renderer::RenderFrame();
@@ -126,6 +132,7 @@ int main(int argc, char *args[]) {
 
     yapre::core::Deinit();
     yapre::renderer::Deinit();
+    // yapre::audio::Deinit();
     return 0;
 }
 

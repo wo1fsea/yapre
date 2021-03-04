@@ -28,12 +28,12 @@ add_subdirectory(${GLAD_DIR})
 set(GLM_DIR "external/glm")
 add_subdirectory(${GLM_DIR})
 
-option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
-option(ASSIMP_BUILD_TESTS OFF)
+# option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
+# option(ASSIMP_BUILD_TESTS OFF)
 
-set(ASSIMP_DIR "external/assimp")
-set(ASSIMP_INCLUDE_DIRS ${ASSIMP_DIR}/include "build/emscripten/external/assimp/include")
-add_subdirectory(${ASSIMP_DIR})
+# set(ASSIMP_DIR "external/assimp")
+# set(ASSIMP_INCLUDE_DIRS ${ASSIMP_DIR}/include "build/emscripten/external/assimp/include")
+# add_subdirectory(${ASSIMP_DIR})
 
 include_directories(
     include/
@@ -65,9 +65,21 @@ add_executable(${PROJECT_NAME} ${PROJECT_INCLUDE} ${PROJECT_SRC})
 
 
 if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
-    target_link_libraries(${PROJECT_NAME} glad assimp glm_static)
+    target_link_libraries(
+        ${PROJECT_NAME} 
+        glad 
+        glm_static
+        # assimp 
+        )
 else()
-    target_link_libraries(${PROJECT_NAME} SDL2main SDL2-static glad assimp glm_static)
+    target_link_libraries(
+        ${PROJECT_NAME} 
+        SDL2main 
+        SDL2-static 
+        glad 
+        glm_static
+        # assimp 
+        )
 endif()
 
 set_target_properties(
