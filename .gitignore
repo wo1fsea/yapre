@@ -31,4 +31,8 @@
 *.out
 *.app
 
+*.swp
+
 /build/
+/tools/
+/compile_commands.json

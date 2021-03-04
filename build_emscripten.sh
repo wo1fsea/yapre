@@ -1,5 +1,8 @@
+. ./platform/emscripten/setup_emsdk.sh
 
-emscripten_path="~/emsdk"
+setup_emsdk
+emscripten_path="./tools/emsdk"
+source "$emscripten_path/emsdk_env.sh"
 
 rm -r ./build/emscripten
 mkdir -p ./build/emscripten
