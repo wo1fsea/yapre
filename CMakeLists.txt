@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 project(yapre)
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(BUILD_SHARED_LIBS OFF)
 set(BUILD_STATIC_LIBS ON)
 
@@ -76,3 +78,9 @@ set_target_properties(
 
 platform_setup_target()
 
+add_custom_command(
+    TARGET ${PROJECT_NAME}
+    POST_BUILD
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMAND cp ${CMAKE_BINARY_DIR}/compile_commands.json ${PROJECT_SOURCE_DIR}/
+    )
