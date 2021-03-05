@@ -132,7 +132,7 @@ int main(int argc, char *args[]) {
 
     yapre::core::Deinit();
     yapre::renderer::Deinit();
-    // yapre::audio::Deinit();
+    yapre::audio::Deinit();
     return 0;
 }
 

@@ -2,8 +2,10 @@
 
 #include <SDL.h>
 #include <SDL_audio.h>
+#include <iterator>
 #include <queue>
 #include <cmath>
+#include <iostream>
 
 
 namespace yapre
@@ -13,25 +15,28 @@ namespace yapre
         const int AMPLITUDE = 28000;
         const int FREQUENCY = 44100;
 
-        struct BeepObject
+        struct BeepData
         {
-            double freq;
-            int samplesLeft;
+            double Freq;
+            int Samples;
         };
 
         static double v = 0;
-        static std::queue<BeepObject> beeps;
+        static std::queue<BeepData> beeps;
 
         void AudioCallback(void *_beeper, Uint8 *_stream, int _length);
 
         bool Init()
         {
-            SDL_Init(SDL_INIT_AUDIO);
+            if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER)) {
+                return false;
+            }
             SDL_AudioSpec desiredSpec;
 
             desiredSpec.freq = FREQUENCY;
             desiredSpec.format = AUDIO_S16SYS;
             desiredSpec.channels = 1;
+            desiredSpec.silence = 0;
             desiredSpec.samples = 2048;
             desiredSpec.callback = AudioCallback;
             desiredSpec.userdata = nullptr;
@@ -59,19 +64,19 @@ namespace yapre
                     }
                     return;
                 }
-                BeepObject& bo = beeps.front();
+                BeepData& bo = beeps.front();
 
-                int samplesToDo = std::min(i + bo.samplesLeft, length);
-                bo.samplesLeft -= samplesToDo - i;
+                int samplesToDo = std::min(i + bo.Samples, length);
 
                 while (i < samplesToDo) {
-                    stream[i] = AMPLITUDE * std::sin(v * 2 * M_PI / FREQUENCY);
+                    stream[i] = AMPLITUDE * std::sin(bo.Samples * bo.Freq * 2 * M_PI / FREQUENCY);
                     i++;
-                    v += bo.freq;
+                    bo.Samples -= 1;
                 }
 
-                if (bo.samplesLeft == 0) {
+                if (bo.Samples == 0) {
                     beeps.pop();
+                    std::cout << "F" << std::endl;
                 }
             }
         }
@@ -91,9 +96,9 @@ namespace yapre
 
         void Beep(double freq, int duration)
         {
-            BeepObject bo;
-            bo.freq = freq;
-            bo.samplesLeft = duration * FREQUENCY / 1000;
+            BeepData bo;
+            bo.Freq = freq;
+            bo.Samples = duration * FREQUENCY / 1000;
 
             SDL_LockAudio();
             beeps.push(bo);

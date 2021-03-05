@@ -10,7 +10,7 @@ set(BUILD_STATIC_LIBS ON)
 function(platform_setup_target)
 endfunction()
 
-option(YAPRE_BUILD_PLATFORM "Platform" "") #"" by default
+option(YAPRE_BUILD_PLATFORM "Platform" "") 
 if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
     include(platform/emscripten/CMakeLists.txt)
 else()
@@ -90,9 +90,23 @@ set_target_properties(
 
 platform_setup_target()
 
-add_custom_command(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    COMMAND cp ${CMAKE_BINARY_DIR}/compile_commands.json ${PROJECT_SOURCE_DIR}/
-    )
+if(YAPRE_BUILD_PLATFORM STREQUAL "windows")
+    #   add_custom_command(
+    #       TARGET ${PROJECT_NAME}
+    #       POST_BUILD
+    #       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    #       COMMAND set "p1=${CMAKE_BINARY_DIR}/compile_commands.json"
+    #       COMMAND set "p2=${PROJECT_SOURCE_DIR}"
+    #       COMMAND set "p1=%p1:/=\\%"
+    #       COMMAND set "p2=%p2:/=\\%"
+    #       COMMAND copy "%p1%" "%p2%"
+    #       )
+else()
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        COMMAND cp ${CMAKE_BINARY_DIR}/compile_commands.json ${PROJECT_SOURCE_DIR}/
+        )
+endif()
+
