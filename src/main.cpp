@@ -57,7 +57,7 @@ int main(int argc, char *args[]) {
         return 0;
     }
     atexit(SDL_Quit);
-
+    
     SetupSdlGl();
     
     if (SCREEN_FULLSCREEN) {
