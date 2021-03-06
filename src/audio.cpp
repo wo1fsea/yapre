@@ -28,7 +28,7 @@ namespace yapre
 
         bool Init()
         {
-            if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER)) {
+            if (SDL_Init(SDL_INIT_AUDIO)) {
                 return false;
             }
             SDL_AudioSpec desiredSpec;
@@ -41,10 +41,10 @@ namespace yapre
             desiredSpec.callback = AudioCallback;
             desiredSpec.userdata = nullptr;
 
-            SDL_AudioSpec obtainedSpec;
-
-            // you might want to look for errors here
-            SDL_OpenAudio(&desiredSpec, &obtainedSpec);
+            if(SDL_OpenAudio(&desiredSpec, NULL))
+            {
+                return false;
+            }
 
             // start play audio
             SDL_PauseAudio(0);
