@@ -50,7 +50,6 @@ namespace yapre
             }
 
             SDL_PauseAudio(0);
-           PlayMario();
             return true;
         }
 
@@ -111,7 +110,7 @@ namespace yapre
         
 
         int time = 0;
-        void MPInit()
+        void PMInit()
         {
             time = 0;
         }
@@ -141,6 +140,7 @@ namespace yapre
 
         void PlayMario()
         {
+            PMInit();
             PMPlayAndWait(659, 125);
             PMPlayAndWait(659, 125);
             PMWait(125);

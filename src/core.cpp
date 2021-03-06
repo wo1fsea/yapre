@@ -16,6 +16,15 @@ namespace yapre {
             while (SDL_PollEvent(&event) != 0) {
                 int l = 200;
                 if (event.type == SDL_KEYDOWN) {
+                        std::cout << event.key.keysym.sym << "." << SDLK_KP_SPACE << std::endl;
+                    
+#ifdef __EMSCRIPTEN__
+                        if (event.key.keysym.sym >=30 && event.key.keysym.sym < 40)
+                        {
+                            event.key.keysym.sym += 19;
+                        }
+#endif
+                        
                     switch (event.key.keysym.sym) {
                         case SDLK_1: 
                             yapre::audio::Beep(audio::TONE::D, l);
