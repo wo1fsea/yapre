@@ -57,11 +57,19 @@ file(GLOB PROJECT_CONFIG
     .gitignore
     .gitmodules
     )
+file(GLOB PROJECT_RESOURCE
+    data
+    )
 
 source_group("include" FILES ${PROJECT_INCLUDE})
 source_group("src" FILES ${PROJECT_SRC})
 
-add_executable(${PROJECT_NAME} ${PROJECT_INCLUDE} ${PROJECT_SRC})
+add_executable(
+    ${PROJECT_NAME} 
+    ${PROJECT_INCLUDE} 
+    ${PROJECT_SRC}
+    ${PROJECT_RESOURCE}
+    )
 
 
 if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
@@ -101,7 +109,7 @@ if(YAPRE_BUILD_PLATFORM STREQUAL "windows")
     #       COMMAND set "p2=%p2:/=\\%"
     #       COMMAND copy "%p1%" "%p2%"
     #       )
-else()
+elseif(YAPRE_BUILD_PLATFORM STREQUAL "mac" OR YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD

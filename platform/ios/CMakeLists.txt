@@ -11,6 +11,8 @@ set(MACOSX_BUNDLE_BUNDLE_VERSION "1.0")
 set(MACOSX_BUNDLE_COPYRIGHT "Copyright YOU")
 # set(MACOSX_DEPLOYMENT_TARGET ${DEPLOYMENT_TARGET})
 
+
+
 function(platform_setup_target)
     target_link_libraries(
         ${PROJECT_NAME} 
@@ -26,7 +28,8 @@ function(platform_setup_target)
         "-framework CoreHaptics"
         iconv
         )
-    #    set_target_properties(${APP_NAME} PROPERTIES
+    set_target_properties(
+        ${PROJECT_NAME} PROPERTIES
         # XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym"
         # XCODE_ATTRIBUTE_GCC_PREFIX_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/Prefix.pch"
         # XCODE_ATTRIBUTE_GCC_PRECOMPILE_PREFIX_HEADER "YES"
@@ -40,6 +43,6 @@ function(platform_setup_target)
         # XCODE_ATTRIBUTE_INSTALL_PATH "$(LOCAL_APPS_DIR)"
         #XCODE_ATTRIBUTE_ENABLE_TESTABILITY YES
         #XCODE_ATTRIBUTE_GCC_SYMBOLS_PRIVATE_EXTERN YES
-        #RESOURCE "${RESOURCES}"
-        #)
+        RESOURCE "${PROJECT_RESOURCE}"
+        )
 endfunction()
