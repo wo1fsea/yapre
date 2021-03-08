@@ -1,11 +1,35 @@
-#version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
 
-out vec3 ourColor;
+
+#if __VERSION__ < 130
+
+attribute vec4 vertex; // <vec2 position, vec2 texCoords>
+
+varying vec2 TexCoords;
+
+uniform mat4 model;
+// note that we're omitting the view matrix; the view never changes so we basically have an identity view matrix and can therefore omit it.
+uniform mat4 projection;
 
 void main()
 {
-    gl_Position = vec4(aPos, 1.0);
-    ourColor = aColor;
+    TexCoords = vertex.zw;
+    gl_Position = projection * model * vec4(vertex.xy, 0.0, 1.0);
 }
+
+#else
+#version 330 core
+layout (location = 0) in vec4 vertex; // <vec2 position, vec2 texCoords>
+
+out vec2 TexCoords;
+
+uniform mat4 model;
+// note that we're omitting the view matrix; the view never changes so we basically have an identity view matrix and can therefore omit it.
+uniform mat4 projection;
+
+void main()
+{
+    TexCoords = vertex.zw;
+    gl_Position = projection * model * vec4(vertex.xy, 0.0, 1.0);
+}
+#endif
+

@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include <SDL.h>
-
+ 
 namespace yapre {
     namespace core {
         bool Init() { return true; }
@@ -19,9 +19,12 @@ namespace yapre {
                         std::cout << event.key.keysym.sym << "." << SDLK_KP_SPACE << std::endl;
                     
 #ifdef __EMSCRIPTEN__
-                        if (event.key.keysym.sym >=30 && event.key.keysym.sym < 40)
+                        if (event.key.keysym.sym >=30 && event.key.keysym.sym < 39)
                         {
                             event.key.keysym.sym += 19;
+                        }else if(event.key.keysym.sym == 39)
+                        {
+                            event.key.keysym.sym = 48;
                         }
 #endif
                         
