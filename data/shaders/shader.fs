@@ -1,9 +1,15 @@
-#version 330 core
-out vec4 FragColor;
+#if __VERSION__ < 110
+precision mediump float;
+#endif
 
-in vec3 ourColor;
+varying vec2 TexCoords;
+
+uniform sampler2D sprite;
+uniform vec3 spriteColor;
 
 void main()
 {
-    FragColor = vec4(ourColor, 1.0f);
+    gl_FragColor = vec4(spriteColor, 1.0) * texture2D(sprite, TexCoords);
 }
+
+

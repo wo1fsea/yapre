@@ -18,6 +18,7 @@ namespace yapre
 
         bool Init();
         void Deinit();
+        void Update();
         void Beep(double freq, int duration);
         void PlayMario();
     };

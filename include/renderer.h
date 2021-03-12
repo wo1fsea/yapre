@@ -6,7 +6,7 @@ namespace yapre
     {
         bool Init();
         void Deinit();
-        void RenderFrame();
+        void Update();
     };
 };
 
