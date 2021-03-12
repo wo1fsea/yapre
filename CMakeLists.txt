@@ -28,6 +28,9 @@ add_subdirectory(${GLAD_DIR})
 set(GLM_DIR "external/glm")
 add_subdirectory(${GLM_DIR})
 
+set(STB_IMAGE_DIR "external/std_image")
+add_subdirectory(${STB_IMAGE_DIR})
+
 # option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 # option(ASSIMP_BUILD_TESTS OFF)
 
@@ -41,6 +44,7 @@ include_directories(
     ${GLAD_DIR}/include
     ${ASSIMP_INCLUDE_DIRS} 
     ${GLM_DIR}
+    ${STB_IMAGE_DIR}/include
     )
 
 file(GLOB PROJECT_INCLUDE 
@@ -77,6 +81,7 @@ if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
         ${PROJECT_NAME} 
         glad 
         glm_static
+        std_image
         # assimp 
         )
 else()
@@ -86,6 +91,7 @@ else()
         SDL2-static 
         glad 
         glm_static
+        std_image
         # assimp 
         )
 endif()

@@ -103,7 +103,7 @@ void DrawSprite(glm::vec2 position, glm::vec2 size = glm::vec2(10.0f, 10.0f),
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RenderFrame() {
+void Update() {
   glClearColor(0.f, 0.f, 0.f, 0.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

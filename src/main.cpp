@@ -85,19 +85,11 @@ int main(int argc, char *args[]) {
 
   SDL_GL_SetSwapInterval(1);
 
-  // glEnable(GL_DEPTH_TEST);
+  glEnable(GL_DEPTH_TEST);
 
-  int w = SCREEN_WIDTH, h = SCREEN_HEIGHT;
+  int w, h;
   // SDL_GL_GetDrawableSize(window, &w, &h);
-  glViewport(0, 0, w, h);
-
-  if (!yapre::renderer::Init()) {
-    return 0;
-  }
-
-  if (!yapre::audio::Init()) {
-    return 0;
-  }
+  glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
   if (!yapre::core::Init()) {
     return 0;
@@ -107,20 +99,16 @@ int main(int argc, char *args[]) {
   emscripten_set_main_loop(
       []() {
         yapre::core::Update();
-        yapre::renderer::RenderFrame();
-
         SDL_GL_SwapWindow(window);
       },
       0, 1);
 #else
-  while (yapre::core::Update()) {
-    yapre::renderer::RenderFrame();
+  while (!yapre::core::ToStop()) {
+    yapre::core::Update();
     SDL_GL_SwapWindow(window);
   }
 #endif
 
   yapre::core::Deinit();
-  yapre::renderer::Deinit();
-  yapre::audio::Deinit();
   return 0;
 }
