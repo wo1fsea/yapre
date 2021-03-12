@@ -12,3 +12,4 @@ void main()
     gl_FragColor = vec4(spriteColor, 1.0) * texture2D(sprite, TexCoords);
 }
 
+
