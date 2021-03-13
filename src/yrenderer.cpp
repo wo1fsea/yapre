@@ -108,9 +108,10 @@ void DrawSprite(glm::vec2 position, glm::vec2 size = glm::vec2(10.0f, 10.0f),
 void Update() {
   glClearColor(0.f, 0.f, 0.f, 0.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
   DrawSprite(glm::vec2(100, 100), glm::vec2(256, 256), 0.0f,
              glm::vec3(1.0f, 0.0f, 1.0f));
 }
+
+
 } // namespace renderer
 } // namespace yapre

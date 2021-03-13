@@ -1,5 +1,6 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <emscripten/html5.h>
 #endif
 
 #include <SDL.h>
@@ -19,6 +20,16 @@ static const char *WINDOW_CAPTION = "yapre";
 static SDL_Window *window = NULL;
 static SDL_GLContext maincontext;
 
+void GetDrawableSize(SDL_Window *window, int *w, int *h) {
+#ifdef __EMSCRIPTEN__
+  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context =
+      emscripten_webgl_get_current_context();
+  emscripten_webgl_get_drawing_buffer_size(context, w, h);
+#else
+  SDL_GL_GetDrawableSize(window, w, h);
+#endif
+}
+
 void PrintSdlError() {
   auto error_message = SDL_GetError();
   std::cout << error_message << std::endl;
@@ -33,7 +44,7 @@ void PrintSdlInfo() {
 
 void SetupSdlGl() {
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-  
+
   /*
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -87,10 +98,6 @@ int main(int argc, char *args[]) {
 
   glEnable(GL_DEPTH_TEST);
 
-  int w, h;
-  // SDL_GL_GetDrawableSize(window, &w, &h);
-  glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
   if (!yapre::core::Init()) {
     return 0;
   }
@@ -98,12 +105,19 @@ int main(int argc, char *args[]) {
 #ifdef __EMSCRIPTEN__
   emscripten_set_main_loop(
       []() {
+        int w, h;
+        GetDrawableSize(window, &w, &h);
+        glViewport(0, 0, w, h);
+
         yapre::core::Update();
         SDL_GL_SwapWindow(window);
       },
       0, 1);
 #else
   while (!yapre::core::ToStop()) {
+    int w, h;
+    GetDrawableSize(window, &w, &h);
+    glViewport(0, 0, w, h);
     yapre::core::Update();
     SDL_GL_SwapWindow(window);
   }
