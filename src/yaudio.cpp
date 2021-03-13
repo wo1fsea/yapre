@@ -1,4 +1,4 @@
-#include "audio.h"
+#include "yaudio.h"
 
 #include <SDL.h>
 #include <SDL_audio.h>

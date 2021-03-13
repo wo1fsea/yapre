@@ -1,12 +1,16 @@
-#include "renderer.h"
+#include "yrenderer.h"
+
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "shader.h"
 #include "stb_image.h"
+#include "yshader.h"
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
+
+namespace yapre {
+namespace renderer {
 
 unsigned int VBO;
 unsigned int TEXTURE_ID;
@@ -19,8 +23,6 @@ const float vertices[] = {
 
 Shader *shader = nullptr;
 
-namespace yapre {
-namespace renderer {
 bool Init() {
   std::string vertexCode;
   std::string fragmentCode;

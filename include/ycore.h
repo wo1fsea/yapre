@@ -2,8 +2,8 @@
 
 #include <array>
 
-#include "audio.h"
-#include "renderer.h"
+#include "yaudio.h"
+#include "yrenderer.h"
 #include "ylua.h"
 
 namespace yapre {

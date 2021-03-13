@@ -1,14 +1,4 @@
-/*******************************************************************
-** This code is part of Breakout.
-**
-** Breakout is free software: you can redistribute it and/or modify
-** it under the terms of the CC BY 4.0 license as published by
-** Creative Commons, either version 4 of the License, or (at your
-** option) any later version.
-******************************************************************/
-#ifndef SHADER_H
-#define SHADER_H
-
+#pragma once
 #include <string>
 
 #include <glad/glad.h>
@@ -16,6 +6,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
+namespace yapre
+{
 // General purpsoe shader object. Compiles from file, generates
 // compile/link-time error messages and hosts several utility 
 // functions for easy management.
@@ -44,5 +36,5 @@ private:
     // checks if compilation or linking failed and if so, print the error logs
     void    checkCompileErrors(unsigned int object, std::string type); 
 };
+}
 
-#endif

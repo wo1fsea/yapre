@@ -7,9 +7,9 @@
 #include <glad/glad.h>
 #include <iostream>
 
-#include "audio.h"
-#include "core.h"
-#include "renderer.h"
+#include "yaudio.h"
+#include "ycore.h"
+#include "yrenderer.h"
 
 static const int SCREEN_FULLSCREEN = 0;
 static const int SCREEN_WIDTH = 800;
