@@ -31,6 +31,10 @@ add_subdirectory(${GLM_DIR})
 set(STB_IMAGE_DIR "external/std_image")
 add_subdirectory(${STB_IMAGE_DIR})
 
+set(LUA_DIR "external/lua")
+add_subdirectory(${LUA_DIR})
+
+
 # option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 # option(ASSIMP_BUILD_TESTS OFF)
 
@@ -45,6 +49,7 @@ include_directories(
     ${ASSIMP_INCLUDE_DIRS} 
     ${GLM_DIR}
     ${STB_IMAGE_DIR}/include
+    ${LUA_DIR}/src
     )
 
 file(GLOB PROJECT_INCLUDE 
@@ -82,6 +87,7 @@ if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
         glad 
         glm_static
         std_image
+        lua
         # assimp 
         )
 else()
@@ -92,6 +98,7 @@ else()
         glad 
         glm_static
         std_image
+        lua
         # assimp 
         )
 endif()

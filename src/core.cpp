@@ -1,6 +1,4 @@
 #include "core.h"
-#include "audio.h"
-#include "renderer.h"
 
 #include <iostream>
 
