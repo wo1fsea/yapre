@@ -3,11 +3,14 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "stb_image.h"
+#include "window_manager.h"
 #include "yshader.h"
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
+
+#include <SDL.h>
 
 namespace yapre {
 namespace renderer {
@@ -23,7 +26,19 @@ const float vertices[] = {
 
 Shader *shader = nullptr;
 
+void PrintGlInfo() {
+  std::cout << "OpenGL loaded" << std::endl;
+  std::cout << "Vendor:" << glGetString(GL_VENDOR) << std::endl;
+  std::cout << "Renderer:" << glGetString(GL_RENDERER) << std::endl;
+  std::cout << "Version:" << glGetString(GL_VERSION) << std::endl;
+}
+
 bool Init() {
+
+  gladLoadGLLoader(SDL_GL_GetProcAddress);
+  PrintGlInfo();
+  glEnable(GL_DEPTH_TEST);
+
   std::string vertexCode;
   std::string fragmentCode;
   std::string geometryCode;
@@ -89,7 +104,8 @@ void DrawSprite(glm::vec2 position, glm::vec2 size = glm::vec2(10.0f, 10.0f),
 
   model = glm::scale(model, glm::vec3(size, 1.0f)); // last scale
 
-  glm::mat4 projection = glm::ortho(0.0f, 800.f, 600.f, 0.0f, -1.0f, 1.0f);
+  auto [w, h] = window_manager::GetDesignSize();
+  glm::mat4 projection = glm::ortho(0.0f, 1.f * w, 1.f * h, 0.0f, -1.0f, 1.0f);
   shader->SetInteger("sprite", 0);
   shader->SetMatrix4("projection", projection);
   shader->SetMatrix4("model", model);
@@ -106,12 +122,34 @@ void DrawSprite(glm::vec2 position, glm::vec2 size = glm::vec2(10.0f, 10.0f),
 }
 
 void Update() {
+
+  auto [w, h] = window_manager::GetDrawableSize();
+  glViewport(0, 0, w, h);
   glClearColor(0.f, 0.f, 0.f, 0.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  DrawSprite(glm::vec2(100, 100), glm::vec2(256, 256), 0.0f,
-             glm::vec3(1.0f, 0.0f, 1.0f));
-}
 
+  auto [dw, dh] = window_manager::GetDesignSize();
+  int rx = 0;
+  int ry = 0;
+  if (1.0 * dw / dh > 1.0 * w / h) {
+    int rh = w * dh / dw;
+    ry = (h - rh) / 2;
+    h = rh;
+  } else {
+    int rw = h * dw / dh;
+    rx = (w - rw) / 2;
+    w = rw;
+  }
+
+  glViewport(rx, ry, w, h);
+  glClearColor(.2f, .2f, .2f, 0.f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  DrawSprite(glm::vec2(100, 0), glm::vec2(600, 600), 0.0f,
+             glm::vec3(1.0f, 0.0f, 1.0f));
+
+  window_manager::SwapWinodw();
+}
 
 } // namespace renderer
 } // namespace yapre
