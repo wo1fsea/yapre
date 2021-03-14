@@ -35,7 +35,7 @@ void PrintSdlError() {
   std::cout << error_message << std::endl;
 }
 
-void PrintSdlInfo() {
+void PrintGLInfo() {
   std::cout << "OpenGL loaded" << std::endl;
   std::cout << "Vendor:" << glGetString(GL_VENDOR) << std::endl;
   std::cout << "Renderer:" << glGetString(GL_RENDERER) << std::endl;
@@ -90,12 +90,10 @@ int main(int argc, char *args[]) {
     return 0;
   }
 
-  gladLoadGLLoader(SDL_GL_GetProcAddress);
-
-  PrintSdlInfo();
-
   SDL_GL_SetSwapInterval(1);
 
+  gladLoadGLLoader(SDL_GL_GetProcAddress);
+  PrintGLInfo();
   glEnable(GL_DEPTH_TEST);
 
   if (!yapre::core::Init()) {
