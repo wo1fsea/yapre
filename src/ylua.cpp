@@ -6,38 +6,49 @@ extern "C" {
 #include "lualib.h"
 }
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <string_view>
 
 namespace yapre {
-namespace lua {
+    namespace lua {
 
-static const luaL_Reg lualibs[] = {{"base", luaopen_base}, {NULL, NULL}};
-static void openlualibs(lua_State *l) {
-  const luaL_Reg *lib;
 
-  for (lib = lualibs; lib->func != NULL; lib++) {
-    lib->func(l);
-    lua_settop(l, 0);
-  }
-}
+        lua_State *luaState = nullptr;
 
-bool to_stop = false;
-bool Init() {
+        void LoadLuaFile(const std::string& luaFilePath)
+        {
+            luaL_dofile(luaState, luaFilePath.c_str());
+        }
 
-  lua_State *l;
-  l = luaL_newstate();
-  openlualibs(l);
+        bool CallLuaInit()
+        {
+            lua_getglobal(luaState, "Init");
+            lua_pcall(luaState, 0, 1, 0);
+            bool result = (bool)lua_toboolean(luaState, -1);
+            lua_pop(luaState, 1);
 
-  luaL_dofile(l, "data/lua/test.lua");
+            return result;
+        }
 
-  lua_close(l);
-  // return (result && status == LUA_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
-  return true;
-}
+        bool Init() {
+            luaState = luaL_newstate();
+            luaL_openlibs(luaState);
 
-void Deinit() {}
+            LoadLuaFile("data/lua/yapre.lua");
 
-void Update() {}
-} // namespace lua
+            return CallLuaInit();
+        }
+
+
+        void Deinit() 
+        {
+            lua_close(luaState);
+        }
+
+        void Update() 
+        {
+            lua_getglobal(luaState, "Update");
+            lua_pcall(luaState, 0, 0, 0);
+        }
+
+    } // namespace lua
 } // namespace yapre
