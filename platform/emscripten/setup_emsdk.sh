@@ -7,17 +7,16 @@ setup_emsdk()
             mkdir ./tools
         fi
 
-        pushd ./tools        
+        cd ./tools        
         git clone https://github.com/emscripten-core/emsdk.git
         
-        pushd ./emsdk
+        cd ./emsdk
         git pull
 
         ./emsdk install latest
         ./emsdk activate latest
         
-        popd
-        popd
+        cd ../..
 
     fi
 }
