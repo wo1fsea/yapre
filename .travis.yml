@@ -24,5 +24,10 @@ jobs:
         - git submodule update --init --recursive
       script:
         - sh ./build_mac.sh
+        - cd ../..
         - sh ./build_ios_simulator.sh
+        - cmake --build .
+        - cd ../..
         - sh ./build_ios.sh
+        - cmake --build .
+        - cd ../..
