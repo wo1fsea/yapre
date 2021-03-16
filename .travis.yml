@@ -10,7 +10,7 @@ jobs:
       dist: bionic
       sudo: required
       install: 
-        - sed -i '' 's/git@github.com:/https:\/\/github.com\//' ./.gitmodules
+        - sed -i 's/git@github.com:/https:\/\/github.com\//' ./.gitmodules
         - git submodule update --init --recursive
         - sh ./platform/emscripten/setup_emsdk.sh 
       script:
