@@ -18,8 +18,6 @@ file(GLOB PROJECT_CONFIG
     .gitmodules
     )
 
-list(REMOVE_ITEM lib_srcs "src/lua.c")
-
 include_directories(
     src/
     )
