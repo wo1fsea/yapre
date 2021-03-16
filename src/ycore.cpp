@@ -73,6 +73,9 @@ void Update() {
     fptr();
   }
   to_stop = event.type == SDL_QUIT;
+  
+  yapre::renderer::DrawSprite("data/logo.png", glm::vec3(0, 0, 0));
+  yapre::renderer::DrawSprite("data/logo.png", glm::vec3(100, 100, 1));
 }
 
 bool ToStop() { return to_stop; }
