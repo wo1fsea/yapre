@@ -1,0 +1,28 @@
+language: cpp
+
+git:
+  submodules: false
+
+jobs:
+  include:
+    - os: linux
+      compiler: g++
+      dist: bionic
+      sudo: required
+      install: 
+        - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+        - git submodule update --init --recursive
+        - sh ./platform/emscripten/setup_emsdk.sh 
+      script:
+        - sh ./build_emscripten.sh
+
+    - os: osx
+      osx_image: xcode11.5
+      sudo: required 
+      install: 
+        - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+        - git submodule update --init --recursive
+      script:
+        - sh ./build_mac.sh
+        - sh ./build_ios_simulator.sh
+        - sh ./build_ios.sh
