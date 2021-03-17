@@ -3,8 +3,8 @@
 #include <array>
 
 #include "yaudio.h"
-#include "yrenderer.h"
 #include "ylua.h"
+#include "yrenderer.h"
 
 namespace yapre {
 constexpr int kMaxSubsysmtemNum = 3;
