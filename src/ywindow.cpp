@@ -1,4 +1,4 @@
-#include "window_manager.h"
+#include "ywindow.h"
 
 #include <iostream>
 #include <tuple>
@@ -11,7 +11,7 @@
 #endif
 
 namespace yapre {
-namespace window_manager {
+namespace window {
 
 const bool kFullScreen = 0;
 const int kDefaultViewWidth = 800;
@@ -36,8 +36,8 @@ std::tuple<int, int> GetDrawableSize() {
   return std::make_tuple(w, h);
 }
 
-std::tuple<int, int> GetDesignSize(){
-    return std::make_tuple(kDefaultViewWidth, kDefaultViewHeight);
+std::tuple<int, int> GetDesignSize() {
+  return std::make_tuple(kDefaultViewWidth, kDefaultViewHeight);
 }
 
 void PrintSdlError() {
@@ -73,13 +73,13 @@ bool Init() {
 
   if (kFullScreen) {
     mainWindow = SDL_CreateWindow(kWindowCaption, SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, 0, 0,
-                              SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+                                  SDL_WINDOWPOS_UNDEFINED, 0, 0,
+                                  SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
   } else {
     mainWindow = SDL_CreateWindow(kWindowCaption, SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, kDefaultViewWidth,
-                              kDefaultViewHeight,
-                              SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+                                  SDL_WINDOWPOS_UNDEFINED, kDefaultViewWidth,
+                                  kDefaultViewHeight,
+                                  SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
     // SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
   }
 
@@ -105,5 +105,5 @@ void SwapWinodw() {
   }
 }
 
-} // namespace window_manager
+} // namespace window
 } // namespace yapre

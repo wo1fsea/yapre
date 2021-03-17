@@ -8,13 +8,13 @@
 #include <glad/glad.h>
 #include <iostream>
 
-#include "window_manager.h"
+#include "ywindow.h"
 #include "yaudio.h"
 #include "ycore.h"
 #include "yrenderer.h"
 
 int main(int argc, char *args[]) {
-  if (!yapre::window_manager::Init()) {
+  if (!yapre::window::Init()) {
     return 0;
   }
 

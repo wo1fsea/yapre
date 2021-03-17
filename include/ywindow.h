@@ -3,7 +3,7 @@
 #include <tuple>
 
 namespace yapre {
-namespace window_manager {
+namespace window{
 bool Init();
 std::tuple<int, int> GetDrawableSize();
 std::tuple<int, int> GetDesignSize();
