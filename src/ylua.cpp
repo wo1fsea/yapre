@@ -11,16 +11,13 @@ extern "C" {
 namespace yapre {
 namespace lua {
 
+const char *kDefaultLuaEntryFilePath = "data/lua/yapre.lua";
 lua_State *mainLuaState = nullptr;
-
-void LoadLuaFile(const std::string &luaFilePath) {
-  luaL_dofile(mainLuaState, luaFilePath.c_str());
-}
 
 bool Init() {
   mainLuaState = luaL_newstate();
   luaL_openlibs(mainLuaState);
-  LoadLuaFile("data/lua/yapre.lua");
+  luaL_dofile(mainLuaState, kDefaultLuaEntryFilePath);
 
   return GStateFunc<bool, void>{"Init"}.Call();
 }
@@ -30,7 +27,7 @@ void Deinit() {
   lua_close(mainLuaState);
 }
 
-void Update() { GStateFunc<void, void>{"Update"}.Call(); }
+void Update() { GStateFunc<void>{"Update"}.Call(); }
 
 } // namespace lua
 } // namespace yapre
