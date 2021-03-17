@@ -28,7 +28,7 @@ jobs:
         - cd ./build/ios_simulator
         - cmake --build .
         - cd ../..
-        - sh ./build_ios.sh
-        - cd ./build/ios
-        - cmake --build .
-        - cd ../..
+          # - sh ./build_ios.sh
+          # - cd ./build/ios
+          # - cmake --build .
+          # - cd ../..
