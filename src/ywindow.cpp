@@ -14,8 +14,8 @@ namespace yapre {
 namespace window {
 
 const bool kFullScreen = 0;
-const int kDefaultViewWidth = 800;
-const int kDefaultViewHeight = 600;
+const int kDefaultViewWidth = 320;
+const int kDefaultViewHeight = 240;
 const char *kWindowCaption = "yapre";
 SDL_Window *mainWindow = nullptr;
 SDL_GLContext mainContext;

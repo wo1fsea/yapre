@@ -1,11 +1,13 @@
 #include "yrenderer.h"
 
 #include "SDL.h"
+#include "glm/fwd.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "stb_image.h"
 #include "stb_image_resize.h"
 
+#include "yluabind.hpp"
 #include "yshader.h"
 #include "ywindow.h"
 
@@ -71,6 +73,9 @@ bool Init() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glDisableVertexAttribArray(0);
 
+  lua::GStateModule("yapre")
+      .Define<void (*)(const std::string &, int, int, int, int, int, float,
+                       float, float, float)>("DrawSprite", DrawSprite);
   return true;
 }
 
@@ -104,10 +109,10 @@ std::tuple<unsigned int, int, int> GetTextureId(std::string texture_filename) {
 
   stbi_image_free(data);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -116,7 +121,7 @@ std::tuple<unsigned int, int, int> GetTextureId(std::string texture_filename) {
   return texture_info;
 }
 
-void DrawSprite(std::string texture_filename, glm::vec3 position,
+void DrawSprite(const std::string &texture_filename, glm::vec3 position,
                 glm::vec2 size, float rotate, glm::vec3 color) {
 
   auto [texture_id, texture_w, texture_h] = GetTextureId(texture_filename);
@@ -144,6 +149,12 @@ void DrawSprite(std::string texture_filename, glm::vec3 position,
   return;
 }
 
+void DrawSprite(const std::string &texture_filename, int x, int y, int z,
+                int width, int height, float rotate, float R, float G,
+                float B) {
+  DrawSprite(texture_filename, glm::vec3(x,y,z), glm::vec2(width, height), rotate, glm::vec3(R,G,B));
+}
+
 void DrawAll() {
   shader->Use();
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -168,7 +179,7 @@ void Update() {
 
   auto [w, h] = window::GetDrawableSize();
   glViewport(0, 0, w, h);
-  glClearColor(0.f, 0.f, 0.f, 0.f);
+  glClearColor(1.f, 0.f, 0.f, 0.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   auto [dw, dh] = window::GetDesignSize();

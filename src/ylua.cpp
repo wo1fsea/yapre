@@ -14,15 +14,17 @@ namespace lua {
 const char *kDefaultLuaEntryFilePath = "data/lua/yapre.lua";
 lua_State *mainLuaState = nullptr;
 
-int t(int i, int j) { return i+j; }
-void *testFuc = (void*)t;
-
-bool Init() {
+lua_State *GetMainLuaState() {
+  if (!mainLuaState){
   mainLuaState = luaL_newstate();
   luaL_openlibs(mainLuaState);
-  luaL_dofile(mainLuaState, kDefaultLuaEntryFilePath);
+  }
+  return mainLuaState;
+}
 
-  GStateFunc<bool, int, int, int(*)(int,int)>{"Init"}.Call(1,2,t);
+bool Init() {
+  luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);
+  GStateFunc<bool>{"Init"}.Call();
   return true;
 }
 

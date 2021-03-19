@@ -15,7 +15,7 @@ extern "C" {
 namespace yapre {
 namespace lua {
 
-extern lua_State *mainLuaState;
+lua_State *GetMainLuaState();
 
 template <typename T> struct StateVar {
   static inline void Put(lua_State *l, T value);
@@ -69,32 +69,30 @@ template <> struct StateVar<std::string> {
   }
 };
 
+template <> struct StateVar<const std::string &> {
+  static inline void Put(lua_State *l, const std::string &value) {
+    lua_pushstring(l, value.c_str());
+  }
+  static inline const std::string Get(lua_State *l, int index) {
+    return luaL_checkstring(l, index);
+  }
+};
+
 template <typename R, typename... Targs>
-lua_CFunction MakeCFuncVar(R (*func)(Targs...));
+lua_CFunction MakeCFuncStateVar(R (*func)(Targs...));
 template <typename R, typename... Targs> struct StateVar<R (*)(Targs...)> {
   static inline void Put(lua_State *l, R (*value)(Targs...)) {
-    lua_pushlightuserdata(l, (void*)value);
-    lua_pushcclosure(l, MakeCFuncVar(value), 1);
+    lua_pushlightuserdata(l, (void *)value);
+    lua_pushcclosure(l, MakeCFuncStateVar(value), 1);
   }
 };
 
-template <size_t args_size, typename R, typename... Targs> struct _StateCall {};
-
-template <typename R, typename... Targs> struct StateCall {
-  static inline R Call(lua_State *l, Targs... args) {
-    return _StateCall<sizeof...(Targs), R, Targs...>::Call(l, args...);
-  }
-};
-
-template <size_t args_size, typename R, typename T, typename... Targs>
-struct _StateCall<args_size, R, T, Targs...> {
+template <size_t args_size, typename R> struct _StateCall {
+  template <typename T, typename... Targs>
   static inline R Call(lua_State *l, T t, Targs... args) {
     StateVar<T>::Put(l, t);
-    return _StateCall<args_size, R, Targs...>::Call(l, args...);
+    return _StateCall<args_size, R>::Call(l, args...);
   }
-};
-
-template <size_t args_size, typename R> struct _StateCall<args_size, R> {
   static inline R Call(lua_State *l) {
     // todo check pcall
     lua_pcall(l, args_size, 1, 0);
@@ -103,7 +101,12 @@ template <size_t args_size, typename R> struct _StateCall<args_size, R> {
     return result;
   }
 };
-
+template <typename R> struct StateCall {
+  template <typename... Targs>
+  static inline R Call(lua_State *l, Targs... args) {
+    return _StateCall<sizeof...(Targs), R>::Call(l, args...);
+  }
+};
 template <size_t args_size> struct _StateCall<args_size, void> {
   static inline void Call(lua_State *l) {
     // todo check pcall
@@ -111,45 +114,25 @@ template <size_t args_size> struct _StateCall<args_size, void> {
   }
 };
 
-template <typename R, typename... Targs> struct GStateCall {
-  static inline R Call(Targs... args) {
-    return StateCall<R, Targs...>::Call(mainLuaState, args...);
+template <typename R> struct GStateCall {
+  template <typename... Targs> static inline R Call(Targs... args) {
+    return StateCall<R>::Call(GetMainLuaState(), args...);
   }
 };
 
-template <typename R, typename... Targs> struct StateFunc {
+template <typename R> struct StateFunc {
   std::string functionName;
-  R Call(lua_State *l, Targs... args) {
+  template <typename... Targs> R Call(lua_State *l, Targs... args) {
     lua_getglobal(l, functionName.c_str());
-    return StateCall<R, Targs...>::Call(l, args...);
+    return StateCall<R>::Call(l, args...);
   }
 };
 
-template <typename R, typename... Targs> struct GStateFunc {
+template <typename R> struct GStateFunc {
   std::string functionName;
-  R Call(Targs... args) {
-    lua_getglobal(mainLuaState, functionName.c_str());
-    return StateCall<R, Targs...>::Call(mainLuaState, args...);
-  }
-};
-
-template <typename R> struct StateCall<R, void> {
-  static inline R Call(lua_State *l) { return _StateCall<0, R>::Call(l); }
-};
-
-template <typename R> struct StateFunc<R, void> {
-  std::string functionName;
-  R Call(lua_State *l) {
-    lua_getglobal(l, functionName.c_str());
-    return StateCall<R>::Call(l);
-  }
-};
-
-template <typename R> struct GStateFunc<R, void> {
-  std::string functionName;
-  R Call() {
-    lua_getglobal(mainLuaState, functionName.c_str());
-    return StateCall<R>::Call(mainLuaState);
+  template <typename... Targs> R Call(Targs... args) {
+    lua_getglobal(GetMainLuaState(), functionName.c_str());
+    return StateCall<R>::Call(GetMainLuaState(), args...);
   }
 };
 
@@ -167,10 +150,47 @@ template <typename R, typename... Targs> struct _CFuncWrapper {
   }
 };
 
+template <typename... Targs> struct _CFuncWrapper<void, Targs...> {
+  using CFuncType = void (*)(Targs...);
+  template <std::size_t... Is>
+  static int _Call(std::index_sequence<Is...> const &, lua_State *l) {
+    CFuncType func = (CFuncType)lua_touserdata(l, lua_upvalueindex(1));
+    func(StateVar<Targs>::Get(l, (int)(-sizeof...(Targs) + Is))...);
+    return 1;
+  }
+  static int Call(lua_State *l) {
+    return _Call(std::make_index_sequence<sizeof...(Targs)>{}, l);
+  }
+};
+
 template <typename R, typename... Targs>
-lua_CFunction MakeCFuncVar(R (*func)(Targs...)) {
+lua_CFunction MakeCFuncStateVar(R (*func)(Targs...)) {
   return _CFuncWrapper<R, Targs...>::Call;
 }
+
+struct StateModule {
+  lua_State *l;
+  const std::string name;
+
+  StateModule(lua_State *l_, const std::string &name_) : l(l_), name(name_) {}
+
+  template <typename T> StateModule Define(const std::string &key, T value) {
+    lua_getglobal(l, name.c_str());
+    if (lua_isnil(l, -1)) {
+      lua_pop(l, 1);
+      lua_newtable(l);
+    }
+    StateVar<T>::Put(l, value);
+    lua_setfield(l, -2, key.c_str());
+    lua_setglobal(l, name.c_str());
+    return *this;
+  }
+};
+
+struct GStateModule : public StateModule {
+  GStateModule(const std::string &name)
+      : StateModule(GetMainLuaState(), name) {}
+};
 
 } // namespace lua
 } // namespace yapre
