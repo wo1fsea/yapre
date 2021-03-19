@@ -1,11 +1,22 @@
 
 print("!!!yapre lua!!!")
 
-function Init()
+function Init(str)
     print("Init")
-    return true
+    yapre.PlayMario();
+    return true 
 end
 
 function Update()
-    print("Update")
+    yapre.DrawSprite(
+    "data/logo.png", 
+    0, -40, 0, 
+    320, 320, 
+    0., 
+    1., 1., 1.
+    )
+end
+
+function Deinit()
+    print("Deinit")
 end

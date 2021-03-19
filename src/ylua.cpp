@@ -6,49 +6,34 @@ extern "C" {
 #include "lualib.h"
 }
 
-#include <string_view>
+#include "yluabind.hpp"
 
 namespace yapre {
-    namespace lua {
+namespace lua {
 
+const char *kDefaultLuaEntryFilePath = "data/lua/yapre.lua";
+lua_State *mainLuaState = nullptr;
 
-        lua_State *luaState = nullptr;
+lua_State *GetMainLuaState() {
+  if (!mainLuaState){
+  mainLuaState = luaL_newstate();
+  luaL_openlibs(mainLuaState);
+  }
+  return mainLuaState;
+}
 
-        void LoadLuaFile(const std::string& luaFilePath)
-        {
-            luaL_dofile(luaState, luaFilePath.c_str());
-        }
+bool Init() {
+  luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);
+  GStateFunc<bool>{"Init"}.Call();
+  return true;
+}
 
-        bool CallLuaInit()
-        {
-            lua_getglobal(luaState, "Init");
-            lua_pcall(luaState, 0, 1, 0);
-            bool result = (bool)lua_toboolean(luaState, -1);
-            lua_pop(luaState, 1);
+void Deinit() {
+  GStateFunc<void>{"Deinit"}.Call();
+  lua_close(mainLuaState);
+}
 
-            return result;
-        }
+void Update() { GStateFunc<void>{"Update"}.Call(); }
 
-        bool Init() {
-            luaState = luaL_newstate();
-            luaL_openlibs(luaState);
-
-            LoadLuaFile("data/lua/yapre.lua");
-
-            return CallLuaInit();
-        }
-
-
-        void Deinit() 
-        {
-            lua_close(luaState);
-        }
-
-        void Update() 
-        {
-            lua_getglobal(luaState, "Update");
-            lua_pcall(luaState, 0, 0, 0);
-        }
-
-    } // namespace lua
+} // namespace lua
 } // namespace yapre

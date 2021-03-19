@@ -1,4 +1,4 @@
-#include "window_manager.h"
+#include "ywindow.h"
 
 #include <iostream>
 #include <tuple>
@@ -11,13 +11,13 @@
 #endif
 
 namespace yapre {
-namespace window_manager {
+namespace window {
 
 const bool kFullScreen = 0;
-const int kDefaultViewWidth = 800;
-const int kDefaultViewHeight = 600;
+const int kDefaultViewWidth = 320;
+const int kDefaultViewHeight = 240;
 const char *kWindowCaption = "yapre";
-SDL_Window *window = nullptr;
+SDL_Window *mainWindow = nullptr;
 SDL_GLContext mainContext;
 
 std::tuple<int, int> GetDrawableSize() {
@@ -29,15 +29,15 @@ std::tuple<int, int> GetDrawableSize() {
       emscripten_webgl_get_current_context();
   emscripten_webgl_get_drawing_buffer_size(context, &w, &h);
 #else
-  if (window) {
-    SDL_GL_GetDrawableSize(window, &w, &h);
+  if (mainWindow) {
+    SDL_GL_GetDrawableSize(mainWindow, &w, &h);
   }
 #endif
   return std::make_tuple(w, h);
 }
 
-std::tuple<int, int> GetDesignSize(){
-    return std::make_tuple(kDefaultViewWidth, kDefaultViewHeight);
+std::tuple<int, int> GetDesignSize() {
+  return std::make_tuple(kDefaultViewWidth, kDefaultViewHeight);
 }
 
 void PrintSdlError() {
@@ -72,23 +72,23 @@ bool Init() {
   SetupSdlGl();
 
   if (kFullScreen) {
-    window = SDL_CreateWindow(kWindowCaption, SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, 0, 0,
-                              SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+    mainWindow = SDL_CreateWindow(kWindowCaption, SDL_WINDOWPOS_UNDEFINED,
+                                  SDL_WINDOWPOS_UNDEFINED, 0, 0,
+                                  SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
   } else {
-    window = SDL_CreateWindow(kWindowCaption, SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, kDefaultViewWidth,
-                              kDefaultViewHeight,
-                              SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+    mainWindow = SDL_CreateWindow(kWindowCaption, SDL_WINDOWPOS_UNDEFINED,
+                                  SDL_WINDOWPOS_UNDEFINED, kDefaultViewWidth,
+                                  kDefaultViewHeight,
+                                  SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
     // SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
   }
 
-  if (window == NULL) {
+  if (mainWindow == NULL) {
     PrintSdlError();
     return false;
   }
 
-  mainContext = SDL_GL_CreateContext(window);
+  mainContext = SDL_GL_CreateContext(mainWindow);
   if (mainContext == NULL) {
     PrintSdlError();
     return false;
@@ -100,10 +100,10 @@ bool Init() {
 }
 
 void SwapWinodw() {
-  if (window) {
-    SDL_GL_SwapWindow(window);
+  if (mainWindow) {
+    SDL_GL_SwapWindow(mainWindow);
   }
 }
 
-} // namespace window_manager
+} // namespace window
 } // namespace yapre

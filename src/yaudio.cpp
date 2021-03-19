@@ -10,6 +10,8 @@
 #include <list>
 #include <type_traits>
 
+#include "yluabind.hpp"
+
 namespace yapre {
 namespace audio {
 const int AMPLITUDE = 28000;
@@ -44,6 +46,11 @@ bool Init() {
   }
 
   SDL_PauseAudio(0);
+
+  lua::GStateModule{"yapre"}
+      .Define("Beep", Beep)
+      .Define("PlayMario", PlayMario);
+
   return true;
 }
 

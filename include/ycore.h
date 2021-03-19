@@ -3,8 +3,8 @@
 #include <array>
 
 #include "yaudio.h"
-#include "yrenderer.h"
 #include "ylua.h"
+#include "yrenderer.h"
 
 namespace yapre {
 constexpr int kMaxSubsysmtemNum = 3;
@@ -19,15 +19,15 @@ constexpr std::array<InitFPtr, kMaxSubsysmtemNum> kInitFPtrs{
 };
 
 constexpr std::array<DeinitFPtr, kMaxSubsysmtemNum> kDeinitFPtrs{
+    &lua::Deinit,
     &audio::Deinit,
     &renderer::Deinit,
-    &lua::Deinit,
 };
 
 constexpr std::array<UpdateFPtr, kMaxSubsysmtemNum> kUpdateFPtrs{
+    &lua::Update,
     &audio::Update,
     &renderer::Update,
-    &lua::Update,
 };
 
 namespace core {
