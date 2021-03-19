@@ -6,8 +6,11 @@ extern "C" {
 #include "lualib.h"
 }
 
+#include <functional>
+#include <iostream>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace yapre {
 namespace lua {
@@ -66,6 +69,15 @@ template <> struct StateVar<std::string> {
   }
 };
 
+template <typename R, typename... Targs>
+lua_CFunction MakeCFuncVar(R (*func)(Targs...));
+template <typename R, typename... Targs> struct StateVar<R (*)(Targs...)> {
+  static inline void Put(lua_State *l, R (*value)(Targs...)) {
+    lua_pushlightuserdata(l, (void*)value);
+    lua_pushcclosure(l, MakeCFuncVar(value), 1);
+  }
+};
+
 template <size_t args_size, typename R, typename... Targs> struct _StateCall {};
 
 template <typename R, typename... Targs> struct StateCall {
@@ -77,8 +89,8 @@ template <typename R, typename... Targs> struct StateCall {
 template <size_t args_size, typename R, typename T, typename... Targs>
 struct _StateCall<args_size, R, T, Targs...> {
   static inline R Call(lua_State *l, T t, Targs... args) {
-    StateVar<T>::Put(t);
-    return _StateCall<sizeof...(Targs), R, Targs...>::Call(l, args...);
+    StateVar<T>::Put(l, t);
+    return _StateCall<args_size, R, Targs...>::Call(l, args...);
   }
 };
 
@@ -140,6 +152,25 @@ template <typename R> struct GStateFunc<R, void> {
     return StateCall<R>::Call(mainLuaState);
   }
 };
+
+template <typename R, typename... Targs> struct _CFuncWrapper {
+  using CFuncType = R (*)(Targs...);
+  template <std::size_t... Is>
+  static int _Call(std::index_sequence<Is...> const &, lua_State *l) {
+    CFuncType func = (CFuncType)lua_touserdata(l, lua_upvalueindex(1));
+    StateVar<R>::Put(
+        l, func(StateVar<Targs>::Get(l, (int)(-sizeof...(Targs) + Is))...));
+    return 1;
+  }
+  static int Call(lua_State *l) {
+    return _Call(std::make_index_sequence<sizeof...(Targs)>{}, l);
+  }
+};
+
+template <typename R, typename... Targs>
+lua_CFunction MakeCFuncVar(R (*func)(Targs...)) {
+  return _CFuncWrapper<R, Targs...>::Call;
+}
 
 } // namespace lua
 } // namespace yapre
