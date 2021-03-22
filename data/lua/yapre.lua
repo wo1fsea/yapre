@@ -9,7 +9,7 @@ end
 
 function Update()
     yapre.DrawSprite(
-    "data/logo.png", 
+    "data/yapre.png", 
     0, -40, 0, 
     320, 320, 
     0., 
