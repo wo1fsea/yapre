@@ -1,4 +1,6 @@
 #include "ylua.h"
+#include <functional>
+#include <string>
 
 extern "C" {
 #include "lauxlib.h"
@@ -15,25 +17,24 @@ const char *kDefaultLuaEntryFilePath = "data/lua/yapre.lua";
 lua_State *mainLuaState = nullptr;
 
 lua_State *GetMainLuaState() {
-  if (!mainLuaState){
-  mainLuaState = luaL_newstate();
-  luaL_openlibs(mainLuaState);
+  if (!mainLuaState) {
+    mainLuaState = luaL_newstate();
+    luaL_openlibs(mainLuaState);
   }
   return mainLuaState;
 }
 
 bool Init() {
   luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);
-  GStateFunc<bool>{"Init"}.Call();
-  return true;
+  return GGetGolbalFunc<bool>("Init")();
 }
 
 void Deinit() {
-  GStateFunc<void>{"Deinit"}.Call();
+  GGetGolbalFunc<void>("Init")();
   lua_close(mainLuaState);
 }
 
-void Update() { GStateFunc<void>{"Update"}.Call(); }
+void Update() { GGetGolbalFunc<void>("Update")(); }
 
 } // namespace lua
 } // namespace yapre

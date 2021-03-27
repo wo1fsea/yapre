@@ -9,10 +9,8 @@ extern "C" {
 #include <functional>
 #include <iostream>
 #include <string>
-#include <string_view>
-#include <utility>
-#include <functional>
 #include <type_traits>
+#include <utility>
 
 namespace yapre {
 namespace lua {
@@ -63,7 +61,7 @@ template <> struct StateVar<double> {
 };
 
 template <> struct StateVar<std::string> {
-  static inline void Put(lua_State *l, const std::string& value) {
+  static inline void Put(lua_State *l, const std::string &value) {
     lua_pushstring(l, value.c_str());
   }
   static inline std::string Get(lua_State *l, int index) {
@@ -71,51 +69,71 @@ template <> struct StateVar<std::string> {
   }
 };
 
-template <> struct StateVar<char const *>
-{
+template <> struct StateVar<char const *> {
   static inline void Put(lua_State *l, char const *value) {
     lua_pushstring(l, value);
   }
-  static inline char const * Get(lua_State *l, int index) {
+  static inline char const *Get(lua_State *l, int index) {
     return luaL_checkstring(l, index);
   }
 };
 
-template <typename R, typename... Targs>
-class LuaFuncVar
-{
+template <typename R> struct StateCall;
+template <typename R, typename... Targs> class LuaFuncVar {
   int ref_;
-  
+  lua_State *l_;
 
-  LuaFuncVar(int ref): ref_(ref){}
-  virtual ~ LuaFuncVar(){}
-
-  R operator () (Targs... args)
-    {
-
-    }
-}
-
-template <typename R, typename... Targs>
-struct StateVar<std::function<R(Targs...)>>
-{
-  static inline void Put(lua_State *l, const std::function<R(Targs...)> &value) {
-    void *user_data_ptr = lua_newuserdata(l, sizeof(value));
-    auto user_data_func_ptr = new(user_data_ptr)std::function<R(Targs...)>(value);
-    lua_pushcclosure(l, _CFuncWrapper<R, Targs...>::Call, 1);
-  }
-  static inline LuaFuncVar<R(Targs...)> Get(lua_State *l, int index) {
-    return LuaFuncVar<R(Targs...)>();
+public:
+  LuaFuncVar(lua_State *l) : ref_(LUA_REFNIL), l_(l) {}
+  LuaFuncVar(lua_State *l, int index) : ref_(LUA_REFNIL), l_(l) {
+    lua_pushvalue(l_, index);
+    ref_ = luaL_ref(l_, LUA_REGISTRYINDEX);
   }
 
+  LuaFuncVar(const LuaFuncVar<R, Targs...> &other) {
+    l_ = other.l_;
+    lua_rawgeti(l_, LUA_REGISTRYINDEX, other.ref_);
+    ref_ = luaL_ref(l_, LUA_REGISTRYINDEX);
+  }
+  const LuaFuncVar<R, Targs...> &
+  operator=(const LuaFuncVar<R, Targs...> &other) {
+    l_ = other.l_;
+    lua_rawgeti(l_, LUA_REGISTRYINDEX, other.ref_);
+    ref_ = luaL_ref(l_, LUA_REGISTRYINDEX);
+    return *this;
+  }
+  virtual ~LuaFuncVar() { luaL_unref(l_, LUA_REGISTRYINDEX, ref_); }
+
+  R operator()(Targs... args) {
+    lua_rawgeti(l_, LUA_REGISTRYINDEX, ref_);
+    return StateCall<R>::Call(l_, args...);
+  }
 };
 
-template <typename R, typename... Targs> struct StateVar<R (*)(Targs...)>: StateVar<std::function<R(Targs...)>>{};
+template <typename R, typename... Targs> struct _CFuncWrapper;
+template <typename R, typename... Targs>
+struct StateVar<std::function<R(Targs...)>> {
+  static inline void Put(lua_State *l,
+                         const std::function<R(Targs...)> &value) {
+    void *user_data_ptr = lua_newuserdata(l, sizeof(value));
+    auto user_data_func_ptr =
+        new (user_data_ptr) std::function<R(Targs...)>(value);
+    lua_pushcclosure(l, _CFuncWrapper<R, Targs...>::Call, 1);
+  }
+  static inline LuaFuncVar<R, Targs...> Get(lua_State *l, int index) {
+    return LuaFuncVar<R, Targs...>(l, index);
+  }
+};
+
+template <typename R, typename... Targs>
+struct StateVar<R (*)(Targs...)> : StateVar<std::function<R(Targs...)>> {};
+template <typename R, typename... Targs>
+struct StateVar<R(Targs...)> : StateVar<std::function<R(Targs...)>> {};
 
 template <size_t args_size, typename R> struct _StateCall {
   template <typename T, typename... Targs>
   static inline R Call(lua_State *l, T t, Targs... args) {
-    StateVar<std::remove_cv_t<std::remove_reference_t<T> > >::Put(l, t);
+    StateVar<std::remove_cv_t<std::remove_reference_t<T>>>::Put(l, t);
     return _StateCall<args_size, R>::Call(l, args...);
   }
   static inline R Call(lua_State *l) {
@@ -133,41 +151,43 @@ template <typename R> struct StateCall {
   }
 };
 template <size_t args_size> struct _StateCall<args_size, void> {
+  template <typename T, typename... Targs>
+  static inline void Call(lua_State *l, T t, Targs... args) {
+    StateVar<std::remove_cv_t<std::remove_reference_t<T>>>::Put(l, t);
+    return _StateCall<args_size, void>::Call(l, args...);
+  }
+
   static inline void Call(lua_State *l) {
     // todo check pcall
     lua_pcall(l, args_size, 0, 0);
   }
 };
 
-template <typename R> struct GStateCall {
-  template <typename... Targs> static inline R Call(Targs... args) {
-    return StateCall<R>::Call(GetMainLuaState(), args...);
-  }
-};
+template <typename R, typename... Targs>
+LuaFuncVar<R, Targs...> GetGolbalFunc(lua_State *l, const std::string &name) {
+  lua_getglobal(l, name.c_str());
+  auto fun_var = StateVar<R(Targs...)>::Get(l, -1);
+  return fun_var;
+}
 
-template <typename R> struct StateFunc {
-  std::string functionName;
-  template <typename... Targs> R Call(lua_State *l, Targs... args) {
-    lua_getglobal(l, functionName.c_str());
-    return StateCall<R>::Call(l, args...);
-  }
-};
-
-template <typename R> struct GStateFunc {
-  std::string functionName;
-  template <typename... Targs> R Call(Targs... args) {
-    lua_getglobal(GetMainLuaState(), functionName.c_str());
-    return StateCall<R>::Call(GetMainLuaState(), args...);
-  }
-};
+template <typename R, typename... Targs>
+LuaFuncVar<R, Targs...> GGetGolbalFunc(const std::string &name) {
+  auto l = GetMainLuaState();
+  lua_getglobal(l, name.c_str());
+  auto fun_var = StateVar<R(Targs...)>::Get(l, -1);
+  return fun_var;
+}
 
 template <typename R, typename... Targs> struct _CFuncWrapper {
   using FuncType = std::function<R(Targs...)>;
   template <std::size_t... Is>
   static int _Call(std::index_sequence<Is...> const &, lua_State *l) {
-    auto func = reinterpret_cast<FuncType*>(lua_touserdata(l, lua_upvalueindex(1)));
+    auto func =
+        reinterpret_cast<FuncType *>(lua_touserdata(l, lua_upvalueindex(1)));
     StateVar<R>::Put(
-        l, (*func)(StateVar<std::remove_cv_t<std::remove_reference_t<Targs> > >::Get(l, (int)(-sizeof...(Targs) + Is))...));
+        l,
+        (*func)(StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
+            l, (int)(-sizeof...(Targs) + Is))...));
     return 1;
   }
   static int Call(lua_State *l) {
@@ -179,8 +199,10 @@ template <typename... Targs> struct _CFuncWrapper<void, Targs...> {
   using FuncType = std::function<void(Targs...)>;
   template <std::size_t... Is>
   static int _Call(std::index_sequence<Is...> const &, lua_State *l) {
-    auto func = reinterpret_cast<FuncType*>(lua_touserdata(l, lua_upvalueindex(1)));
-    (*func)(StateVar<std::remove_cv_t<std::remove_reference_t<Targs> > >::Get(l, ((uint32_t)Is - sizeof...(Targs)))...);
+    auto func =
+        reinterpret_cast<FuncType *>(lua_touserdata(l, lua_upvalueindex(1)));
+    (*func)(StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
+        l, ((uint32_t)Is - sizeof...(Targs)))...);
     return 1;
   }
   static int Call(lua_State *l) {
