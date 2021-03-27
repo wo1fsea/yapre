@@ -28,8 +28,8 @@ namespace input
         kMouseButtonMiddle = 4,
     };
 
-    using KeyboardCallBackFunc = std::function<void(uint32_t timestamp, KeyState state, uint8_t repeat, uint8_t keycode)>; 
-    using MouseCallBackFunc = std::function<void(uint32_t timestamp, MouseState state, uint8_t button, int32_t x, int32_t y)>; 
+    using KeyboardCallBackFunc = std::function<void(uint32_t timestamp, uint8_t state, uint8_t repeat, uint8_t keycode)>; 
+    using MouseCallBackFunc = std::function<void(uint32_t timestamp, uint8_t state, uint8_t button, int32_t x, int32_t y)>; 
     using TouchCallBackFunc = std::function<void(uint32_t timestamp, uint8_t state, uint8_t touchId, int32_t x, int32_t y)>; 
     
     bool Init();

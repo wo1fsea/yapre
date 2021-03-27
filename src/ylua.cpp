@@ -30,7 +30,7 @@ bool Init() {
 }
 
 void Deinit() {
-  GGetGolbalFunc<void>("Init")();
+  GGetGolbalFunc<void>("deinit")();
   lua_close(mainLuaState);
 }
 
