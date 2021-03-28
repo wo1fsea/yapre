@@ -28,7 +28,7 @@ static std::list<BeepData> beeps;
 void AudioCallback(void *_beeper, Uint8 *_stream, int _length);
 
 bool Init() {
-  if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER)) {
+  if (SDL_Init(SDL_INIT_AUDIO)) {
     return false;
   }
   SDL_AudioSpec desiredSpec;

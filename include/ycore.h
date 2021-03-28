@@ -3,32 +3,29 @@
 #include <array>
 
 #include "yaudio.h"
+#include "yinput.h"
 #include "ylua.h"
 #include "yrenderer.h"
-#include "yinput.h"
+#include "ytimer.h"
 
 namespace yapre {
-constexpr int kMaxSubsysmtemNum = 4;
+constexpr int kMaxSubsysmtemNum = 5;
 using InitFPtr = bool (*)(void);
 using DeinitFPtr = void (*)(void);
 using UpdateFPtr = void (*)(void);
 
 constexpr std::array<InitFPtr, kMaxSubsysmtemNum> kInitFPtrs{
-    &audio::Init,
-    &renderer::Init,
-    &input::Init,
-    &lua::Init,
+    &timer::Init, &audio::Init, &renderer::Init, &input::Init, &lua::Init,
 };
 
 constexpr std::array<DeinitFPtr, kMaxSubsysmtemNum> kDeinitFPtrs{
-    &lua::Deinit,
-    &input::Deinit,
-    &audio::Deinit,
-    &renderer::Deinit,
+    &lua::Deinit,   &input::Deinit, &renderer::Deinit,
+    &audio::Deinit, &timer::Deinit,
 };
 
 constexpr std::array<UpdateFPtr, kMaxSubsysmtemNum> kUpdateFPtrs{
     &input::Update,
+        &timer::Update,
     &lua::Update,
     &audio::Update,
     &renderer::Update,
