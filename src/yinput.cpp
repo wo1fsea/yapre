@@ -12,8 +12,13 @@ std::unordered_map<std::string, MouseCallBackFunc> MouseCallBackFuncMap;
 std::unordered_map<std::string, TouchCallBackFunc> TouchCallBackFuncMap;
 
 bool Init() {
-  lua::GStateModule{"yapre"}.Define("BindKeyboardInputCallback",
-                                    BindKeyboardInputCallback);
+  lua::GStateModule{"yapre"}
+  .Define("BindKeyboardInputCallback", BindKeyboardInputCallback)
+  .Define("UnbindKeyboardInputCallback", UnbindKeyboardInputCallback)
+  .Define("BindMouseInputCallback", BindMouseInputCallback)
+  .Define("UnbindMouseInputCallback", UnbindMouseInputCallback)
+  .Define("BindTouchInputCallback", BindTouchInputCallback)
+  .Define("UnbindTouchInputCallback", UnbindMouseInputCallback);
 
   return true;
 }
