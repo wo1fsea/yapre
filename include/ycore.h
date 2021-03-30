@@ -25,7 +25,7 @@ constexpr std::array<DeinitFPtr, kMaxSubsysmtemNum> kDeinitFPtrs{
 
 constexpr std::array<UpdateFPtr, kMaxSubsysmtemNum> kUpdateFPtrs{
     &input::Update,
-        &timer::Update,
+    &timer::Update,
     &lua::Update,
     &audio::Update,
     &renderer::Update,

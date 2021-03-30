@@ -1,4 +1,5 @@
 #include "ywindow.h"
+#include "yrenderer.h"
 
 #include <iostream>
 #include <tuple>
@@ -14,15 +15,12 @@ namespace yapre {
 namespace window {
 
 const bool kFullScreen = 0;
-const int kDefaultViewWidth = 320;
-const int kDefaultViewHeight = 240;
 const char *kWindowCaption = "yapre";
 SDL_Window *mainWindow = nullptr;
 SDL_GLContext mainContext;
 
 std::tuple<int, int> GetDrawableSize() {
-  int w = kDefaultViewWidth;
-  int h = kDefaultViewHeight;
+  auto [w, h] = renderer::GetRenderSize();
 
 #ifdef __EMSCRIPTEN__
   EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context =
@@ -34,10 +32,6 @@ std::tuple<int, int> GetDrawableSize() {
   }
 #endif
   return std::make_tuple(w, h);
-}
-
-std::tuple<int, int> GetDesignSize() {
-  return std::make_tuple(kDefaultViewWidth, kDefaultViewHeight);
 }
 
 void PrintSdlError() {
@@ -70,6 +64,7 @@ bool Init() {
   atexit(SDL_Quit);
 
   SetupSdlGl();
+  auto [w, h] = renderer::GetRenderSize();
 
   if (kFullScreen) {
     mainWindow = SDL_CreateWindow(kWindowCaption, SDL_WINDOWPOS_UNDEFINED,
@@ -77,8 +72,7 @@ bool Init() {
                                   SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
   } else {
     mainWindow = SDL_CreateWindow(kWindowCaption, SDL_WINDOWPOS_UNDEFINED,
-                                  SDL_WINDOWPOS_UNDEFINED, kDefaultViewWidth,
-                                  kDefaultViewHeight,
+                                  SDL_WINDOWPOS_UNDEFINED, w, h,
                                   SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
     // SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
   }
@@ -97,6 +91,11 @@ bool Init() {
   SDL_GL_SetSwapInterval(1);
 
   return true;
+}
+
+void Deinit() {
+  SDL_DestroyWindow(mainWindow);
+  SDL_Quit();
 }
 
 void SwapWinodw() {

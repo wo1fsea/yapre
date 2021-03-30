@@ -120,6 +120,8 @@ struct StateVar<std::function<R(Targs...)>> {
     auto user_data_func_ptr =
         new (user_data_ptr) std::function<R(Targs...)>(value);
     lua_pushcclosure(l, _CFuncWrapper<R, Targs...>::Call, 1);
+    user_data_func_ptr->~function<R(Targs...)>();
+    //TODO: this may case someting badly wrong
   }
   static inline LuaFuncVar<R, Targs...> Get(lua_State *l, int index) {
     return LuaFuncVar<R, Targs...>(l, index);
@@ -168,6 +170,7 @@ template <typename R, typename... Targs>
 LuaFuncVar<R, Targs...> GetGolbalFunc(lua_State *l, const std::string &name) {
   lua_getglobal(l, name.c_str());
   auto fun_var = StateVar<R(Targs...)>::Get(l, -1);
+  lua_pop(l, 1);
   return fun_var;
 }
 
@@ -176,6 +179,7 @@ LuaFuncVar<R, Targs...> GGetGolbalFunc(const std::string &name) {
   auto l = GetMainLuaState();
   lua_getglobal(l, name.c_str());
   auto fun_var = StateVar<R(Targs...)>::Get(l, -1);
+  lua_pop(l, 1);
   return fun_var;
 }
 

@@ -27,14 +27,17 @@ lua_State *GetMainLuaState() {
 bool Init() {
   luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);
   return GGetGolbalFunc<bool>("Init")();
+  return true;
 }
 
 void Deinit() {
-  GGetGolbalFunc<void>("deinit")();
+  GGetGolbalFunc<void>("Deinit")();
   lua_close(mainLuaState);
 }
 
-void Update() { GGetGolbalFunc<void>("Update")(); }
+void Update() {
+  GGetGolbalFunc<void>("Update")();
+}
 
 } // namespace lua
 } // namespace yapre

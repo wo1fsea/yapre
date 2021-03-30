@@ -25,5 +25,6 @@ int main(int argc, char *args[]) {
 #endif
 
   yapre::core::Deinit();
+  yapre::window::Deinit();
   return 0;
 }

@@ -34,6 +34,10 @@ const float vertices[] = {
     0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
 
 Shader *shader = nullptr;
+int viewport_x = 0;
+int viewport_y = 0;
+int viewport_w = kDefaultViewWidth;
+int viewport_h = kDefaultViewHeight;
 
 void PrintGlInfo() {
   std::cout << "OpenGL loaded" << std::endl;
@@ -80,6 +84,10 @@ bool Init() {
 }
 
 void Deinit() { delete shader; }
+
+std::tuple<int, int> GetRenderSize() {
+  return std::make_tuple(kDefaultViewWidth, kDefaultViewHeight);
+}
 
 std::tuple<unsigned int, int, int> GetTextureId(std::string texture_filename) {
   auto i = texture_map.find(texture_filename);
@@ -142,7 +150,7 @@ void DrawSprite(const std::string &texture_filename, glm::vec3 position,
                                           0.0f)); // move origin back
 
   model = glm::scale(model, glm::vec3(size, 1.0f)); // last scale
-  auto [w, h] = window::GetDesignSize();
+  auto [w, h] = GetRenderSize();
   glm::mat4 projection = glm::ortho(0.0f, 1.f * w, 1.f * h, 0.0f, -1.0f, 1.0f);
 
   draw_list.emplace_back(std::make_tuple(texture_id, model, projection, color));
@@ -152,7 +160,8 @@ void DrawSprite(const std::string &texture_filename, glm::vec3 position,
 void DrawSprite(const std::string &texture_filename, int x, int y, int z,
                 int width, int height, float rotate, float R, float G,
                 float B) {
-  DrawSprite(texture_filename, glm::vec3(x,y,z), glm::vec2(width, height), rotate, glm::vec3(R,G,B));
+  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height),
+             rotate, glm::vec3(R, G, B));
 }
 
 void DrawAll() {
@@ -175,14 +184,9 @@ void DrawAll() {
   draw_list.clear();
 }
 
-void Update() {
-
+void RefreshViewport() {
   auto [w, h] = window::GetDrawableSize();
-  glViewport(0, 0, w, h);
-  glClearColor(1.f, 0.f, 0.f, 0.f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  auto [dw, dh] = window::GetDesignSize();
+  auto [dw, dh] = GetRenderSize();
   int rx = 0;
   int ry = 0;
   if (1.0 * dw / dh > 1.0 * w / h) {
@@ -194,13 +198,26 @@ void Update() {
     rx = (w - rw) / 2;
     w = rw;
   }
+  viewport_x = rx;
+  viewport_y = ry;
+  viewport_w = w;
+  viewport_h = h;
+}
 
-  glViewport(rx, ry, w, h);
+void Update() {
+  RefreshViewport();
+  glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
   glClearColor(.2f, .2f, .2f, 0.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   DrawAll();
   window::SwapWinodw();
+}
+
+std::tuple<int, int> convertToViewport(int x, int y) {
+  auto [rw, rh] = GetRenderSize();
+  return std::make_tuple((x - viewport_x) * rw / viewport_w,
+                  (y - viewport_y) * rh / viewport_h);
 }
 
 } // namespace renderer

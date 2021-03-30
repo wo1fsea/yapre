@@ -1,6 +1,7 @@
 #include "yinput.h"
 #include "ycore.h"
 #include "yluabind.hpp"
+#include "yrenderer.h"
 
 #include <SDL.h>
 #include <unordered_map>
@@ -22,7 +23,12 @@ bool Init() {
 
   return true;
 }
-void Deinit() {}
+void Deinit() {
+    KeyboardCallBackFuncMap.clear();
+    MouseCallBackFuncMap.clear();
+    TouchCallBackFuncMap.clear();
+}
+
 void Update() {
   SDL_Event event;
   while (SDL_PollEvent(&event) != 0) {
@@ -53,8 +59,10 @@ void Update() {
         if (event.motion.state & SDL_BUTTON_MMASK) {
           buttonState += kMouseButtonMiddle;
         }
+        auto [x, y] = renderer::convertToViewport(event.motion.x, event.motion.y);
         func(event.motion.timestamp, kMouseStateMove, buttonState,
-             event.motion.x, event.motion.y);
+            x,y
+            );
       }
       return;
     }
