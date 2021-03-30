@@ -19,8 +19,8 @@ constexpr std::array<InitFPtr, kMaxSubsysmtemNum> kInitFPtrs{
 };
 
 constexpr std::array<DeinitFPtr, kMaxSubsysmtemNum> kDeinitFPtrs{
-    &lua::Deinit,   &input::Deinit, &renderer::Deinit,
-    &audio::Deinit, &timer::Deinit,
+    &input::Deinit, &renderer::Deinit,
+    &audio::Deinit, &timer::Deinit, &lua::Deinit,   
 };
 
 constexpr std::array<UpdateFPtr, kMaxSubsysmtemNum> kUpdateFPtrs{
