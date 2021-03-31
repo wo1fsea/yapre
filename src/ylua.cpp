@@ -1,5 +1,6 @@
 #include "ylua.h"
 #include <functional>
+#include <iostream>
 #include <string>
 
 extern "C" {
@@ -25,9 +26,14 @@ lua_State *GetMainLuaState() {
 }
 
 bool Init() {
-  luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);
+  int result = luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);
+  if (result != 0) {
+    auto s = lua_tostring(GetMainLuaState(), -1);
+    std::cout << s << std::endl;
+    return false;
+  }
+
   return GGetGolbalFunc<bool>("Init")();
-  return true;
 }
 
 void Deinit() {
@@ -35,9 +41,7 @@ void Deinit() {
   lua_close(mainLuaState);
 }
 
-void Update() {
-  GGetGolbalFunc<void>("Update")();
-}
+void Update() { GGetGolbalFunc<void>("Update")(); }
 
 } // namespace lua
 } // namespace yapre

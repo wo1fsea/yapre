@@ -21,8 +21,8 @@ bool Init() {
     if (!fptr())
       return false;
   }
-  input::BindKeyboardInputCallback(testK, "testK");
-  input::BindMouseInputCallback(testM, "testM");
+  // input::BindKeyboardInputCallback(testK, "testK");
+  // input::BindMouseInputCallback(testM, "testM");
   return true;
 }
 

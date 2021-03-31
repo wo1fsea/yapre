@@ -11,6 +11,7 @@
 #include "yshader.h"
 #include "ywindow.h"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -51,6 +52,8 @@ bool Init() {
   gladLoadGLLoader(SDL_GL_GetProcAddress);
   PrintGlInfo();
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   std::string vertexCode;
   std::string fragmentCode;
@@ -217,7 +220,7 @@ void Update() {
 std::tuple<int, int> convertToViewport(int x, int y) {
   auto [rw, rh] = GetRenderSize();
   return std::make_tuple((x - viewport_x) * rw / viewport_w,
-                  (y - viewport_y) * rh / viewport_h);
+                         (y - viewport_y) * rh / viewport_h);
 }
 
 } // namespace renderer

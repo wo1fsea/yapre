@@ -109,20 +109,29 @@ set_target_properties(
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
     )
 
+add_custom_command(
+    TARGET ${PROJECT_NAME}
+    PRE_BUILD
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMAND cp -r ./data ${CMAKE_BINARY_DIR}
+    )
+
 platform_setup_target()
 
-if(YAPRE_BUILD_PLATFORM STREQUAL "windows")
-    #   add_custom_command(
-    #       TARGET ${PROJECT_NAME}
-    #       POST_BUILD
-    #       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    #       COMMAND set "p1=${CMAKE_BINARY_DIR}/compile_commands.json"
-    #       COMMAND set "p2=${PROJECT_SOURCE_DIR}"
-    #       COMMAND set "p1=%p1:/=\\%"
-    #       COMMAND set "p2=%p2:/=\\%"
-    #       COMMAND copy "%p1%" "%p2%"
-    #       )
-elseif(YAPRE_BUILD_PLATFORM STREQUAL "mac" OR YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
+#if(YAPRE_BUILD_PLATFORM STREQUAL "windows")
+#   add_custom_command(
+#       TARGET ${PROJECT_NAME}
+#       POST_BUILD
+#       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+#       COMMAND set "p1=${CMAKE_BINARY_DIR}/compile_commands.json"
+#       COMMAND set "p2=${PROJECT_SOURCE_DIR}"
+#       COMMAND set "p1=%p1:/=\\%"
+#       COMMAND set "p2=%p2:/=\\%"
+#       COMMAND copy "%p1%" "%p2%"
+#       )
+#endif()
+
+if(NOT YAPRE_BUILD_PLATFORM STREQUAL "windows")
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD

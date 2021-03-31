@@ -12,11 +12,4 @@ function(platform_setup_target)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
         COMMAND cp ./platform/emscripten/index.html ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
         )
-    add_custom_command(
-        TARGET ${PROJECT_NAME}
-        PRE_BUILD
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        COMMAND cp -r ./data ${CMAKE_BINARY_DIR}
-        )
-
 endfunction()
