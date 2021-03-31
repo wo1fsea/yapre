@@ -20,7 +20,9 @@ bool Init() {
   return true;
 }
 
-void Deinit() {}
+void Deinit() {
+ callback_map.clear(); 
+}
 void Update() {}
 
 uint32_t TimerCallback(uint32_t interval, void *key) {
@@ -32,7 +34,8 @@ uint32_t TimerCallback(uint32_t interval, void *key) {
   return 0;
 }
 
-void AddTimer(int ms, std::function<void()> callback) {
+void AddTimer(int ms, const std::function<void()>& callback) {
+  std::cout << ms << std::endl;
   auto key = callback_index;
   callback_index = reinterpret_cast<char *>(callback_index) + 1;
   callback_map.emplace(key, callback);

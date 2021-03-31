@@ -1,4 +1,6 @@
+package.path = package.path .. ";./data/lua/?.lua"
 
+require "mario_music"
 print("!!!yapre lua!!!")
 
 function OnKey(timestamp, state, multi, keyode)
@@ -10,11 +12,11 @@ function OnMouse(timestamp, state, button, x, y)
 end
 
 function Init(str)
-    print("Init")
-    yapre.PlayMario()
+    print("Init") 
     yapre.BindKeyboardInputCallback(OnKey, "OnKey")
     yapre.BindMouseInputCallback(OnMouse, "OnMouse")
-    return true 
+    mario_music.play_music()
+    return true
 end
 
 function Update()

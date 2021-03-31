@@ -116,12 +116,18 @@ template <typename R, typename... Targs>
 struct StateVar<std::function<R(Targs...)>> {
   static inline void Put(lua_State *l,
                          const std::function<R(Targs...)> &value) {
-    void *user_data_ptr = lua_newuserdata(l, sizeof(value));
-    auto user_data_func_ptr =
-        new (user_data_ptr) std::function<R(Targs...)>(value);
+
+    // TODO: this may case someting badly wrong
+    // void *user_data_ptr = lua_newuserdata(l, sizeof(value));
+    // auto user_data_func_ptr = new (user_data_ptr)
+    // std::function<R(Targs...)>(value); auto user_data_func_ptr = new
+    // std::function<R(Targs...)>(value); lua_pushlightuserdata(l,
+    // user_data_func_ptr); lua_pushcclosure(l, _CFuncWrapper<R,
+    // Targs...>::Call,1); user_data_func_ptr->~function<R(Targs...)>();
+
+        auto user_data_func_ptr = new std::function<R(Targs...)>(value);
+    lua_pushlightuserdata(l, user_data_func_ptr);
     lua_pushcclosure(l, _CFuncWrapper<R, Targs...>::Call, 1);
-    // user_data_func_ptr->~function<R(Targs...)>();
-    //TODO: this may case someting badly wrong
   }
   static inline LuaFuncVar<R, Targs...> Get(lua_State *l, int index) {
     return LuaFuncVar<R, Targs...>(l, index);
