@@ -19,16 +19,13 @@ constexpr std::array<InitFPtr, kMaxSubsysmtemNum> kInitFPtrs{
 };
 
 constexpr std::array<DeinitFPtr, kMaxSubsysmtemNum> kDeinitFPtrs{
-    &input::Deinit, &renderer::Deinit,
-    &audio::Deinit, &timer::Deinit, &lua::Deinit,   
+    &input::Deinit, &renderer::Deinit, &audio::Deinit,
+    &timer::Deinit, &lua::Deinit,
 };
 
 constexpr std::array<UpdateFPtr, kMaxSubsysmtemNum> kUpdateFPtrs{
-    &input::Update,
-    &timer::Update,
-    &lua::Update,
-    &audio::Update,
-    &renderer::Update,
+    &input::Update, &timer::Update,    &lua::Update,
+    &audio::Update, &renderer::Update,
 };
 
 namespace core {

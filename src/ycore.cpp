@@ -1,8 +1,8 @@
 #include "ycore.h"
 #include "ytimer.h"
 
+#include <SDL.h>
 #include <iostream>
-
 namespace yapre {
 namespace core {
 
@@ -17,7 +17,7 @@ void testM(uint32_t timestamp, uint8_t state, uint8_t button, int32_t x,
 
 bool to_stop = false;
 bool Init() {
-  for (auto fptr : kInitFPtrs) {
+  for (bool (*fptr)(void) : kInitFPtrs) {
     if (!fptr())
       return false;
   }
@@ -27,13 +27,14 @@ bool Init() {
 }
 
 void Deinit() {
-  for (auto fptr : kDeinitFPtrs) {
+  for (void (*fptr)(void) : kDeinitFPtrs) {
     fptr();
   }
 }
 
 void Update() {
-  for (auto fptr : kUpdateFPtrs) {
+  input::Update();
+  for (void (*fptr)(void) : kUpdateFPtrs) {
     fptr();
   }
 }

@@ -1,3 +1,7 @@
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #include "yinput.h"
 #include "ycore.h"
 #include "yluabind.hpp"
@@ -5,6 +9,8 @@
 
 #include <SDL.h>
 #include <unordered_map>
+
+
 
 namespace yapre {
 namespace input {
@@ -14,25 +20,24 @@ std::unordered_map<std::string, TouchCallBackFunc> TouchCallBackFuncMap;
 
 bool Init() {
   lua::GStateModule{"yapre"}
-  .Define("BindKeyboardInputCallback", BindKeyboardInputCallback)
-  .Define("UnbindKeyboardInputCallback", UnbindKeyboardInputCallback)
-  .Define("BindMouseInputCallback", BindMouseInputCallback)
-  .Define("UnbindMouseInputCallback", UnbindMouseInputCallback)
-  .Define("BindTouchInputCallback", BindTouchInputCallback)
-  .Define("UnbindTouchInputCallback", UnbindMouseInputCallback);
+      .Define("BindKeyboardInputCallback", BindKeyboardInputCallback)
+      .Define("UnbindKeyboardInputCallback", UnbindKeyboardInputCallback)
+      .Define("BindMouseInputCallback", BindMouseInputCallback)
+      .Define("UnbindMouseInputCallback", UnbindMouseInputCallback)
+      .Define("BindTouchInputCallback", BindTouchInputCallback)
+      .Define("UnbindTouchInputCallback", UnbindMouseInputCallback);
 
   return true;
 }
 void Deinit() {
-    KeyboardCallBackFuncMap.clear();
-    MouseCallBackFuncMap.clear();
-    TouchCallBackFuncMap.clear();
+  KeyboardCallBackFuncMap.clear();
+  MouseCallBackFuncMap.clear();
+  TouchCallBackFuncMap.clear();
 }
 
 void Update() {
   SDL_Event event;
   while (SDL_PollEvent(&event) != 0) {
-
     if (event.type == SDL_QUIT) {
       yapre::core::SetToStop();
       return;
@@ -40,11 +45,17 @@ void Update() {
 
     if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
       for (auto [_, func] : KeyboardCallBackFuncMap) {
-        func(event.key.timestamp,
+        uint32_t timestamp = 0;
+#ifndef __EMSCRIPTEN__
+        // fuck emscritpen! no event.key.timestamp
+        timestamp = event.key.timestamp;
+#endif
+
+        func(timestamp,
              event.type == SDL_KEYDOWN ? kKeyStatePressed : kKeyStateReleased,
              event.key.repeat, event.key.keysym.sym);
       }
-      return;
+      continue;
     }
 
     if (event.type == SDL_MOUSEMOTION) {
@@ -59,12 +70,11 @@ void Update() {
         if (event.motion.state & SDL_BUTTON_MMASK) {
           buttonState += kMouseButtonMiddle;
         }
-        auto [x, y] = renderer::convertToViewport(event.motion.x, event.motion.y);
-        func(event.motion.timestamp, kMouseStateMove, buttonState,
-            x,y
-            );
+        auto [x, y] =
+            renderer::convertToViewport(event.motion.x, event.motion.y);
+        func(event.motion.timestamp, kMouseStateMove, buttonState, x, y);
       }
-      return;
+      continue;
     }
     if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
       for (auto [_, func] : MouseCallBackFuncMap) {
@@ -82,14 +92,14 @@ void Update() {
                                                : kMouseStateReleased,
              buttonState, event.button.x, event.button.y);
       }
-      return;
+      continue;
     }
     if (event.type == SDL_MOUSEWHEEL) {
       for (auto [_, func] : MouseCallBackFuncMap) {
         func(event.wheel.timestamp, kMouseStateWheel, 0, event.wheel.x,
              event.wheel.y);
       }
-      return;
+      continue;
     }
   }
 }

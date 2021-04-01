@@ -22,9 +22,10 @@ int main(int argc, char *args[]) {
   while (!yapre::core::ToStop()) {
     yapre::core::Update();
   }
-#endif
-
   yapre::core::Deinit();
   yapre::window::Deinit();
+#endif
+
+
   return 0;
 }

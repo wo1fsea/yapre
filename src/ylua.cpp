@@ -41,7 +41,8 @@ void Deinit() {
   lua_close(mainLuaState);
 }
 
-void Update() { GGetGolbalFunc<void>("Update")(); }
+void Update() {  GGetGolbalFunc<void>("Update")();
+}
 
 } // namespace lua
 } // namespace yapre
