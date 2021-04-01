@@ -2,15 +2,13 @@
 #include <emscripten.h>
 #endif
 
-#include "yinput.h"
 #include "ycore.h"
+#include "yinput.h"
 #include "yluabind.hpp"
 #include "yrenderer.h"
 
 #include <SDL.h>
 #include <unordered_map>
-
-
 
 namespace yapre {
 namespace input {
@@ -104,8 +102,8 @@ void Update() {
   }
 }
 
-void BindKeyboardInputCallback(KeyboardCallBackFunc callback,
-                               const std::string &key) {
+void BindKeyboardInputCallback(const std::string &key,
+                               const KeyboardCallBackFunc& callback) {
   KeyboardCallBackFuncMap[key] = callback;
 }
 
@@ -113,8 +111,8 @@ void UnbindKeyboardInputCallback(const std::string &key) {
   KeyboardCallBackFuncMap.erase(key);
 }
 
-void BindMouseInputCallback(MouseCallBackFunc callback,
-                            const std::string &key) {
+void BindMouseInputCallback(const std::string &key,
+                            const MouseCallBackFunc& callback) {
 
   MouseCallBackFuncMap[key] = callback;
 }
@@ -122,8 +120,8 @@ void UnbindMouseInputCallback(const std::string &key) {
   MouseCallBackFuncMap.erase(key);
 }
 
-void BindTouchInputCallback(TouchCallBackFunc callback,
-                            const std::string &key) {
+void BindTouchInputCallback(const std::string &key, const TouchCallBackFunc& callback
+                            ) {
 
   TouchCallBackFuncMap[key] = callback;
 }

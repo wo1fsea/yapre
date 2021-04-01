@@ -131,7 +131,7 @@ platform_setup_target()
 #       )
 #endif()
 
-if(NOT YAPRE_BUILD_PLATFORM STREQUAL "windows")
+if(YAPRE_BUILD_PLATFORM STREQUAL "mac" OR YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD

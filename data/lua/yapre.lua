@@ -13,8 +13,8 @@ end
 
 function Init(str)
     print("Init") 
-    yapre.BindKeyboardInputCallback(OnKey, "OnKey")
-    yapre.BindMouseInputCallback(OnMouse, "OnMouse")
+    yapre.BindKeyboardInputCallback("OnKey", OnKey)
+    yapre.BindMouseInputCallback("OnMouse", OnMouse)
     mario_music.play_music()
     return true
 end
