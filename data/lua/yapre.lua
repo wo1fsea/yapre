@@ -1,6 +1,6 @@
 package.path = package.path .. ";./data/lua/?.lua"
 
-require "mario_music"
+local mario_music = require "mario_music"
 print("!!!yapre lua!!!")
 
 function OnKey(timestamp, state, multi, keyode)

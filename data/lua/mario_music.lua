@@ -1,4 +1,4 @@
-mario_music = {}
+local mario_music = {}
 
 mario_music.data = {
     {0, 659, 125},
