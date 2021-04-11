@@ -1,5 +1,3 @@
-require "strict"
-
 local yecs = {}
 
 function deep_copy(obj, seen)
@@ -49,7 +47,7 @@ end
 
 function World:Update(delta_ms)
     for _, system in ipairs(self.system_update_queue) do
-        system.Update(delta_ms)
+        system:Update(delta_ms)
     end
 end
 
@@ -70,7 +68,7 @@ function World:AddSystem(system)
         system = yecs.System:New(system)
     end
 
-    if system == nil or self.system[system.key] ~= nil then return end
+    if system == nil or self.systems[system.key] ~= nil then return end
     
     system.world = self
     self.systems[system.key] = system
@@ -81,7 +79,7 @@ end
 function World:RemoveSystem(system)
     if getmetatable(system) ~= "SystemMeta" then
         system = self.systems[system]
-    else
+    end 
 
     if system == nil or system.world ~= self then
         return 
@@ -93,6 +91,17 @@ function World:RemoveSystem(system)
     collectgarbage()
 end
 
+function World:GetEntities(condition)
+    local entities = {}
+
+    for _, entity in pairs(self.entities) do
+        if (not condition) or condition(entity) then
+            table.insert(entities, entity)
+        end
+    end
+
+    return entities
+end
 
 -- entity
 
@@ -111,7 +120,6 @@ function Entity:New(components)
     component_keys = {}
     for k, v in pairs(components) do
         if getmetatable(v) ~= "ComponentMeta" then
-            print(v, yecs.Component:New(v) )
             component_data[v] = yecs.Component:New(v) 
         else
             component_data[v.key] = v 
@@ -151,7 +159,9 @@ local Component = {
 Component.__index = Component
 
 function Component:Register(key, data)
+	if component_templates[key] ~= nil then return end
 	if type(data) ~= 'table' then return end
+
     data["key"] = key
     component_templates[key] = data
 end

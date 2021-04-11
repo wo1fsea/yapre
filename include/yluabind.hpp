@@ -146,7 +146,9 @@ template <size_t args_size, typename R> struct _StateCall {
   }
   static inline R Call(lua_State *l) {
     // todo check pcall
-    lua_pcall(l, args_size, 1, 0);
+    if (lua_pcall(l, args_size, 1, 0) != 0) {
+      std::cout << lua_tostring(l, -1) << std::endl;
+    }
     R result = StateVar<R>::Get(l, -1);
     lua_pop(l, 1);
     return result;
@@ -167,7 +169,10 @@ template <size_t args_size> struct _StateCall<args_size, void> {
 
   static inline void Call(lua_State *l) {
     // todo check pcall
-    lua_pcall(l, args_size, 0, 0);
+    if (lua_pcall(l, args_size, 0, 0) != 0) {
+      std::cout << lua_tostring(l, -1) << std::endl;
+      lua_pop(l, 1);
+    }
   }
 };
 
