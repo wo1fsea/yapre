@@ -1,3 +1,5 @@
+require "strict"
+
 local yecs = {}
 
 function deep_copy(obj, seen)
@@ -18,8 +20,8 @@ end
 yecs.worlds = {}
 
 local World = {
-    __metatable = "WorldMeta",
-    __tostring = function(self) return string.format("<yecs-world: %s>", self.key) end,
+    __metatable = 'WorldMeta',
+    __tostring = function(self) return string.format('<yecs-world: %s>', self.key) end,
 }
 World.__index = World
 
@@ -32,7 +34,7 @@ function World:New(key)
         key = key,
         entities = {},
         systems = {},
-        system_update_queue=setmetatable({}, {__mode="v"}),
+        system_update_queue=setmetatable({}, {__mode='v'}),
     },
     self 
     )
@@ -45,9 +47,9 @@ function World:Destroy()
    yecs.worlds[self.key] = nil 
 end
 
-function World:Update(ms)
+function World:Update(delta_ms)
     for _, system in ipairs(self.system_update_queue) do
-        system.Update(ms)
+        system.Update(delta_ms)
     end
 end
 
@@ -56,17 +58,38 @@ function World:AddEntity(entity)
 end
 
 function World:RemoveEntity(entity)
-    self.entities[entity.key] = nil
+    if getmetatable(entity) == "EntityMeta" then
+        entity = entity.key
+    end
+
+    self.entities[entity] = nil
 end
 
 function World:AddSystem(system)  
+    if getmetatable(system) ~= "SystemMeta" then
+        system = yecs.System:New(system)
+    end
+
+    if system == nil or self.system[system.key] ~= nil then return end
+    
+    system.world = self
     self.systems[system.key] = system
     table.insert(self.system_update_queue, system)
     table.sort(self.system_update_queue, function(s1, s2) return s1.update_order < s2.update_order end)
 end
 
 function World:RemoveSystem(system)
+    if getmetatable(system) ~= "SystemMeta" then
+        system = self.systems[system]
+    else
+
+    if system == nil or system.world ~= self then
+        return 
+    end
+
+    system.world = nil
     self.systems[system.key] = nil 
+
     collectgarbage()
 end
 
@@ -98,7 +121,7 @@ function Entity:New(components)
     entity_key = entity_key + 1
     local entity = setmetatable(
     {
-        key = entity_key,
+        key = tostring(entity_key),
         components = component_data,
     },
     self 
@@ -171,6 +194,10 @@ function System:New(key)
        self
     )
     return system
+end
+
+function System:Update(delta_ms)
+    print(self, "Update", delta_ms)
 end
 
 yecs.World = World
