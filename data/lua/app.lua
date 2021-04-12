@@ -11,6 +11,7 @@ local world1 = nil
 function app.Init()
     world1 = yecs.World:New("world1")
     world1:AddSystem("sprite")
+    world1:AddSystem("input")
     entity = yecs.Entity:New({"position", "sprite"})
     world1:AddEntity(entity)
     entity2 = yecs.Entity:New({"position", "sprite"})

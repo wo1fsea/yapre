@@ -43,6 +43,12 @@ end
 
 function World:Destroy()
    yecs.worlds[self.key] = nil 
+   for _, system in pairs(self.systems) do
+       system:Deinit()
+   end
+   self.entities = {}
+   self.systems = {}
+   self.system_update_queue = {}
 end
 
 function World:Update(delta_ms)
@@ -74,6 +80,8 @@ function World:AddSystem(system)
     self.systems[system.key] = system
     table.insert(self.system_update_queue, system)
     table.sort(self.system_update_queue, function(s1, s2) return s1.update_order < s2.update_order end)
+
+    system:Init()
 end
 
 function World:RemoveSystem(system)
@@ -87,8 +95,14 @@ function World:RemoveSystem(system)
 
     system.world = nil
     self.systems[system.key] = nil 
-
+    system:Deinit()
     collectgarbage()
+    
+    system.system_update_queue = {}
+    for _, system in pairs(self.systems) do
+        table.insert(self.system_update_queue, system)
+    end
+    table.sort(self.system_update_queue, function(s1, s2) return s1.update_order < s2.update_order end)
 end
 
 function World:GetEntities(condition)
@@ -208,6 +222,12 @@ end
 
 function System:Update(delta_ms)
     print(self, "Update", delta_ms)
+end
+
+function System:Init()
+end
+
+function System:Deinit()
 end
 
 yecs.World = World

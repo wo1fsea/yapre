@@ -1,6 +1,7 @@
 local systems = {}
 local yecs = require("utils.yecs")
 
+-- sprite system
 local sprite_system = {}
 function sprite_system:Update(delta_ms)
     local sprite_entities = self.world:GetEntities(function(entity) return entity.sprite end)
@@ -20,7 +21,37 @@ function sprite_system:Update(delta_ms)
         end
     end
 end
-
 yecs.System:Register("sprite", sprite_system)
+
+-- input system
+local input_system = {}
+function input_system:Update(delta_ms)
+end
+
+function input_system:Init(delta_ms)
+    function OnKey(timestamp, state, multi, keyode)
+        print(string.format("%s-[OnKey] %i:%i:%i:%c", self.world, timestamp, state, multi, keyode))
+        if self.OnKey then
+            self:OnKey(timestamp, state, multi, keyode)
+        end
+    end
+
+    function OnMouse(timestamp, state, button, x, y)
+        print(string.format("%s-:[OnMouse] %i:%i:%i:(%i,%i)", self.world, timestamp, state, button, x, y))
+        if self.OnMouse then
+            self:OnMouse(timestamp, state, button, x, y)
+        end
+    end
+
+    yapre.BindKeyboardInputCallback(string.format("%s-OnKey", self.world), OnKey)
+    yapre.BindMouseInputCallback(string.format("%s-OnMouse", self.world), OnMouse)
+end
+
+function input_system:Deinit(delta_ms)
+    yapre.UnbindKeyboardInputCallback(string.format("%s-OnKey", self.world))
+    yapre.UnbindMouseInputCallback(string.format("%s-OnMouse", self.world))
+end
+
+yecs.System:Register("input", input_system)
 
 return systems
