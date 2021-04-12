@@ -12,8 +12,8 @@ function Init(str)
     return true
 end
 
-function Update()
-    app.Update()
+function Update(delta_ms)
+    app.Update(delta_ms)
 end
 
 function Deinit()

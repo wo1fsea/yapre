@@ -4,6 +4,6 @@ namespace yapre {
 namespace lua {
 bool Init();
 void Deinit();
-void Update();
+void Update(int delta_ms);
 }; // namespace core
 }; // namespace yapre

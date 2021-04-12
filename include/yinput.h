@@ -32,7 +32,7 @@ using TouchCallBackFunc = std::function<void(
 
 bool Init();
 void Deinit();
-void Update();
+void Update(int delta_ms);
 void BindKeyboardInputCallback(const std::string &key,
                                const KeyboardCallBackFunc& callback);
 void UnbindKeyboardInputCallback(const std::string &key);

@@ -15,7 +15,7 @@ const double d = 587.330;
 
 bool Init();
 void Deinit();
-void Update();
+void Update(int delta_ms);
 void Beep(double freq, int duration);
 void PlayMario();
 }; // namespace audio

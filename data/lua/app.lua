@@ -19,8 +19,8 @@ function app.Init()
     world1:AddEntity(entity2)
 end
 
-function app.Update()
-    entity.position.x = (entity.position.x + 1) % 240 
+function app.Update(delta_ms)
+    entity.position.x = (entity.position.x + delta_ms // 10) % 240 
     world1:Update(0)
 end
 

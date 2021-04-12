@@ -12,7 +12,7 @@ namespace yapre {
 constexpr int kMaxSubsysmtemNum = 5;
 using InitFPtr = bool (*)(void);
 using DeinitFPtr = void (*)(void);
-using UpdateFPtr = void (*)(void);
+using UpdateFPtr = void (*)(int);
 
 constexpr std::array<InitFPtr, kMaxSubsysmtemNum> kInitFPtrs{
     &timer::Init, &audio::Init, &renderer::Init, &input::Init, &lua::Init,

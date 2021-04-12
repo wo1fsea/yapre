@@ -33,7 +33,7 @@ void Deinit() {
   TouchCallBackFuncMap.clear();
 }
 
-void Update() {
+void Update(int delta_ms) {
   SDL_Event event;
   while (SDL_PollEvent(&event) != 0) {
     if (event.type == SDL_QUIT) {

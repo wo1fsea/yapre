@@ -207,7 +207,7 @@ void RefreshViewport() {
   viewport_h = h;
 }
 
-void Update() {
+void Update(int delta_ms) {
   RefreshViewport();
   glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
   glClearColor(.2f, .2f, .2f, 0.f);
