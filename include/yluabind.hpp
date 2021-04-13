@@ -199,10 +199,11 @@ template <typename R, typename... Targs> struct _CFuncWrapper {
   static int _Call(std::index_sequence<Is...> const &, lua_State *l) {
     auto func =
         reinterpret_cast<FuncType *>(lua_touserdata(l, lua_upvalueindex(1)));
-    StateVar<R>::Put(
-        l,
+    R result =
         (*func)(StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
-            l, (int)(-sizeof...(Targs) + Is))...));
+            l, (int)(-sizeof...(Targs) + Is))...);
+    lua_settop(l, 0);
+    StateVar<R>::Put(l, result);
     return 1;
   }
   static int Call(lua_State *l) {
@@ -218,7 +219,8 @@ template <typename... Targs> struct _CFuncWrapper<void, Targs...> {
         reinterpret_cast<FuncType *>(lua_touserdata(l, lua_upvalueindex(1)));
     (*func)(StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
         l, ((uint32_t)Is - sizeof...(Targs)))...);
-    return 1;
+    lua_settop(l, 0);
+    return 0;
   }
   static int Call(lua_State *l) {
     return _Call(std::make_index_sequence<sizeof...(Targs)>{}, l);

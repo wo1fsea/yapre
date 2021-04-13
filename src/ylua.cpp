@@ -39,10 +39,31 @@ bool Init() {
 void Deinit() {
   GGetGolbalFunc<void>("Deinit")();
   lua_close(mainLuaState);
+  mainLuaState = nullptr;
 }
 
-void Update(int delta_ms) { 
-    GGetGolbalFunc<void, int>("Update")(delta_ms); 
+void Update(int delta_ms) { GGetGolbalFunc<void, int>("Update")(delta_ms); }
+
+std::string DoString(const std::string &input) {
+  std::string eval_string = "return " + input;
+  std::string result = "nil";
+  if (mainLuaState) {
+    // int on = lua_gettop(mainLuaState);
+    luaL_dostring(mainLuaState, eval_string.c_str());
+    int n = lua_gettop(mainLuaState);
+    // std::cout << on << "," << n << std::endl;
+
+    if (n > 0) {
+      luaL_checkstack(mainLuaState, LUA_MINSTACK, "too many results");
+      lua_getglobal(mainLuaState, "tostring");
+      lua_insert(mainLuaState, 1);
+      lua_pcall(mainLuaState, n, 1, 0);
+      result = StateVar<std::string>::Get(mainLuaState, -1);
+      lua_pop(mainLuaState, 1);
+    }
+  }
+
+  return result;
 }
 
 } // namespace lua
