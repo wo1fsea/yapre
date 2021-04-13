@@ -109,12 +109,14 @@ set_target_properties(
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
     )
 
+if(NOT YAPRE_BUILD_PLATFORM STREQUAL "windows")
 add_custom_command(
     TARGET ${PROJECT_NAME}
     PRE_BUILD
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     COMMAND cp -r ./data ${CMAKE_BINARY_DIR}
     )
+endif()
 
 platform_setup_target()
 

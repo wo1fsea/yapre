@@ -7,25 +7,26 @@
 #include "ylua.h"
 #include "yrenderer.h"
 #include "ytimer.h"
+#include "yrepl.h"
 
 namespace yapre {
-constexpr int kMaxSubsysmtemNum = 5;
+constexpr int kMaxSubsysmtemNum = 6;
 using InitFPtr = bool (*)(void);
 using DeinitFPtr = void (*)(void);
 using UpdateFPtr = void (*)(int);
 
 constexpr std::array<InitFPtr, kMaxSubsysmtemNum> kInitFPtrs{
-    &timer::Init, &audio::Init, &renderer::Init, &input::Init, &lua::Init,
+    &timer::Init, &audio::Init, &renderer::Init, &input::Init, &lua::Init, &repl::Init
 };
 
 constexpr std::array<DeinitFPtr, kMaxSubsysmtemNum> kDeinitFPtrs{
     &input::Deinit, &renderer::Deinit, &audio::Deinit,
-    &timer::Deinit, &lua::Deinit,
+    &timer::Deinit, &lua::Deinit, &repl::Deinit
 };
 
 constexpr std::array<UpdateFPtr, kMaxSubsysmtemNum> kUpdateFPtrs{
-    &input::Update, &timer::Update,    &lua::Update,
-    &audio::Update, &renderer::Update,
+    &input::Update, &timer::Update, &lua::Update,
+    &audio::Update, &renderer::Update, &repl::Update
 };
 
 namespace core {
