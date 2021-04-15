@@ -12,6 +12,14 @@
 namespace yapre {
 namespace repl {
 
+#ifdef __EMSCRIPTEN__
+
+bool Init() {return true;}
+void Deinit() {}
+void Update(int delta_ms) {}
+
+#else
+
 std::thread *console = nullptr;
 std::string input = "";
 
@@ -68,6 +76,8 @@ void Update(int delta_ms) {
     input = "";
   }
 }
+
+#endif
 
 }; // namespace repl
 }; // namespace yapre
