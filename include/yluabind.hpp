@@ -122,7 +122,7 @@ struct StateVar<std::function<R(Targs...)>> {
     auto user_data_func_ptr =
         new (user_data_ptr) std::function<R(Targs...)>(value);
     lua_pushcclosure(l, _CFuncWrapper<R, Targs...>::Call, 1);
-    user_data_func_ptr->~function<R(Targs...)>();
+    // user_data_func_ptr->~function<R(Targs...)>();
 
     // auto user_data_func_ptr = new std::function<R(Targs...)>(value);
     // lua_pushlightuserdata(l, user_data_func_ptr);
@@ -146,7 +146,9 @@ template <size_t args_size, typename R> struct _StateCall {
   }
   static inline R Call(lua_State *l) {
     // todo check pcall
-    lua_pcall(l, args_size, 1, 0);
+    if (lua_pcall(l, args_size, 1, 0) != 0) {
+      std::cout << lua_tostring(l, -1) << std::endl;
+    }
     R result = StateVar<R>::Get(l, -1);
     lua_pop(l, 1);
     return result;
@@ -167,7 +169,10 @@ template <size_t args_size> struct _StateCall<args_size, void> {
 
   static inline void Call(lua_State *l) {
     // todo check pcall
-    lua_pcall(l, args_size, 0, 0);
+    if (lua_pcall(l, args_size, 0, 0) != 0) {
+      std::cout << lua_tostring(l, -1) << std::endl;
+      lua_pop(l, 1);
+    }
   }
 };
 
@@ -194,10 +199,11 @@ template <typename R, typename... Targs> struct _CFuncWrapper {
   static int _Call(std::index_sequence<Is...> const &, lua_State *l) {
     auto func =
         reinterpret_cast<FuncType *>(lua_touserdata(l, lua_upvalueindex(1)));
-    StateVar<R>::Put(
-        l,
+    R result =
         (*func)(StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
-            l, (int)(-sizeof...(Targs) + Is))...));
+            l, (int)(-sizeof...(Targs) + Is))...);
+    lua_settop(l, 0);
+    StateVar<R>::Put(l, result);
     return 1;
   }
   static int Call(lua_State *l) {
@@ -213,7 +219,8 @@ template <typename... Targs> struct _CFuncWrapper<void, Targs...> {
         reinterpret_cast<FuncType *>(lua_touserdata(l, lua_upvalueindex(1)));
     (*func)(StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
         l, ((uint32_t)Is - sizeof...(Targs)))...);
-    return 1;
+    lua_settop(l, 0);
+    return 0;
   }
   static int Call(lua_State *l) {
     return _Call(std::make_index_sequence<sizeof...(Targs)>{}, l);

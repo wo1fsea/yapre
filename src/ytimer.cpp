@@ -29,7 +29,7 @@ void Deinit() {
   current_timeout_keys.clear();
 }
 
-void Update() {
+void Update(int delta_ms) {
   std::lock_guard<std::mutex> guard(current_timeout_keys_mutex);
   for (auto key : current_timeout_keys) {
     auto i = callback_map.find(key);

@@ -10,7 +10,7 @@ const int kDefaultViewHeight = 240;
 
 bool Init();
 void Deinit();
-void Update();
+void Update(int delta_ms);
 std::tuple<int, int> GetRenderSize();
 std::tuple<int, int> convertToViewport(int x, int y);
 void DrawSprite(const std::string &texture_filename,

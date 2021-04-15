@@ -34,6 +34,8 @@ add_subdirectory(${STB_IMAGE_DIR})
 set(LUA_DIR "external/lua")
 add_subdirectory(${LUA_DIR})
 
+set(CPP_LONENOISE_DIR "external/cpp-linenoise")
+add_subdirectory(${CPP_LONENOISE_DIR})
 
 # option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 # option(ASSIMP_BUILD_TESTS OFF)
@@ -50,6 +52,7 @@ include_directories(
     ${GLM_DIR}
     ${STB_IMAGE_DIR}/include
     ${LUA_DIR}/src
+    ${CPP_LONENOISE_DIR}
     )
 
 file(GLOB PROJECT_INCLUDE 
@@ -109,12 +112,14 @@ set_target_properties(
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
     )
 
+if(NOT YAPRE_BUILD_PLATFORM STREQUAL "windows")
 add_custom_command(
     TARGET ${PROJECT_NAME}
     PRE_BUILD
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     COMMAND cp -r ./data ${CMAKE_BINARY_DIR}
     )
+endif()
 
 platform_setup_target()
 

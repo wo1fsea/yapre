@@ -81,7 +81,7 @@ void AudioCallback(void *_, Uint8 *_stream, int _length) {
 }
 
 void Deinit() { SDL_CloseAudio(); }
-void Update() {}
+void Update(int delta_ms) {}
 
 void Beep(double freq, int duration) {
   SDL_LockAudio();

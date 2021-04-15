@@ -10,3 +10,6 @@
 [submodule "external/assimp"]
 	path = external/assimp
 	url = git@github.com:assimp/assimp.git
+[submodule "external/cpp-linenoise"]
+	path = external/cpp-linenoise
+	url = git@github.com:yhirose/cpp-linenoise.git

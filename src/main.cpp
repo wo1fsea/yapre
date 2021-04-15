@@ -26,6 +26,6 @@ int main(int argc, char *args[]) {
   yapre::window::Deinit();
 #endif
 
-
+  std::exit(0);
   return 0;
 }
