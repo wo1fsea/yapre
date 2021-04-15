@@ -49,9 +49,13 @@ std::string DoString(const std::string &input) {
   std::string result = "nil";
   if (mainLuaState) {
     // int on = lua_gettop(mainLuaState);
-    luaL_dostring(mainLuaState, eval_string.c_str());
+    int r = luaL_dostring(mainLuaState, eval_string.c_str());
+    if (r != 0) {
+      lua_pop(mainLuaState, 1);
+      luaL_dostring(mainLuaState, input.c_str());
+    }
+
     int n = lua_gettop(mainLuaState);
-    // std::cout << on << "," << n << std::endl;
 
     if (n > 0) {
       luaL_checkstack(mainLuaState, LUA_MINSTACK, "too many results");
