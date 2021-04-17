@@ -23,10 +23,13 @@
 namespace yapre {
 namespace renderer {
 
-unsigned int VBO;
-std::unordered_map<std::string, std::tuple<unsigned int, int, int>> texture_map;
-std::vector<std::tuple<unsigned int, glm::mat4, glm::mat4, glm::vec3>>
-    draw_list;
+unsigned int VBO = 0;
+unsigned int draw_count = 0;
+using DrawData =
+    std::tuple<unsigned int, unsigned int, glm::mat4, glm::mat4, glm::vec3>;
+using TextureData = std::tuple<unsigned int, int, int>;
+std::unordered_map<std::string, TextureData> texture_map;
+std::vector<DrawData> draw_list;
 
 const float vertices[] = {
     // pos      // tex
@@ -58,8 +61,8 @@ bool Init() {
   std::string vertexCode;
   std::string fragmentCode;
   std::string geometryCode;
-  std::ifstream vertexShaderFile("data/shaders/shader.vs");
-  std::ifstream fragmentShaderFile("data/shaders/shader.fs");
+  std::ifstream vertexShaderFile("data/shaders/sprite.vs");
+  std::ifstream fragmentShaderFile("data/shaders/sprite.fs");
   std::stringstream vShaderStream, fShaderStream;
   vShaderStream << vertexShaderFile.rdbuf();
   fShaderStream << fragmentShaderFile.rdbuf();
@@ -155,8 +158,11 @@ void DrawSprite(const std::string &texture_filename, glm::vec3 position,
   model = glm::scale(model, glm::vec3(size, 1.0f)); // last scale
   auto [w, h] = GetRenderSize();
   glm::mat4 projection = glm::ortho(0.0f, 1.f * w, 1.f * h, 0.0f, -1.0f, 1.0f);
+  unsigned int draw_id = position.z * 1024 * 1024 + draw_count;
+  draw_count++;
 
-  draw_list.emplace_back(std::make_tuple(texture_id, model, projection, color));
+  draw_list.emplace_back(
+      std::make_tuple(draw_id, texture_id, model, projection, color));
   return;
 }
 
@@ -168,13 +174,20 @@ void DrawSprite(const std::string &texture_filename, int x, int y, int z,
 }
 
 void DrawAll() {
+  draw_count = 0;
   shader->Use();
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glEnableVertexAttribArray(0);
   glActiveTexture(GL_TEXTURE0);
   shader->SetInteger("sprite", 0);
 
-  for (auto [texture_id, model, projection, color] : draw_list) {
+  std::sort(draw_list.begin(), draw_list.end(), 
+          [](const DrawData &a, const DrawData &b){
+          return std::get<0>(a) < std::get<0>(b); 
+          }
+          );
+
+  for (auto [draw_id, texture_id, model, projection, color] : draw_list) {
     shader->SetMatrix4("projection", projection);
     shader->SetMatrix4("model", model);
     shader->SetVector3f("spriteColor", color);
