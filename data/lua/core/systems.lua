@@ -24,20 +24,65 @@ end
 yecs.System:Register("sprite", sprite_system)
 
 -- input system
-local input_system = {}
-function input_system:Update(delta_ms)
-end
+local input_system = { key_events={}, mouse_events={} }
 
-function input_system:Init(delta_ms)
+function input_system:Update(delta_ms)
+    local input_entities = self.world:GetEntities(function(entity) return entity.input end)
+    tree_system = self.world.systems["tree"]
+
+    for _, mouse_event in ipairs(self.mouse_events) do
+        if mouse_event.button ~= 1 then
+            goto continue0
+        end
+
+        for _, entity in pairs(input_entities) do
+            local size = entity.input.touch_size or entity.size
+            if size == nil then goto continue1 end
+
+            local position = nil
+            if tree_system then
+                position = tree_system:GetPosition(entity)
+            end
+
+            position = position or entity.position
+            if position == nil then goto continue1 end
+            local x = position.x
+            local y = position.y
+            local w = size.width
+            local h = size.height
+
+            if  mouse_event.x > x and mouse_event.x < x + w and
+                mouse_event.y > y and mouse_event.y < y + h
+                then
+                    if mouse_event.state==1 then
+                        entity.input._OnTouchBegan(x, y)
+                    elseif mouse_event.state==2 then
+                        entity.input._OnTouchEnded(x, y)
+                    elseif mouse_event.state==4 then
+                        entity.input._OnTouchMoved(x, y)
+                    end
+                end
+                ::continue1::
+            end
+            ::continue0::
+        end
+
+        self.key_events={}
+        self.mouse_events={}
+    end
+
+function input_system:Init()
     function OnKey(timestamp, state, multi, keyode)
-        print(string.format("%s-[OnKey] %i:%i:%i:%c", self.world, timestamp, state, multi, keyode))
+        print(string.format("%s-[OnKey] %i:%i:%i:%c", self.world, timestamp, state, multi, keycode))
+        table.insert(self.key_events, {timestamp=timestamp, state=state, multi=multi, keycode=keycode})
         if self.OnKey then
-            self:OnKey(timestamp, state, multi, keyode)
+            self:OnKey(timestamp, state, multi, keycode)
         end
     end
 
     function OnMouse(timestamp, state, button, x, y)
         print(string.format("%s-:[OnMouse] %i:%i:%i:(%i,%i)", self.world, timestamp, state, button, x, y))
+        table.insert(self.mouse_events, {timestamp=timestamp, state=state, button=button, x=x, y=y})
         if self.OnMouse then
             self:OnMouse(timestamp, state, button, x, y)
         end
@@ -47,11 +92,29 @@ function input_system:Init(delta_ms)
     yapre.BindMouseInputCallback(string.format("%s-OnMouse", self.world), OnMouse)
 end
 
-function input_system:Deinit(delta_ms)
+function input_system:Deinit()
     yapre.UnbindKeyboardInputCallback(string.format("%s-OnKey", self.world))
     yapre.UnbindMouseInputCallback(string.format("%s-OnMouse", self.world))
 end
 
 yecs.System:Register("input", input_system)
+
+-- tree_system
+local tree_system = { global_position={} }
+function tree_system:Update(delta_ms)
+end
+
+function tree_system:Init()
+end
+
+function tree_system:Deinit()
+end
+
+function tree_system:GetPosition(entity)
+    position = global_position[entity.id]
+    if position then return position end
+
+    return entity.position
+end
 
 return systems
