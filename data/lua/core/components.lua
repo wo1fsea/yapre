@@ -19,18 +19,37 @@ yecs.Component:Register("sprite",
 yecs.Component:Register("input", 
 {
     touch_size=nil,
-    _OnTouchBegan=function(x, y)
+    touched=false,
+    transparent=false,
+    _OnTouchBegan=function(self, x, y)
+        self.touched = true
         print("_OnTouchBegan")
+        return self:OnTouchBegan(x, y)
     end,
-    _OnTouchMoved=function(x, y)
+    _OnTouchMoved=function(self, x, y)
         print("_OnTouchMoved")
+        self:OnTouchMoved(x, y)
     end,
-    _OnTouchEnded=function(x, y)
+    _OnTouchEnded=function(self, x, y)
         print("_OnTouchEnded")
+        self:OnTouchEnded(x, y)
+        self:OnClicked(x, y)
     end,
-    OnClicked=function(x, y)
+
+    OnClicked=function(self, x, y)
         print("OnClicked")
+    end,
+    OnTouchBegan=function(self, x, y)
+        print("OnTouchBegan")
+    end,
+    OnTouchMoved=function(self, x, y)
+        print("OnTouchMoved")
+    end,
+    OnTouchEnded=function(self, x, y)
+        print("OnTouchEnded")
     end
+
+
 }
 )
 

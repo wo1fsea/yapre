@@ -1,6 +1,6 @@
 local yecs = {}
 
-function deep_copy(obj, seen)
+local function deep_copy(obj, seen)
 	-- Handle non-tables and previously-seen tables.
 	if type(obj) ~= 'table' then return obj end
 	if seen and seen[obj] then return seen[obj] end
@@ -140,7 +140,6 @@ function Entity:New(components)
     self 
     )
 
-    component_keys = {}
     for k, v in pairs(components) do
         if getmetatable(v) ~= "ComponentMeta" then
             v = yecs.Component:New(v) 
@@ -212,7 +211,7 @@ function System:Register(key, data)
 end
 
 function System:New(key)
-    system_data = system_templates[key]
+    local system_data = system_templates[key]
     if system_data == nil then return nil end
 
     local system = setmetatable

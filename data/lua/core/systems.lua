@@ -28,7 +28,7 @@ local input_system = { key_events={}, mouse_events={} }
 
 function input_system:Update(delta_ms)
     local input_entities = self.world:GetEntities(function(entity) return entity.input end)
-    tree_system = self.world.systems["tree"]
+    local tree_system = self.world.systems["tree"]
 
     for _, mouse_event in ipairs(self.mouse_events) do
         if mouse_event.button ~= 1 then
@@ -36,43 +36,54 @@ function input_system:Update(delta_ms)
         end
 
         for _, entity in pairs(input_entities) do
-            local size = entity.input.touch_size or entity.size
-            if size == nil then goto continue1 end
+            local einput = entity.input
 
-            local position = nil
-            if tree_system then
-                position = tree_system:GetPosition(entity)
-            end
+            if mouse_event.state==1 then
+                local size = einput.touch_size or entity.size
+                if size == nil then goto continue1 end
 
-            position = position or entity.position
-            if position == nil then goto continue1 end
-            local x = position.x
-            local y = position.y
-            local w = size.width
-            local h = size.height
+                local position = nil
+                if tree_system then
+                    position = tree_system:GetPosition(entity)
+                end
 
-            if  mouse_event.x > x and mouse_event.x < x + w and
-                mouse_event.y > y and mouse_event.y < y + h
-                then
-                    if mouse_event.state==1 then
-                        entity.input._OnTouchBegan(x, y)
-                    elseif mouse_event.state==2 then
-                        entity.input._OnTouchEnded(x, y)
-                    elseif mouse_event.state==4 then
-                        entity.input._OnTouchMoved(x, y)
+                position = position or entity.position
+                if position == nil then goto continue1 end
+                local x = position.x
+                local y = position.y
+                local w = size.width
+                local h = size.height
+
+                if  mouse_event.x > x and mouse_event.x < x + w and
+                    mouse_event.y > y and mouse_event.y < y + h then
+                    if einput:_OnTouchBegan(mouse_event.x, mouse_event.y) then
+                        einput.touched = true
+                        if not einput.transparent then
+                            break 
+                        end
                     end
                 end
-                ::continue1::
+            elseif mouse_event.state==2 then
+                if einput.touched then 
+                    einput:_OnTouchEnded(mouse_event.x, mouse_event.y)
+                    einput.touched = false
+                end
+            elseif mouse_event.state==4 then
+                if einput.touched then 
+                    einput:_OnTouchMoved(mouse_event.x, mouse_event.y)
+                end
             end
-            ::continue0::
+            ::continue1::
         end
-
-        self.key_events={}
-        self.mouse_events={}
+        ::continue0::
     end
 
+    self.key_events={}
+    self.mouse_events={}
+end
+
 function input_system:Init()
-    function OnKey(timestamp, state, multi, keyode)
+    local function OnKey(timestamp, state, multi, keyode)
         print(string.format("%s-[OnKey] %i:%i:%i:%c", self.world, timestamp, state, multi, keycode))
         table.insert(self.key_events, {timestamp=timestamp, state=state, multi=multi, keycode=keycode})
         if self.OnKey then
@@ -80,7 +91,7 @@ function input_system:Init()
         end
     end
 
-    function OnMouse(timestamp, state, button, x, y)
+    local function OnMouse(timestamp, state, button, x, y)
         print(string.format("%s-:[OnMouse] %i:%i:%i:(%i,%i)", self.world, timestamp, state, button, x, y))
         table.insert(self.mouse_events, {timestamp=timestamp, state=state, button=button, x=x, y=y})
         if self.OnMouse then
