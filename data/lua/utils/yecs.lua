@@ -130,16 +130,7 @@ Entity.__index = function(self, k) return Entity[k] or self.components[k] end
 function Entity:New(components)
     components = components or {}
     local component_data = {}
-   
-    component_keys = {}
-    for k, v in pairs(components) do
-        if getmetatable(v) ~= "ComponentMeta" then
-            component_data[v] = yecs.Component:New(v) 
-        else
-            component_data[v.key] = v 
-        end
-    end
-
+    
     entity_key = entity_key + 1
     local entity = setmetatable(
     {
@@ -148,6 +139,18 @@ function Entity:New(components)
     },
     self 
     )
+
+    component_keys = {}
+    for k, v in pairs(components) do
+        if getmetatable(v) ~= "ComponentMeta" then
+            v = yecs.Component:New(v) 
+        end
+
+        if v ~= nil then 
+            v.entity = entity
+            component_data[v.key] = v 
+        end
+    end
 
     return entity
 end
