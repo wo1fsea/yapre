@@ -84,11 +84,12 @@ void Update(int delta_ms) {
         } else if (event.button.button == SDL_BUTTON_MIDDLE) {
           buttonState = kMouseButtonMiddle;
         }
-
+        auto [x, y] =
+            renderer::convertToViewport(event.motion.x, event.motion.y);
         func(event.button.timestamp,
              event.type == SDL_MOUSEBUTTONDOWN ? kMouseStatePressed
                                                : kMouseStateReleased,
-             buttonState, event.button.x, event.button.y);
+             buttonState, x, y);
       }
       continue;
     }
