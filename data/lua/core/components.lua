@@ -8,7 +8,7 @@ yecs.Component:Register("sprite",
 {
     sprites={
         {
-            texture="data/image/yapre.png", 
+            texture="data/image/sprite16.png", 
             color={r=1,g=1,b=1}, 
             size={width=-1, heigh=-1}, 
             offset={x=0, y=0, z=0},
