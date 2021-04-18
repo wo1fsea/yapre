@@ -1,7 +1,6 @@
 local components = {}
 local yecs = require("utils.yecs")
 
-yecs.Component:Register("tree", {parent=nil, children={}})
 yecs.Component:Register("position", {x=0, y=0, z=0})
 yecs.Component:Register("size", {width=0, height=0})
 yecs.Component:Register("sprite", 
@@ -22,7 +21,6 @@ yecs.Component:Register("input",
     touched=false,
     transparent=false,
     _OnTouchBegan=function(self, x, y)
-        self.touched = true
         print("_OnTouchBegan")
         return self:OnTouchBegan(x, y)
     end,
@@ -48,9 +46,31 @@ yecs.Component:Register("input",
     OnTouchEnded=function(self, x, y)
         print("OnTouchEnded")
     end
-
-
 }
 )
+
+yecs.Component:Register("tree", 
+{
+    parent=nil, 
+    children={},
+    AddChild=function(self, c)
+        if c.tree == nil then return end
+        local c_parent = c.tree.parent
+        if c_parent then
+            c_parent.tree:RemoveChild(c)
+        end
+
+        c.tree.parent = self.entity
+        self.children[c.key] = c
+    end,
+    RemoveChild=function(self, c)
+        local c_tree = c.tree
+        if c_tree == nil then return end
+        if c_tree.parent ~= self.entity then return end
+        
+        c_tree.parent = nil
+        self.children[c.key] = nil
+    end
+})
 
 return components

@@ -3,10 +3,17 @@ local yecs = require("utils.yecs")
 
 -- sprite system
 local sprite_system = {}
+sprite_system.update_order = 2048
 function sprite_system:Update(delta_ms)
+    local tree_system = self.world.systems["tree"]
     local sprite_entities = self.world:GetEntities(function(entity) return entity.sprite end)
     for _, entity in pairs(sprite_entities) do
-        local position = entity.position or {x=0, y=0, z=0}
+        local position = entity.position
+        if tree_system then
+            position = tree_system:GetPosition(entity)
+        end
+        position = position or {x=0, y=0, z=0}
+
         for _, sprite_data in ipairs(entity.sprite.sprites) do
             local offset = sprite_data.offset
             local size = sprite_data.size
@@ -111,8 +118,38 @@ end
 yecs.System:Register("input", input_system)
 
 -- tree_system
-local tree_system = { global_position={} }
+local tree_system = {}
+tree_system.update_order = sprite_system.update_order - 1
+tree_system.global_position = {}
+
+function tree_system:_UpdateTreeNodePos(node, parent_pos)
+    local pos = node.position
+    local node_pos = {
+        x=pos.x+parent_pos.x, 
+        y=pos.y+parent_pos.y, 
+        z=pos.z+parent_pos.z, 
+    }
+    self.global_position[node.key] = node_pos
+
+    for _, c in pairs(node.tree.children) do
+        self:_UpdateTreeNodePos(c, node_pos)
+    end
+end
+
 function tree_system:Update(delta_ms)
+    self.global_position = {}
+    local world = self.world
+    local tree_entities = self.world:GetEntities(function(entity) return entity.tree end)
+    for _, entity in pairs(tree_entities) do
+        local parent = entity.tree.parent
+        if parent == nil then
+            self:_UpdateTreeNodePos(entity, {x=0, y=0, z=0})
+        else
+            if world.entities[parent.key] == nil then
+                world:RemoveEntity(entity)
+            end
+        end
+    end
 end
 
 function tree_system:Init()
@@ -122,10 +159,14 @@ function tree_system:Deinit()
 end
 
 function tree_system:GetPosition(entity)
-    position = global_position[entity.id]
-    if position then return position end
-
-    return entity.position
+    local position = self.global_position[entity.key]
+    if position then 
+        return position 
+    else
+        return entity.position
+    end
 end
+
+yecs.System:Register("tree", tree_system)
 
 return systems
