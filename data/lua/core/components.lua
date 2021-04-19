@@ -73,4 +73,48 @@ yecs.Component:Register("tree",
     end
 })
 
+local font_data = require("data.font_data")
+yecs.Component:Register("text", 
+{
+    _text="",
+    _size=1,
+    SetText=function(self, new_text)
+        self._text = new_text
+        local sprite = self.entity.sprite
+        if sprite == nil then return end
+
+        local new_sprites = {}
+        local pos_x = 0
+        local pos_y = 0
+        local size = self._size
+        new_text:gsub(".", function(c)
+            if c == "\n" then
+                pos_y = pos_y + font_data.size + 1
+                pos_x = 0
+                return
+            end
+
+            local c_n = string.byte(c)
+            local width = font_data.width[c_n]
+            if width == nil then 
+                c_n = -1
+                width = font_data[-1] 
+            end
+            local texture = {
+                texture=string.format("data/image/font/%d.png", c_n), 
+                color={r=1,g=1,b=1}, 
+                size={width=width*size, heigh=font_data.size*size}, 
+                offset={x=pos_x*size, y=pos_y*size, z=0},
+            }
+            table.insert(new_sprites, texture)
+            pos_x = pos_x + width
+        end)
+        
+        sprite.sprites = new_sprites
+    end,
+    GetText=function(self)
+        return self.text
+    end
+})
+
 return components

@@ -19,6 +19,12 @@ function app.Init()
     entity1 = yecs.Entity:New({"position", "sprite", "input", "size", "tree"})
     entity2 = yecs.Entity:New({"position", "sprite", "tree"})
     button = yecs.Entity:New({"position", "sprite", "input", "size", "tree"})
+    text = yecs.Entity:New({"position", "sprite", "size", "text"})
+
+    text.text:SetText("O wonder! \nHow many goodly creatures are there here!\nHow beauteous mankind is!\nO brave new world,\nThat has such people in't.")
+    text.position.x = 16
+    text.position.y = 32 
+
     button.sprite.sprites[1] = {
         texture="data/image/ui/button16_0.png", 
         color={r=1,g=1,b=1}, 
@@ -34,16 +40,21 @@ function app.Init()
     function button.input:OnTouchEnded(x, y)
         self.entity.sprite.sprites[1].texture = "data/image/ui/button16_0.png"
     end
-    button.position.x = 64
-    button.position.y = 64
+    button.position.x = 256 
+    button.position.y = 128
+    button.position.z = 1
     
     entity2.tree:AddChild(entity1)
-    entity2.tree:AddChild(button)
-    entity1.position.x = 10
-    entity1.position.y = 10
+
+    entity1.position.x = 32
+    entity1.position.y = 32
+    entity1.position.z = 0
+    entity2.position.z = 1
+
     world1:AddEntity(entity1)
     world1:AddEntity(entity2)
     world1:AddEntity(button)
+    world1:AddEntity(text)
 end
 
 function app.Update(delta_ms)
