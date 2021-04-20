@@ -10,6 +10,7 @@ local world1 = nil
 local entity1 = nil
 local entity2 = nil
 local button = nil
+local text = nil
 
 function app.Init()
     world1 = yecs.World:New("world1")
