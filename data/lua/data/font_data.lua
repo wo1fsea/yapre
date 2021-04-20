@@ -1,5 +1,6 @@
 local font_data = {}
-font_data.size=7 
+font_data.size=8
+font_data.height=7 
 font_data.width={
     [-1]=7,
     [32]=4,

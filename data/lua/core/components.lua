@@ -86,10 +86,11 @@ yecs.Component:Register("text",
         local new_sprites = {}
         local pos_x = 0
         local pos_y = 0
+        local pos_z = 1
         local size = self._size
         new_text:gsub(".", function(c)
             if c == "\n" then
-                pos_y = pos_y + font_data.size + 1
+                pos_y = pos_y + font_data.height + 1
                 pos_x = 0
                 return
             end
@@ -103,11 +104,12 @@ yecs.Component:Register("text",
             local texture = {
                 texture=string.format("data/image/font/%d.png", c_n), 
                 color={r=1,g=1,b=1}, 
-                size={width=width*size, heigh=font_data.size*size}, 
-                offset={x=pos_x*size, y=pos_y*size, z=0},
+                size={width=font_data.size*size, heigh=font_data.size*size}, 
+                offset={x=pos_x*size, y=pos_y*size, z=pos_z},
             }
             table.insert(new_sprites, texture)
             pos_x = pos_x + width
+            pos_z = pos_z + 1
         end)
         
         sprite.sprites = new_sprites

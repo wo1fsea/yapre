@@ -146,7 +146,8 @@ void DrawSprite(const std::string &texture_filename, glm::vec3 position,
     size.x = texture_w;
     size.y = texture_h;
   }
-
+  
+  position.z = position.z / 1048576;
   glm::mat4 model = glm::mat4(1.0f);
   model = glm::translate(model, position);
   model = glm::translate(
