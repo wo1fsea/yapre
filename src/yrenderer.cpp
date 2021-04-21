@@ -1,6 +1,6 @@
 #include "yrenderer.h"
 
-#include "SDL.h"
+#include "glad/glad.h"
 #include "glm/fwd.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -11,6 +11,7 @@
 #include "yshader.h"
 #include "ywindow.h"
 
+#include <SDL.h>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
