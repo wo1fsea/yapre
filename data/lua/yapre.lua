@@ -1,7 +1,8 @@
 package.path = package.path .. ";./data/lua/?.lua"
+require("utils.strict")
 
-local mario_music = require("mario_music")
 local app = require("app")
+local mario_music = require("mario_music")
 
 print("!!!yapre lua!!!")
 

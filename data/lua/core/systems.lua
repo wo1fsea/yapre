@@ -3,10 +3,17 @@ local yecs = require("utils.yecs")
 
 -- sprite system
 local sprite_system = {}
+sprite_system.update_order = 2048
 function sprite_system:Update(delta_ms)
+    local tree_system = self.world.systems["tree"]
     local sprite_entities = self.world:GetEntities(function(entity) return entity.sprite end)
     for _, entity in pairs(sprite_entities) do
-        local position = entity.position or {x=0, y=0, z=0}
+        local position = entity.position
+        if tree_system then
+            position = tree_system:GetPosition(entity)
+        end
+        position = position or {x=0, y=0, z=0}
+
         for _, sprite_data in ipairs(entity.sprite.sprites) do
             local offset = sprite_data.offset
             local size = sprite_data.size
@@ -24,20 +31,76 @@ end
 yecs.System:Register("sprite", sprite_system)
 
 -- input system
-local input_system = {}
+local input_system = { key_events={}, mouse_events={} }
+
 function input_system:Update(delta_ms)
+    local input_entities = self.world:GetEntities(function(entity) return entity.input end)
+    local tree_system = self.world.systems["tree"]
+
+    for _, mouse_event in ipairs(self.mouse_events) do
+        if mouse_event.button ~= 1 then
+            goto continue0
+        end
+
+        for _, entity in pairs(input_entities) do
+            local einput = entity.input
+
+            if mouse_event.state==1 then
+                local size = einput.touch_size or entity.size
+                if size == nil then goto continue1 end
+
+                local position = nil
+                if tree_system then
+                    position = tree_system:GetPosition(entity)
+                end
+
+                position = position or entity.position
+                if position == nil then goto continue1 end
+                local x = position.x
+                local y = position.y
+                local w = size.width
+                local h = size.height
+
+                if  mouse_event.x > x and mouse_event.x < x + w and
+                    mouse_event.y > y and mouse_event.y < y + h then
+                    if einput:_OnTouchBegan(mouse_event.x, mouse_event.y) then
+                        einput.touched = true
+                        if not einput.transparent then
+                            break 
+                        end
+                    end
+                end
+            elseif mouse_event.state==2 then
+                if einput.touched then 
+                    einput:_OnTouchEnded(mouse_event.x, mouse_event.y)
+                    einput.touched = false
+                end
+            elseif mouse_event.state==4 then
+                if einput.touched then 
+                    einput:_OnTouchMoved(mouse_event.x, mouse_event.y)
+                end
+            end
+            ::continue1::
+        end
+        ::continue0::
+    end
+
+    self.key_events={}
+    self.mouse_events={}
 end
 
-function input_system:Init(delta_ms)
-    function OnKey(timestamp, state, multi, keyode)
-        print(string.format("%s-[OnKey] %i:%i:%i:%c", self.world, timestamp, state, multi, keyode))
+function input_system:Init()
+    local function OnKey(timestamp, state, multi, keyode)
+        print(string.format("%s-[OnKey] %i:%i:%i:%c", self.world, timestamp, state, multi, keycode))
+        table.insert(self.key_events, {timestamp=timestamp, state=state, multi=multi, keycode=keycode})
         if self.OnKey then
-            self:OnKey(timestamp, state, multi, keyode)
+            self:OnKey(timestamp, state, multi, keycode)
         end
     end
 
-    function OnMouse(timestamp, state, button, x, y)
+    local function OnMouse(timestamp, state, button, x, y)
         print(string.format("%s-:[OnMouse] %i:%i:%i:(%i,%i)", self.world, timestamp, state, button, x, y))
+        table.insert(self.mouse_events, {timestamp=timestamp, state=state, button=button, x=x, y=y})
         if self.OnMouse then
             self:OnMouse(timestamp, state, button, x, y)
         end
@@ -47,11 +110,63 @@ function input_system:Init(delta_ms)
     yapre.BindMouseInputCallback(string.format("%s-OnMouse", self.world), OnMouse)
 end
 
-function input_system:Deinit(delta_ms)
+function input_system:Deinit()
     yapre.UnbindKeyboardInputCallback(string.format("%s-OnKey", self.world))
     yapre.UnbindMouseInputCallback(string.format("%s-OnMouse", self.world))
 end
 
 yecs.System:Register("input", input_system)
+
+-- tree_system
+local tree_system = {}
+tree_system.update_order = sprite_system.update_order - 1
+tree_system.global_position = {}
+
+function tree_system:_UpdateTreeNodePos(node, parent_pos)
+    local pos = node.position
+    local node_pos = {
+        x=pos.x+parent_pos.x, 
+        y=pos.y+parent_pos.y, 
+        z=pos.z+parent_pos.z, 
+    }
+    self.global_position[node.key] = node_pos
+
+    for _, c in pairs(node.tree.children) do
+        self:_UpdateTreeNodePos(c, node_pos)
+    end
+end
+
+function tree_system:Update(delta_ms)
+    self.global_position = {}
+    local world = self.world
+    local tree_entities = self.world:GetEntities(function(entity) return entity.tree end)
+    for _, entity in pairs(tree_entities) do
+        local parent = entity.tree.parent
+        if parent == nil then
+            self:_UpdateTreeNodePos(entity, {x=0, y=0, z=0})
+        else
+            if world.entities[parent.key] == nil then
+                world:RemoveEntity(entity)
+            end
+        end
+    end
+end
+
+function tree_system:Init()
+end
+
+function tree_system:Deinit()
+end
+
+function tree_system:GetPosition(entity)
+    local position = self.global_position[entity.key]
+    if position then 
+        return position 
+    else
+        return entity.position
+    end
+end
+
+yecs.System:Register("tree", tree_system)
 
 return systems
