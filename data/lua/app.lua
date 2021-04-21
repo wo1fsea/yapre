@@ -17,10 +17,14 @@ function app.Init()
     world1:AddSystem("sprite")
     world1:AddSystem("input")
     world1:AddSystem("tree")
+    world1:AddSystem("tick")
     entity1 = yecs.Entity:New({"position", "sprite", "input", "size", "tree"})
     entity2 = yecs.Entity:New({"position", "sprite", "tree"})
-    button = yecs.Entity:New({"position", "sprite", "input", "size", "tree"})
-    text = yecs.Entity:New({"position", "sprite", "size", "text"})
+    button = yecs.Entity:New({"position", "sprite", "input", "size", "tree", "tick"})
+    text = yecs.Entity:New({"position", "sprite", "size", "text", "tick"})
+
+    button.tick:AddCallback("a", function(self, ms) print(button, ms, 10) end, 10)
+    text.tick:AddCallback("c", function(self, ms) print(text, ms, 3) end, 3)
 
     text.text:SetText("O wonder! \nHow many goodly creatures are there here!\nHow beauteous mankind is!\nO brave new world,\nThat has such people in't.")
     text.position.x = 16

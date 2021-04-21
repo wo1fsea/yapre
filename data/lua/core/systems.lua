@@ -1,6 +1,23 @@
 local systems = {}
 local yecs = require("utils.yecs")
 
+-- dummy system
+local dummy_system = {}
+dummy_system.update_order = 0
+function dummy_system:Init()
+    print("dummy Init")
+end
+
+function dummy_system:Deinit()
+    print("dummy Deinit")
+end
+
+function dummy_system:Update(delta_ms)
+    print("dummy Update ", delta_ms)
+end
+yecs.System:Register("dummy", dummy_system)
+
+
 -- sprite system
 local sprite_system = {}
 sprite_system.update_order = 2048
@@ -19,12 +36,12 @@ function sprite_system:Update(delta_ms)
             local size = sprite_data.size
             local color = sprite_data.color
             yapre.DrawSprite(
-                sprite_data.texture, 
-                position.x + offset.x, position.y + offset.y, position.z + offset.z, 
-                size.width, size.heigh, 
-                0., 
-                color.r, color.g, color.b 
-                ) 
+            sprite_data.texture, 
+            position.x + offset.x, position.y + offset.y, position.z + offset.z, 
+            size.width, size.heigh, 
+            0., 
+            color.r, color.g, color.b 
+            ) 
         end
     end
 end
@@ -168,5 +185,46 @@ function tree_system:GetPosition(entity)
 end
 
 yecs.System:Register("tree", tree_system)
+
+-- tick system
+local tick_system = {}
+tick_system.update_order = 0
+function tick_system:Init()
+end
+
+function tick_system:Deinit()
+end
+
+function tick_system:Update(delta_ms)
+    local world = self.world
+    local tick_entities = self.world:GetEntities(function(entity) return entity.tick end)
+    local g_callbacks = {}
+    for _, entity in pairs(tick_entities) do
+        local etick = entity.tick
+        for _, callback in pairs(etick.callbacks) do
+            table.insert(g_callbacks, callback)
+        end
+    end
+
+    table.sort(
+    g_callbacks, 
+    function(t1, t2)
+        if t1.tick_order < t2.tick_order then
+            return true
+        elseif t1.tick_order > t2.tick_order  then
+            return false
+        else
+            return tonumber(t1.entity.key) < tonumber(t2.entity.key)
+        end
+    end
+    )
+
+    for _, callback in ipairs(g_callbacks) do
+        callback.callback(callback.component, delta_ms)
+    end
+end
+
+yecs.System:Register("tick", tick_system)
+
 
 return systems

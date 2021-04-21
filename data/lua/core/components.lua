@@ -119,4 +119,22 @@ yecs.Component:Register("text",
     end
 })
 
+local default_tick_order = 1
+yecs.Component:Register("tick", 
+{
+    callbacks={},
+    AddCallback=function(self, key, callback, tick_order)
+        self.callbacks[key] = {
+            tick_order=tick_order or default_tick_order,
+            callback=callback,
+            
+            component=self,
+            entity=self.entity,
+        }
+    end,
+    RemoveCallback=function(self, key)
+        self.callbacks[key] = nil
+    end,
+})
+
 return components
