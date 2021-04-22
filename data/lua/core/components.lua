@@ -5,14 +5,19 @@ yecs.Component:Register("position", {x=0, y=0, z=0})
 yecs.Component:Register("size", {width=0, height=0})
 yecs.Component:Register("sprite", 
 {
-    sprites={
-        {
-            texture="data/image/sprite16.png", 
-            color={r=1,g=1,b=1}, 
-            size={width=-1, heigh=-1}, 
-            offset={x=0, y=0, z=0},
+    sprites={}, 
+    AddSprite=function(self, key, texture, params)
+        params = params or {}
+        self.sprites[key] = {
+            texture = texture or "data/image/sprite16.png", 
+            color = params.color or {r=1,g=1,b=1}, 
+            size = params.size or {width=-1, heigh=-1}, 
+            offset = params.offset or {x=0, y=0, z=0},
         }
-    }, 
+    end,
+    RemoveSprite=function(self, key)
+        self.sprites[key] = nil
+    end,
 })
 
 yecs.Component:Register("input", 
@@ -77,7 +82,7 @@ local font_data = require("data.font_data")
 yecs.Component:Register("text", 
 {
     _text="",
-    _size=1,
+    _size=2,
     SetText=function(self, new_text)
         self._text = new_text
         local sprite = self.entity.sprite
@@ -134,6 +139,76 @@ yecs.Component:Register("tick",
     end,
     RemoveCallback=function(self, key)
         self.callbacks[key] = nil
+    end,
+})
+
+local animation_callback_key = 1
+yecs.Component:Register("animation", 
+{
+    _waiting_timer=false,
+    _next_idx={},
+    _callback=function(self)
+        self._waiting_timer = false
+        local entity = self.entity
+        local sprite = entity.sprite
+        if not sprite then
+            self._next_idx = {}
+            return 
+        end
+        
+        local next_timer = false
+        local next_idx = {}
+        for k, idx in pairs(self._next_idx) do
+            local a = self.animations[k]
+            if a then 
+                local s = sprite.sprites[a.sprite_key]
+                if s then 
+                    s.texture = string.format(a.texture_format, idx)
+                    if idx + 1 < a.end_idx then
+                        next_idx[k] = idx + 1
+                        next_timer = true
+                    end
+                end
+            end
+        end
+
+        if next_timer then
+            yapre.AddTimer(1000//12, function() self:_callback() end)
+            self._waiting_timer = true
+        end
+        
+        self._next_idx = next_idx 
+    end,
+
+    frame_rate=12,
+    animations={},
+    AddState=function(self, key, sprite_key, texture_format, start_idx, end_idx)
+        self.animations[key] = {
+            sprite_key=sprite_key,
+            texture_format=texture_format,
+            start_idx=start_idx,
+            end_idx=end_idx,
+        }
+    end,
+    RemoveState=function(self, key)
+        animations[key] = nil
+    end,
+    Play=function(self, key)
+       local a = self.animations[key]
+       if not a then return end
+
+       local s = self.entity.sprite.sprites[a.sprite_key]
+       if not s then return end
+
+       self._next_idx[key] = a.start_idx
+
+       if not self._waiting_timer then
+           yapre.AddTimer(1000//12, function() self:_callback() end)
+           self._waiting_timer = true
+       end
+   end,
+    Stop=function(self, key)
+        self._next_idx[key] = nil
     end,
 })
 
