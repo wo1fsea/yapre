@@ -115,9 +115,15 @@ var Module = typeof Module !== 'undefined' ? Module : {};
         if (!check) throw msg + new Error().stack;
       }
   Module['FS_createPath']("/", "data", true, true);
+Module['FS_createPath']("/data", "image", true, true);
+Module['FS_createPath']("/data/image", "ui", true, true);
+Module['FS_createPath']("/data/image", "animation", true, true);
+Module['FS_createPath']("/data/image/animation", "blood", true, true);
+Module['FS_createPath']("/data/image", "font", true, true);
 Module['FS_createPath']("/data", "lua", true, true);
-Module['FS_createPath']("/data", "model", true, true);
-Module['FS_createPath']("/data/model", "backpack", true, true);
+Module['FS_createPath']("/data/lua", "core", true, true);
+Module['FS_createPath']("/data/lua", "utils", true, true);
+Module['FS_createPath']("/data/lua", "data", true, true);
 Module['FS_createPath']("/data", "shaders", true, true);
 
           /** @constructor */
@@ -191,7 +197,7 @@ Module['FS_createPath']("/data", "shaders", true, true);
     }
   
    }
-   loadPackage({"files": [{"filename": "/data/.DS_Store", "start": 0, "end": 6148, "audio": 0}, {"filename": "/data/logo.png", "start": 6148, "end": 7201, "audio": 0}, {"filename": "/data/lua/test.lua", "start": 7201, "end": 7222, "audio": 0}, {"filename": "/data/lua/.yapre.lua.swp", "start": 7222, "end": 19510, "audio": 0}, {"filename": "/data/lua/yapre.lua", "start": 19510, "end": 19789, "audio": 0}, {"filename": "/data/model/backpack/source_attribution.txt", "start": 19789, "end": 20097, "audio": 0}, {"filename": "/data/model/backpack/backpack.obj", "start": 20097, "end": 7018137, "audio": 0}, {"filename": "/data/model/backpack/diffuse.jpg", "start": 7018137, "end": 13126992, "audio": 0}, {"filename": "/data/model/backpack/specular.jpg", "start": 13126992, "end": 18544887, "audio": 0}, {"filename": "/data/model/backpack/normal.png", "start": 18544887, "end": 33759758, "audio": 0}, {"filename": "/data/model/backpack/ao.jpg", "start": 33759758, "end": 35654884, "audio": 0}, {"filename": "/data/model/backpack/roughness.jpg", "start": 35654884, "end": 40043134, "audio": 0}, {"filename": "/data/model/backpack/backpack.mtl", "start": 40043134, "end": 40043412, "audio": 0}, {"filename": "/data/shaders/shader.vs", "start": 40043412, "end": 40043618, "audio": 0}, {"filename": "/data/shaders/model.fs", "start": 40043618, "end": 40043787, "audio": 0}, {"filename": "/data/shaders/model.vs", "start": 40043787, "end": 40044115, "audio": 0}, {"filename": "/data/shaders/.shader.vs.swp", "start": 40044115, "end": 40056403, "audio": 0}, {"filename": "/data/shaders/shader.fs", "start": 40056403, "end": 40056628, "audio": 0}], "remote_package_size": 40056628, "package_uuid": "87f69d1e-a5e0-4e0f-b066-62a0ddeb5fa0"});
+   loadPackage({"files": [{"filename": "/data/.DS_Store", "start": 0, "end": 6148, "audio": 0}, {"filename": "/data/image/sprite16.png", "start": 6148, "end": 6294, "audio": 0}, {"filename": "/data/image/.DS_Store", "start": 6294, "end": 12442, "audio": 0}, {"filename": "/data/image/banner.png", "start": 12442, "end": 14655, "audio": 0}, {"filename": "/data/image/yapre_text.png", "start": 14655, "end": 14824, "audio": 0}, {"filename": "/data/image/yapre.png", "start": 14824, "end": 15279, "audio": 0}, {"filename": "/data/image/ui/button16_0.png", "start": 15279, "end": 15435, "audio": 0}, {"filename": "/data/image/ui/button16_1.png", "start": 15435, "end": 15590, "audio": 0}, {"filename": "/data/image/ui/button16_2.png", "start": 15590, "end": 15737, "audio": 0}, {"filename": "/data/image/animation/.DS_Store", "start": 15737, "end": 21885, "audio": 0}, {"filename": "/data/image/animation/blood/8.png", "start": 21885, "end": 22509, "audio": 0}, {"filename": "/data/image/animation/blood/9.png", "start": 22509, "end": 23036, "audio": 0}, {"filename": "/data/image/animation/blood/14.png", "start": 23036, "end": 23446, "audio": 0}, {"filename": "/data/image/animation/blood/15.png", "start": 23446, "end": 23828, "audio": 0}, {"filename": "/data/image/animation/blood/17.png", "start": 23828, "end": 24174, "audio": 0}, {"filename": "/data/image/animation/blood/16.png", "start": 24174, "end": 24520, "audio": 0}, {"filename": "/data/image/animation/blood/12.png", "start": 24520, "end": 24978, "audio": 0}, {"filename": "/data/image/animation/blood/13.png", "start": 24978, "end": 25392, "audio": 0}, {"filename": "/data/image/animation/blood/11.png", "start": 25392, "end": 25864, "audio": 0}, {"filename": "/data/image/animation/blood/10.png", "start": 25864, "end": 26414, "audio": 0}, {"filename": "/data/image/animation/blood/20.png", "start": 26414, "end": 26778, "audio": 0}, {"filename": "/data/image/animation/blood/18.png", "start": 26778, "end": 27124, "audio": 0}, {"filename": "/data/image/animation/blood/19.png", "start": 27124, "end": 27470, "audio": 0}, {"filename": "/data/image/animation/blood/4.png", "start": 27470, "end": 28430, "audio": 0}, {"filename": "/data/image/animation/blood/5.png", "start": 28430, "end": 29344, "audio": 0}, {"filename": "/data/image/animation/blood/7.png", "start": 29344, "end": 30036, "audio": 0}, {"filename": "/data/image/animation/blood/6.png", "start": 30036, "end": 30823, "audio": 0}, {"filename": "/data/image/animation/blood/2.png", "start": 30823, "end": 31591, "audio": 0}, {"filename": "/data/image/animation/blood/3.png", "start": 31591, "end": 32463, "audio": 0}, {"filename": "/data/image/animation/blood/1.png", "start": 32463, "end": 32876, "audio": 0}, {"filename": "/data/image/font/88.png", "start": 32876, "end": 32989, "audio": 0}, {"filename": "/data/image/font/77.png", "start": 32989, "end": 33096, "audio": 0}, {"filename": "/data/image/font/63.png", "start": 33096, "end": 33205, "audio": 0}, {"filename": "/data/image/font/62.png", "start": 33205, "end": 33312, "audio": 0}, {"filename": "/data/image/font/76.png", "start": 33312, "end": 33408, "audio": 0}, {"filename": "/data/image/font/89.png", "start": 33408, "end": 33512, "audio": 0}, {"filename": "/data/image/font/60.png", "start": 33512, "end": 33614, "audio": 0}, {"filename": "/data/image/font/74.png", "start": 33614, "end": 33710, "audio": 0}, {"filename": "/data/image/font/48.png", "start": 33710, "end": 33814, "audio": 0}, {"filename": "/data/image/font/49.png", "start": 33814, "end": 33914, "audio": 0}, {"filename": "/data/image/font/75.png", "start": 33914, "end": 34027, "audio": 0}, {"filename": "/data/image/font/61.png", "start": 34027, "end": 34125, "audio": 0}, {"filename": "/data/image/font/59.png", "start": 34125, "end": 34222, "audio": 0}, {"filename": "/data/image/font/65.png", "start": 34222, "end": 34333, "audio": 0}, {"filename": "/data/image/font/71.png", "start": 34333, "end": 34447, "audio": 0}, {"filename": "/data/image/font/70.png", "start": 34447, "end": 34546, "audio": 0}, {"filename": "/data/image/font/64.png", "start": 34546, "end": 34668, "audio": 0}, {"filename": "/data/image/font/58.png", "start": 34668, "end": 34759, "audio": 0}, {"filename": "/data/image/font/99.png", "start": 34759, "end": 34859, "audio": 0}, {"filename": "/data/image/font/72.png", "start": 34859, "end": 34968, "audio": 0}, {"filename": "/data/image/font/66.png", "start": 34968, "end": 35074, "audio": 0}, {"filename": "/data/image/font/67.png", "start": 35074, "end": 35177, "audio": 0}, {"filename": "/data/image/font/73.png", "start": 35177, "end": 35265, "audio": 0}, {"filename": "/data/image/font/98.png", "start": 35265, "end": 35372, "audio": 0}, {"filename": "/data/image/font/115.png", "start": 35372, "end": 35477, "audio": 0}, {"filename": "/data/image/font/101.png", "start": 35477, "end": 35584, "audio": 0}, {"filename": "/data/image/font/100.png", "start": 35584, "end": 35691, "audio": 0}, {"filename": "/data/image/font/114.png", "start": 35691, "end": 35791, "audio": 0}, {"filename": "/data/image/font/102.png", "start": 35791, "end": 35891, "audio": 0}, {"filename": "/data/image/font/116.png", "start": 35891, "end": 35984, "audio": 0}, {"filename": "/data/image/font/117.png", "start": 35984, "end": 36085, "audio": 0}, {"filename": "/data/image/font/103.png", "start": 36085, "end": 36198, "audio": 0}, {"filename": "/data/image/font/107.png", "start": 36198, "end": 36303, "audio": 0}, {"filename": "/data/image/font/113.png", "start": 36303, "end": 36406, "audio": 0}, {"filename": "/data/image/font/112.png", "start": 36406, "end": 36514, "audio": 0}, {"filename": "/data/image/font/106.png", "start": 36514, "end": 36620, "audio": 0}, {"filename": "/data/image/font/110.png", "start": 36620, "end": 36720, "audio": 0}, {"filename": "/data/image/font/104.png", "start": 36720, "end": 36824, "audio": 0}, {"filename": "/data/image/font/39.png", "start": 36824, "end": 36922, "audio": 0}, {"filename": "/data/image/font/38.png", "start": 36922, "end": 37033, "audio": 0}, {"filename": "/data/image/font/105.png", "start": 37033, "end": 37127, "audio": 0}, {"filename": "/data/image/font/111.png", "start": 37127, "end": 37232, "audio": 0}, {"filename": "/data/image/font/108.png", "start": 37232, "end": 37320, "audio": 0}, {"filename": "/data/image/font/120.png", "start": 37320, "end": 37433, "audio": 0}, {"filename": "/data/image/font/35.png", "start": 37433, "end": 37531, "audio": 0}, {"filename": "/data/image/font/34.png", "start": 37531, "end": 37626, "audio": 0}, {"filename": "/data/image/font/121.png", "start": 37626, "end": 37735, "audio": 0}, {"filename": "/data/image/font/109.png", "start": 37735, "end": 37838, "audio": 0}, {"filename": "/data/image/font/123.png", "start": 37838, "end": 37945, "audio": 0}, {"filename": "/data/image/font/36.png", "start": 37945, "end": 38060, "audio": 0}, {"filename": "/data/image/font/37.png", "start": 38060, "end": 38172, "audio": 0}, {"filename": "/data/image/font/122.png", "start": 38172, "end": 38284, "audio": 0}, {"filename": "/data/image/font/126.png", "start": 38284, "end": 38381, "audio": 0}, {"filename": "/data/image/font/33.png", "start": 38381, "end": 38472, "audio": 0}, {"filename": "/data/image/font/32.png", "start": 38472, "end": 38550, "audio": 0}, {"filename": "/data/image/font/127.png", "start": 38550, "end": 38655, "audio": 0}, {"filename": "/data/image/font/125.png", "start": 38655, "end": 38756, "audio": 0}, {"filename": "/data/image/font/119.png", "start": 38756, "end": 38857, "audio": 0}, {"filename": "/data/image/font/118.png", "start": 38857, "end": 38958, "audio": 0}, {"filename": "/data/image/font/124.png", "start": 38958, "end": 39047, "audio": 0}, {"filename": "/data/image/font/95.png", "start": 39047, "end": 39139, "audio": 0}, {"filename": "/data/image/font/81.png", "start": 39139, "end": 39253, "audio": 0}, {"filename": "/data/image/font/56.png", "start": 39253, "end": 39359, "audio": 0}, {"filename": "/data/image/font/42.png", "start": 39359, "end": 39470, "audio": 0}, {"filename": "/data/image/font/43.png", "start": 39470, "end": 39575, "audio": 0}, {"filename": "/data/image/font/57.png", "start": 39575, "end": 39685, "audio": 0}, {"filename": "/data/image/font/80.png", "start": 39685, "end": 39792, "audio": 0}, {"filename": "/data/image/font/94.png", "start": 39792, "end": 39893, "audio": 0}, {"filename": "/data/image/font/-1.png", "start": 39893, "end": 39996, "audio": 0}, {"filename": "/data/image/font/82.png", "start": 39996, "end": 40099, "audio": 0}, {"filename": "/data/image/font/96.png", "start": 40099, "end": 40194, "audio": 0}, {"filename": "/data/image/font/41.png", "start": 40194, "end": 40286, "audio": 0}, {"filename": "/data/image/font/55.png", "start": 40286, "end": 40387, "audio": 0}, {"filename": "/data/image/font/69.png", "start": 40387, "end": 40490, "audio": 0}, {"filename": "/data/image/font/68.png", "start": 40490, "end": 40594, "audio": 0}, {"filename": "/data/image/font/54.png", "start": 40594, "end": 40708, "audio": 0}, {"filename": "/data/image/font/40.png", "start": 40708, "end": 40807, "audio": 0}, {"filename": "/data/image/font/97.png", "start": 40807, "end": 40914, "audio": 0}, {"filename": "/data/image/font/83.png", "start": 40914, "end": 41031, "audio": 0}, {"filename": "/data/image/font/87.png", "start": 41031, "end": 41145, "audio": 0}, {"filename": "/data/image/font/93.png", "start": 41145, "end": 41239, "audio": 0}, {"filename": "/data/image/font/78.png", "start": 41239, "end": 41348, "audio": 0}, {"filename": "/data/image/font/44.png", "start": 41348, "end": 41444, "audio": 0}, {"filename": "/data/image/font/50.png", "start": 41444, "end": 41550, "audio": 0}, {"filename": "/data/image/font/51.png", "start": 41550, "end": 41658, "audio": 0}, {"filename": "/data/image/font/45.png", "start": 41658, "end": 41752, "audio": 0}, {"filename": "/data/image/font/79.png", "start": 41752, "end": 41856, "audio": 0}, {"filename": "/data/image/font/92.png", "start": 41856, "end": 41956, "audio": 0}, {"filename": "/data/image/font/86.png", "start": 41956, "end": 42058, "audio": 0}, {"filename": "/data/image/font/90.png", "start": 42058, "end": 42163, "audio": 0}, {"filename": "/data/image/font/84.png", "start": 42163, "end": 42257, "audio": 0}, {"filename": "/data/image/font/53.png", "start": 42257, "end": 42366, "audio": 0}, {"filename": "/data/image/font/47.png", "start": 42366, "end": 42469, "audio": 0}, {"filename": "/data/image/font/46.png", "start": 42469, "end": 42556, "audio": 0}, {"filename": "/data/image/font/52.png", "start": 42556, "end": 42664, "audio": 0}, {"filename": "/data/image/font/85.png", "start": 42664, "end": 42769, "audio": 0}, {"filename": "/data/image/font/91.png", "start": 42769, "end": 42867, "audio": 0}, {"filename": "/data/lua/app.lua", "start": 42867, "end": 47247, "audio": 0}, {"filename": "/data/lua/mario_music.lua", "start": 47247, "end": 49909, "audio": 0}, {"filename": "/data/lua/.app.lua.swp", "start": 49909, "end": 66293, "audio": 0}, {"filename": "/data/lua/yapre.lua", "start": 66293, "end": 66667, "audio": 0}, {"filename": "/data/lua/core/.components.lua.swp", "start": 66667, "end": 83051, "audio": 0}, {"filename": "/data/lua/core/entities.lua", "start": 83051, "end": 83090, "audio": 0}, {"filename": "/data/lua/core/components.lua", "start": 83090, "end": 88821, "audio": 0}, {"filename": "/data/lua/core/systems.lua", "start": 88821, "end": 95713, "audio": 0}, {"filename": "/data/lua/utils/yecs.lua", "start": 95713, "end": 101126, "audio": 0}, {"filename": "/data/lua/utils/strict.lua", "start": 101126, "end": 102351, "audio": 0}, {"filename": "/data/lua/data/font_data.lua", "start": 102351, "end": 103639, "audio": 0}, {"filename": "/data/shaders/.DS_Store", "start": 103639, "end": 109787, "audio": 0}, {"filename": "/data/shaders/sprite.fs", "start": 109787, "end": 110012, "audio": 0}, {"filename": "/data/shaders/sprite.vs", "start": 110012, "end": 110218, "audio": 0}], "remote_package_size": 110218, "package_uuid": "e4477ed1-dbcd-407f-94fb-14d6fbd667e7"});
   
   })();
   
@@ -796,7 +802,7 @@ if (typeof WebAssembly !== 'object') {
 function setValue(ptr, value, type, noSafe) {
   type = type || 'i8';
   if (type.charAt(type.length-1) === '*') type = 'i32'; // pointers are 32-bit
-    switch(type) {
+    switch (type) {
       case 'i1': HEAP8[((ptr)>>0)] = value; break;
       case 'i8': HEAP8[((ptr)>>0)] = value; break;
       case 'i16': HEAP16[((ptr)>>1)] = value; break;
@@ -814,7 +820,7 @@ function setValue(ptr, value, type, noSafe) {
 function getValue(ptr, type, noSafe) {
   type = type || 'i8';
   if (type.charAt(type.length-1) === '*') type = 'i32'; // pointers are 32-bit
-    switch(type) {
+    switch (type) {
       case 'i1': return HEAP8[((ptr)>>0)];
       case 'i8': return HEAP8[((ptr)>>0)];
       case 'i16': return HEAP16[((ptr)>>1)];
@@ -995,7 +1001,7 @@ function UTF8ArrayToString(heap, idx, maxBytesToRead) {
       if ((u0 & 0xF0) == 0xE0) {
         u0 = ((u0 & 15) << 12) | (u1 << 6) | u2;
       } else {
-        if ((u0 & 0xF8) != 0xF0) warnOnce('Invalid UTF-8 leading byte 0x' + u0.toString(16) + ' encountered when deserializing a UTF-8 string on the asm.js/wasm heap to a JS string!');
+        if ((u0 & 0xF8) != 0xF0) warnOnce('Invalid UTF-8 leading byte 0x' + u0.toString(16) + ' encountered when deserializing a UTF-8 string in wasm memory to a JS string!');
         u0 = ((u0 & 7) << 18) | (u1 << 12) | (u2 << 6) | (heap[idx++] & 63);
       }
 
@@ -1071,7 +1077,7 @@ function stringToUTF8Array(str, heap, outIdx, maxBytesToWrite) {
       heap[outIdx++] = 0x80 | (u & 63);
     } else {
       if (outIdx + 3 >= endIdx) break;
-      if (u >= 0x200000) warnOnce('Invalid Unicode code point 0x' + u.toString(16) + ' encountered when serializing a JS string to an UTF-8 string on the asm.js/wasm heap! (Valid unicode code points should be in range 0-0x1FFFFF).');
+      if (u >= 0x200000) warnOnce('Invalid Unicode code point 0x' + u.toString(16) + ' encountered when serializing a JS string to a UTF-8 string in wasm memory! (Valid unicode code points should be in range 0-0x1FFFFF).');
       heap[outIdx++] = 0xF0 | (u >> 18);
       heap[outIdx++] = 0x80 | ((u >> 12) & 63);
       heap[outIdx++] = 0x80 | ((u >> 6) & 63);
@@ -1439,12 +1445,12 @@ function checkStackCookie() {
 // include: runtime_assertions.js
 
 
-// Endianness check (note: assumes compiler arch was little-endian)
+// Endianness check
 (function() {
   var h16 = new Int16Array(1);
   var h8 = new Int8Array(h16.buffer);
   h16[0] = 0x6373;
-  if (h8[0] !== 0x73 || h8[1] !== 0x63) throw 'Runtime error: expected the system to be little-endian!';
+  if (h8[0] !== 0x73 || h8[1] !== 0x63) throw 'Runtime error: expected the system to be little-endian! (Run with -s SUPPORT_BIG_ENDIAN=1 to bypass)';
 })();
 
 function abortFnPtrError(ptr, sig) {
@@ -1460,8 +1466,6 @@ var __ATPOSTRUN__ = []; // functions called after the main() is called
 
 var runtimeInitialized = false;
 var runtimeExited = false;
-
-__ATINIT__.push({ func: function() { ___wasm_call_ctors() } });
 
 function preRun() {
 
@@ -1479,6 +1483,7 @@ function initRuntime() {
   checkStackCookie();
   assert(!runtimeInitialized);
   runtimeInitialized = true;
+
   if (!Module["noFSInit"] && !FS.init.initialized) FS.init();
 TTY.init();
   callRuntimeCallbacks(__ATINIT__);
@@ -1784,6 +1789,8 @@ function createWasm() {
     wasmTable = Module['asm']['__indirect_function_table'];
     assert(wasmTable, "table not found in wasm exports");
 
+    addOnInit(Module['asm']['__wasm_call_ctors']);
+
     removeRunDependency('wasm-instantiate');
   }
   // we can't run yet (except in a pthread, where we have a custom sync instantiator)
@@ -1805,7 +1812,8 @@ function createWasm() {
 
   function instantiateArrayBuffer(receiver) {
     return getBinaryPromise().then(function(binary) {
-      return WebAssembly.instantiate(binary, info);
+      var result = WebAssembly.instantiate(binary, info);
+      return result;
     }).then(receiver, function(reason) {
       err('failed to asynchronously prepare wasm: ' + reason);
 
@@ -1864,36 +1872,34 @@ var tempI64;
 // === Body ===
 
 var ASM_CONSTS = {
-  41146: function($0) {var str = UTF8ToString($0) + '\n\n' + 'Abort/Retry/Ignore/AlwaysIgnore? [ariA] :'; var reply = window.prompt(str, "i"); if (reply === null) { reply = "i"; } return allocate(intArrayFromString(reply), 'i8', ALLOC_NORMAL);},  
- 50530: function($0, $1, $2, $3, $4) {return Browser.safeSetTimeout(function() { dynCall('viiii', $0, [$1, $2, $3, $4]); }, $2);},  
- 78780: function($0, $1, $2) {var w = $0; var h = $1; var pixels = $2; if (!Module['SDL2']) Module['SDL2'] = {}; var SDL2 = Module['SDL2']; if (SDL2.ctxCanvas !== Module['canvas']) { SDL2.ctx = Module['createContext'](Module['canvas'], false, true); SDL2.ctxCanvas = Module['canvas']; } if (SDL2.w !== w || SDL2.h !== h || SDL2.imageCtx !== SDL2.ctx) { SDL2.image = SDL2.ctx.createImageData(w, h); SDL2.w = w; SDL2.h = h; SDL2.imageCtx = SDL2.ctx; } var data = SDL2.image.data; var src = pixels >> 2; var dst = 0; var num; if (typeof CanvasPixelArray !== 'undefined' && data instanceof CanvasPixelArray) { num = data.length; while (dst < num) { var val = HEAP32[src]; data[dst ] = val & 0xff; data[dst+1] = (val >> 8) & 0xff; data[dst+2] = (val >> 16) & 0xff; data[dst+3] = 0xff; src++; dst += 4; } } else { if (SDL2.data32Data !== data) { SDL2.data32 = new Int32Array(data.buffer); SDL2.data8 = new Uint8Array(data.buffer); } var data32 = SDL2.data32; num = data32.length; data32.set(HEAP32.subarray(src, src + num)); var data8 = SDL2.data8; var i = 3; var j = i + 4*num; if (num % 8 == 0) { while (i < j) { data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; } } else { while (i < j) { data8[i] = 0xff; i = i + 4 | 0; } } } SDL2.ctx.putImageData(SDL2.image, 0, 0); return 0;},  
- 80259: function($0, $1, $2, $3, $4) {var w = $0; var h = $1; var hot_x = $2; var hot_y = $3; var pixels = $4; var canvas = document.createElement("canvas"); canvas.width = w; canvas.height = h; var ctx = canvas.getContext("2d"); var image = ctx.createImageData(w, h); var data = image.data; var src = pixels >> 2; var dst = 0; var num; if (typeof CanvasPixelArray !== 'undefined' && data instanceof CanvasPixelArray) { num = data.length; while (dst < num) { var val = HEAP32[src]; data[dst ] = val & 0xff; data[dst+1] = (val >> 8) & 0xff; data[dst+2] = (val >> 16) & 0xff; data[dst+3] = (val >> 24) & 0xff; src++; dst += 4; } } else { var data32 = new Int32Array(data.buffer); num = data32.length; data32.set(HEAP32.subarray(src, src + num)); } ctx.putImageData(image, 0, 0); var url = hot_x === 0 && hot_y === 0 ? "url(" + canvas.toDataURL() + "), auto" : "url(" + canvas.toDataURL() + ") " + hot_x + " " + hot_y + ", auto"; var urlBuf = _malloc(url.length + 1); stringToUTF8(url, urlBuf, url.length + 1); return urlBuf;},  
- 81248: function($0) {if (Module['canvas']) { Module['canvas'].style['cursor'] = UTF8ToString($0); } return 0;},  
- 81341: function() {if (Module['canvas']) { Module['canvas'].style['cursor'] = 'none'; }},  
- 82566: function() {return screen.width;},  
- 82593: function() {return screen.height;},  
- 82621: function() {return window.innerWidth;},  
- 82653: function() {return window.innerHeight;},  
- 82731: function($0) {if (typeof setWindowTitle !== 'undefined') { setWindowTitle(UTF8ToString($0)); } return 0;},  
- 82865: function() {if (typeof(AudioContext) !== 'undefined') { return 1; } else if (typeof(webkitAudioContext) !== 'undefined') { return 1; } return 0;},  
- 83031: function() {if ((typeof(navigator.mediaDevices) !== 'undefined') && (typeof(navigator.mediaDevices.getUserMedia) !== 'undefined')) { return 1; } else if (typeof(navigator.webkitGetUserMedia) !== 'undefined') { return 1; } return 0;},  
- 83257: function($0) {if(typeof(Module['SDL2']) === 'undefined') { Module['SDL2'] = {}; } var SDL2 = Module['SDL2']; if (!$0) { SDL2.audio = {}; } else { SDL2.capture = {}; } if (!SDL2.audioContext) { if (typeof(AudioContext) !== 'undefined') { SDL2.audioContext = new AudioContext(); } else if (typeof(webkitAudioContext) !== 'undefined') { SDL2.audioContext = new webkitAudioContext(); } if (SDL2.audioContext) { autoResumeAudioContext(SDL2.audioContext); } } return SDL2.audioContext === undefined ? -1 : 0;},  
- 83810: function() {var SDL2 = Module['SDL2']; return SDL2.audioContext.sampleRate;},  
- 83880: function($0, $1, $2, $3) {var SDL2 = Module['SDL2']; var have_microphone = function(stream) { if (SDL2.capture.silenceTimer !== undefined) { clearTimeout(SDL2.capture.silenceTimer); SDL2.capture.silenceTimer = undefined; } SDL2.capture.mediaStreamNode = SDL2.audioContext.createMediaStreamSource(stream); SDL2.capture.scriptProcessorNode = SDL2.audioContext.createScriptProcessor($1, $0, 1); SDL2.capture.scriptProcessorNode.onaudioprocess = function(audioProcessingEvent) { if ((SDL2 === undefined) || (SDL2.capture === undefined)) { return; } audioProcessingEvent.outputBuffer.getChannelData(0).fill(0.0); SDL2.capture.currentCaptureBuffer = audioProcessingEvent.inputBuffer; dynCall('vi', $2, [$3]); }; SDL2.capture.mediaStreamNode.connect(SDL2.capture.scriptProcessorNode); SDL2.capture.scriptProcessorNode.connect(SDL2.audioContext.destination); SDL2.capture.stream = stream; }; var no_microphone = function(error) { }; SDL2.capture.silenceBuffer = SDL2.audioContext.createBuffer($0, $1, SDL2.audioContext.sampleRate); SDL2.capture.silenceBuffer.getChannelData(0).fill(0.0); var silence_callback = function() { SDL2.capture.currentCaptureBuffer = SDL2.capture.silenceBuffer; dynCall('vi', $2, [$3]); }; SDL2.capture.silenceTimer = setTimeout(silence_callback, ($1 / SDL2.audioContext.sampleRate) * 1000); if ((navigator.mediaDevices !== undefined) && (navigator.mediaDevices.getUserMedia !== undefined)) { navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(have_microphone).catch(no_microphone); } else if (navigator.webkitGetUserMedia !== undefined) { navigator.webkitGetUserMedia({ audio: true, video: false }, have_microphone, no_microphone); }},  
- 85532: function($0, $1, $2, $3) {var SDL2 = Module['SDL2']; SDL2.audio.scriptProcessorNode = SDL2.audioContext['createScriptProcessor']($1, 0, $0); SDL2.audio.scriptProcessorNode['onaudioprocess'] = function (e) { if ((SDL2 === undefined) || (SDL2.audio === undefined)) { return; } SDL2.audio.currentOutputBuffer = e['outputBuffer']; dynCall('vi', $2, [$3]); }; SDL2.audio.scriptProcessorNode['connect'](SDL2.audioContext['destination']);},  
- 85942: function($0, $1) {var SDL2 = Module['SDL2']; var numChannels = SDL2.capture.currentCaptureBuffer.numberOfChannels; for (var c = 0; c < numChannels; ++c) { var channelData = SDL2.capture.currentCaptureBuffer.getChannelData(c); if (channelData.length != $1) { throw 'Web Audio capture buffer length mismatch! Destination size: ' + channelData.length + ' samples vs expected ' + $1 + ' samples!'; } if (numChannels == 1) { for (var j = 0; j < $1; ++j) { setValue($0 + (j * 4), channelData[j], 'float'); } } else { for (var j = 0; j < $1; ++j) { setValue($0 + (((j * numChannels) + c) * 4), channelData[j], 'float'); } } }},  
- 86547: function($0, $1) {var SDL2 = Module['SDL2']; var numChannels = SDL2.audio.currentOutputBuffer['numberOfChannels']; for (var c = 0; c < numChannels; ++c) { var channelData = SDL2.audio.currentOutputBuffer['getChannelData'](c); if (channelData.length != $1) { throw 'Web Audio output buffer length mismatch! Destination size: ' + channelData.length + ' samples vs expected ' + $1 + ' samples!'; } for (var j = 0; j < $1; ++j) { channelData[j] = HEAPF32[$0 + ((j*numChannels + c) << 2) >> 2]; } }},  
- 87027: function($0) {var SDL2 = Module['SDL2']; if ($0) { if (SDL2.capture.silenceTimer !== undefined) { clearTimeout(SDL2.capture.silenceTimer); } if (SDL2.capture.stream !== undefined) { var tracks = SDL2.capture.stream.getAudioTracks(); for (var i = 0; i < tracks.length; i++) { SDL2.capture.stream.removeTrack(tracks[i]); } SDL2.capture.stream = undefined; } if (SDL2.capture.scriptProcessorNode !== undefined) { SDL2.capture.scriptProcessorNode.onaudioprocess = function(audioProcessingEvent) {}; SDL2.capture.scriptProcessorNode.disconnect(); SDL2.capture.scriptProcessorNode = undefined; } if (SDL2.capture.mediaStreamNode !== undefined) { SDL2.capture.mediaStreamNode.disconnect(); SDL2.capture.mediaStreamNode = undefined; } if (SDL2.capture.silenceBuffer !== undefined) { SDL2.capture.silenceBuffer = undefined } SDL2.capture = undefined; } else { if (SDL2.audio.scriptProcessorNode != undefined) { SDL2.audio.scriptProcessorNode.disconnect(); SDL2.audio.scriptProcessorNode = undefined; } SDL2.audio = undefined; } if ((SDL2.audioContext !== undefined) && (SDL2.audio === undefined) && (SDL2.capture === undefined)) { SDL2.audioContext.close(); SDL2.audioContext = undefined; }}
+  116100: function($0) {var str = UTF8ToString($0) + '\n\n' + 'Abort/Retry/Ignore/AlwaysIgnore? [ariA] :'; var reply = window.prompt(str, "i"); if (reply === null) { reply = "i"; } return allocate(intArrayFromString(reply), 'i8', ALLOC_NORMAL);},  
+ 116325: function($0, $1, $2, $3, $4) {return Browser.safeSetTimeout(function() { dynCall('viiii', $0, [$1, $2, $3, $4]); }, $2);},  
+ 116420: function($0) {window.clearTimeout($0);},  
+ 116449: function($0, $1, $2, $3, $4) {return Browser.safeSetTimeout(function() { dynCall('viiii', $0, [$1, $2, $3, $4]); }, $2);},  
+ 116544: function($0, $1, $2) {var w = $0; var h = $1; var pixels = $2; if (!Module['SDL2']) Module['SDL2'] = {}; var SDL2 = Module['SDL2']; if (SDL2.ctxCanvas !== Module['canvas']) { SDL2.ctx = Module['createContext'](Module['canvas'], false, true); SDL2.ctxCanvas = Module['canvas']; } if (SDL2.w !== w || SDL2.h !== h || SDL2.imageCtx !== SDL2.ctx) { SDL2.image = SDL2.ctx.createImageData(w, h); SDL2.w = w; SDL2.h = h; SDL2.imageCtx = SDL2.ctx; } var data = SDL2.image.data; var src = pixels >> 2; var dst = 0; var num; if (typeof CanvasPixelArray !== 'undefined' && data instanceof CanvasPixelArray) { num = data.length; while (dst < num) { var val = HEAP32[src]; data[dst ] = val & 0xff; data[dst+1] = (val >> 8) & 0xff; data[dst+2] = (val >> 16) & 0xff; data[dst+3] = 0xff; src++; dst += 4; } } else { if (SDL2.data32Data !== data) { SDL2.data32 = new Int32Array(data.buffer); SDL2.data8 = new Uint8Array(data.buffer); } var data32 = SDL2.data32; num = data32.length; data32.set(HEAP32.subarray(src, src + num)); var data8 = SDL2.data8; var i = 3; var j = i + 4*num; if (num % 8 == 0) { while (i < j) { data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; data8[i] = 0xff; i = i + 4 | 0; } } else { while (i < j) { data8[i] = 0xff; i = i + 4 | 0; } } } SDL2.ctx.putImageData(SDL2.image, 0, 0); return 0;},  
+ 117999: function($0, $1, $2, $3, $4) {var w = $0; var h = $1; var hot_x = $2; var hot_y = $3; var pixels = $4; var canvas = document.createElement("canvas"); canvas.width = w; canvas.height = h; var ctx = canvas.getContext("2d"); var image = ctx.createImageData(w, h); var data = image.data; var src = pixels >> 2; var dst = 0; var num; if (typeof CanvasPixelArray !== 'undefined' && data instanceof CanvasPixelArray) { num = data.length; while (dst < num) { var val = HEAP32[src]; data[dst ] = val & 0xff; data[dst+1] = (val >> 8) & 0xff; data[dst+2] = (val >> 16) & 0xff; data[dst+3] = (val >> 24) & 0xff; src++; dst += 4; } } else { var data32 = new Int32Array(data.buffer); num = data32.length; data32.set(HEAP32.subarray(src, src + num)); } ctx.putImageData(image, 0, 0); var url = hot_x === 0 && hot_y === 0 ? "url(" + canvas.toDataURL() + "), auto" : "url(" + canvas.toDataURL() + ") " + hot_x + " " + hot_y + ", auto"; var urlBuf = _malloc(url.length + 1); stringToUTF8(url, urlBuf, url.length + 1); return urlBuf;},  
+ 118988: function($0) {if (Module['canvas']) { Module['canvas'].style['cursor'] = UTF8ToString($0); } return 0;},  
+ 119081: function() {if (Module['canvas']) { Module['canvas'].style['cursor'] = 'none'; }},  
+ 119150: function() {return screen.width;},  
+ 119175: function() {return screen.height;},  
+ 119201: function() {return window.innerWidth;},  
+ 119231: function() {return window.innerHeight;},  
+ 119262: function($0) {if (typeof setWindowTitle !== 'undefined') { setWindowTitle(UTF8ToString($0)); } return 0;},  
+ 119357: function() {if (typeof(AudioContext) !== 'undefined') { return 1; } else if (typeof(webkitAudioContext) !== 'undefined') { return 1; } return 0;},  
+ 119494: function() {if ((typeof(navigator.mediaDevices) !== 'undefined') && (typeof(navigator.mediaDevices.getUserMedia) !== 'undefined')) { return 1; } else if (typeof(navigator.webkitGetUserMedia) !== 'undefined') { return 1; } return 0;},  
+ 119718: function($0) {if(typeof(Module['SDL2']) === 'undefined') { Module['SDL2'] = {}; } var SDL2 = Module['SDL2']; if (!$0) { SDL2.audio = {}; } else { SDL2.capture = {}; } if (!SDL2.audioContext) { if (typeof(AudioContext) !== 'undefined') { SDL2.audioContext = new AudioContext(); } else if (typeof(webkitAudioContext) !== 'undefined') { SDL2.audioContext = new webkitAudioContext(); } if (SDL2.audioContext) { autoResumeAudioContext(SDL2.audioContext); } } return SDL2.audioContext === undefined ? -1 : 0;},  
+ 120211: function() {var SDL2 = Module['SDL2']; return SDL2.audioContext.sampleRate;},  
+ 120279: function($0, $1, $2, $3) {var SDL2 = Module['SDL2']; var have_microphone = function(stream) { if (SDL2.capture.silenceTimer !== undefined) { clearTimeout(SDL2.capture.silenceTimer); SDL2.capture.silenceTimer = undefined; } SDL2.capture.mediaStreamNode = SDL2.audioContext.createMediaStreamSource(stream); SDL2.capture.scriptProcessorNode = SDL2.audioContext.createScriptProcessor($1, $0, 1); SDL2.capture.scriptProcessorNode.onaudioprocess = function(audioProcessingEvent) { if ((SDL2 === undefined) || (SDL2.capture === undefined)) { return; } audioProcessingEvent.outputBuffer.getChannelData(0).fill(0.0); SDL2.capture.currentCaptureBuffer = audioProcessingEvent.inputBuffer; dynCall('vi', $2, [$3]); }; SDL2.capture.mediaStreamNode.connect(SDL2.capture.scriptProcessorNode); SDL2.capture.scriptProcessorNode.connect(SDL2.audioContext.destination); SDL2.capture.stream = stream; }; var no_microphone = function(error) { }; SDL2.capture.silenceBuffer = SDL2.audioContext.createBuffer($0, $1, SDL2.audioContext.sampleRate); SDL2.capture.silenceBuffer.getChannelData(0).fill(0.0); var silence_callback = function() { SDL2.capture.currentCaptureBuffer = SDL2.capture.silenceBuffer; dynCall('vi', $2, [$3]); }; SDL2.capture.silenceTimer = setTimeout(silence_callback, ($1 / SDL2.audioContext.sampleRate) * 1000); if ((navigator.mediaDevices !== undefined) && (navigator.mediaDevices.getUserMedia !== undefined)) { navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(have_microphone).catch(no_microphone); } else if (navigator.webkitGetUserMedia !== undefined) { navigator.webkitGetUserMedia({ audio: true, video: false }, have_microphone, no_microphone); }},  
+ 121931: function($0, $1, $2, $3) {var SDL2 = Module['SDL2']; SDL2.audio.scriptProcessorNode = SDL2.audioContext['createScriptProcessor']($1, 0, $0); SDL2.audio.scriptProcessorNode['onaudioprocess'] = function (e) { if ((SDL2 === undefined) || (SDL2.audio === undefined)) { return; } SDL2.audio.currentOutputBuffer = e['outputBuffer']; dynCall('vi', $2, [$3]); }; SDL2.audio.scriptProcessorNode['connect'](SDL2.audioContext['destination']);},  
+ 122341: function($0, $1) {var SDL2 = Module['SDL2']; var numChannels = SDL2.capture.currentCaptureBuffer.numberOfChannels; for (var c = 0; c < numChannels; ++c) { var channelData = SDL2.capture.currentCaptureBuffer.getChannelData(c); if (channelData.length != $1) { throw 'Web Audio capture buffer length mismatch! Destination size: ' + channelData.length + ' samples vs expected ' + $1 + ' samples!'; } if (numChannels == 1) { for (var j = 0; j < $1; ++j) { setValue($0 + (j * 4), channelData[j], 'float'); } } else { for (var j = 0; j < $1; ++j) { setValue($0 + (((j * numChannels) + c) * 4), channelData[j], 'float'); } } }},  
+ 122946: function($0, $1) {var SDL2 = Module['SDL2']; var numChannels = SDL2.audio.currentOutputBuffer['numberOfChannels']; for (var c = 0; c < numChannels; ++c) { var channelData = SDL2.audio.currentOutputBuffer['getChannelData'](c); if (channelData.length != $1) { throw 'Web Audio output buffer length mismatch! Destination size: ' + channelData.length + ' samples vs expected ' + $1 + ' samples!'; } for (var j = 0; j < $1; ++j) { channelData[j] = HEAPF32[$0 + ((j*numChannels + c) << 2) >> 2]; } }},  
+ 123426: function($0) {var SDL2 = Module['SDL2']; if ($0) { if (SDL2.capture.silenceTimer !== undefined) { clearTimeout(SDL2.capture.silenceTimer); } if (SDL2.capture.stream !== undefined) { var tracks = SDL2.capture.stream.getAudioTracks(); for (var i = 0; i < tracks.length; i++) { SDL2.capture.stream.removeTrack(tracks[i]); } SDL2.capture.stream = undefined; } if (SDL2.capture.scriptProcessorNode !== undefined) { SDL2.capture.scriptProcessorNode.onaudioprocess = function(audioProcessingEvent) {}; SDL2.capture.scriptProcessorNode.disconnect(); SDL2.capture.scriptProcessorNode = undefined; } if (SDL2.capture.mediaStreamNode !== undefined) { SDL2.capture.mediaStreamNode.disconnect(); SDL2.capture.mediaStreamNode = undefined; } if (SDL2.capture.silenceBuffer !== undefined) { SDL2.capture.silenceBuffer = undefined } SDL2.capture = undefined; } else { if (SDL2.audio.scriptProcessorNode != undefined) { SDL2.audio.scriptProcessorNode.disconnect(); SDL2.audio.scriptProcessorNode = undefined; } SDL2.audio = undefined; } if ((SDL2.audioContext !== undefined) && (SDL2.audio === undefined) && (SDL2.capture === undefined)) { SDL2.audioContext.close(); SDL2.audioContext = undefined; }}
 };
 
 
 
 
 
-
-  function abortStackOverflow(allocSize) {
-      abort('Stack overflow! Attempted to allocate ' + allocSize + ' bytes on the stack, but stack has only ' + (_emscripten_stack_get_free() + allocSize) + ' bytes available!');
-    }
 
   function listenOnce(object, event, func) {
       object.addEventListener(event, func, { 'once': true });
@@ -1914,7 +1920,7 @@ var ASM_CONSTS = {
     }
 
   function callRuntimeCallbacks(callbacks) {
-      while(callbacks.length > 0) {
+      while (callbacks.length > 0) {
         var callback = callbacks.shift();
         if (typeof callback == 'function') {
           callback(Module); // Pass the module as the first argument.
@@ -1985,6 +1991,11 @@ var ASM_CONSTS = {
         }
       }
       return error.stack.toString();
+    }
+
+  var runtimeKeepaliveCounter=0;
+  function keepRuntimeAlive() {
+      return noExitRuntime || runtimeKeepaliveCounter > 0;
     }
 
   function stackTrace() {
@@ -2120,7 +2131,7 @@ var ASM_CONSTS = {
       info.init(type, destructor);
       exceptionLast = ptr;
       uncaughtExceptionCount++;
-      throw ptr + " - Exception catching is disabled, this exception cannot be caught. Compile with -s DISABLE_EXCEPTION_CATCHING=0 or DISABLE_EXCEPTION_CATCHING=2 to catch.";
+      throw ptr + " - Exception catching is disabled, this exception cannot be caught. Compile with -s NO_DISABLE_EXCEPTION_CATCHING or -s EXCEPTION_CATCHING_ALLOWED=[..] to catch.";
     }
 
   function _gmtime_r(time, tmPtr) {
@@ -4266,7 +4277,7 @@ var ASM_CONSTS = {
           Object.defineProperties(lazyArray, {
             length: {
               get: /** @this{Object} */ function() {
-                if(!this.lengthKnown) {
+                if (!this.lengthKnown) {
                   this.cacheLength();
                 }
                 return this._length;
@@ -4274,7 +4285,7 @@ var ASM_CONSTS = {
             },
             chunkSize: {
               get: /** @this{Object} */ function() {
-                if(!this.lengthKnown) {
+                if (!this.lengthKnown) {
                   this.cacheLength();
                 }
                 return this._chunkSize;
@@ -4820,6 +4831,10 @@ var ASM_CONSTS = {
         return 1; // Return non-zero on failure, can't set timing mode when there is no main loop.
       }
   
+      if (!Browser.mainLoop.running) {
+        
+        Browser.mainLoop.running = true;
+      }
       if (mode == 0 /*EM_TIMING_SETTIMEOUT*/) {
         Browser.mainLoop.scheduler = function Browser_mainLoop_scheduler_setTimeout() {
           var timeUntilNextTick = Math.max(0, Browser.mainLoop.tickStartTime + value - _emscripten_get_now())|0;
@@ -4861,16 +4876,50 @@ var ASM_CONSTS = {
       }
       return 0;
     }
-  function setMainLoop(browserIterationFunc, fps, simulateInfiniteLoop, arg, noSetTiming) {
-      noExitRuntime = true;
   
+  function runtimeKeepalivePush() {
+      runtimeKeepaliveCounter += 1;
+    }
+  
+  function _exit(status) {
+      // void _exit(int status);
+      // http://pubs.opengroup.org/onlinepubs/000095399/functions/exit.html
+      exit(status);
+    }
+  function maybeExit() {
+      if (!keepRuntimeAlive()) {
+        try {
+          _exit(EXITSTATUS);
+        } catch (e) {
+          if (e instanceof ExitStatus) {
+            return;
+          }
+          throw e;
+        }
+      }
+    }
+  function setMainLoop(browserIterationFunc, fps, simulateInfiniteLoop, arg, noSetTiming) {
       assert(!Browser.mainLoop.func, 'emscripten_set_main_loop: there can only be one main loop function at once: call emscripten_cancel_main_loop to cancel the previous one before setting a new one with different parameters.');
   
       Browser.mainLoop.func = browserIterationFunc;
       Browser.mainLoop.arg = arg;
   
       var thisMainLoopId = Browser.mainLoop.currentlyRunningMainloop;
+      function checkIsRunning() {
+        if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) {
+          
+          maybeExit();
+          return false;
+        }
+        return true;
+      }
   
+      // We create the loop runner here but it is not actually running until
+      // _emscripten_set_main_loop_timing is called (which might happen a
+      // later time).  This member signifies that the current runner has not
+      // yet been started so that we can call runtimeKeepalivePush when it
+      // gets it timing set for the first time.
+      Browser.mainLoop.running = false;
       Browser.mainLoop.runner = function Browser_mainLoop_runner() {
         if (ABORT) return;
         if (Browser.mainLoop.queue.length > 0) {
@@ -4892,14 +4941,14 @@ var ASM_CONSTS = {
           Browser.mainLoop.updateStatus();
   
           // catches pause/resume main loop from blocker execution
-          if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
+          if (!checkIsRunning()) return;
   
           setTimeout(Browser.mainLoop.runner, 0);
           return;
         }
   
         // catch pauses from non-main loop sources
-        if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
+        if (!checkIsRunning()) return;
   
         // Implement very basic swap interval control
         Browser.mainLoop.currentFrameNumber = Browser.mainLoop.currentFrameNumber + 1 | 0;
@@ -4925,7 +4974,7 @@ var ASM_CONSTS = {
         checkStackCookie();
   
         // catch pauses from the main loop itself
-        if (thisMainLoopId < Browser.mainLoop.currentlyRunningMainloop) return;
+        if (!checkIsRunning()) return;
   
         // Queue new audio data. This is important to be right after the main loop invocation, so that we will immediately be able
         // to queue the newest produced audio samples.
@@ -4947,7 +4996,30 @@ var ASM_CONSTS = {
         throw 'unwind';
       }
     }
-  var Browser={mainLoop:{scheduler:null,method:"",currentlyRunningMainloop:0,func:null,arg:0,timingMode:0,timingValue:0,currentFrameNumber:0,queue:[],pause:function() {
+  
+  function callUserCallback(func) {
+      if (ABORT) {
+        err('user callback triggered after application aborted.  Ignoring.');
+        return;
+      }
+      try {
+        func();
+      } catch (e) {
+        if (e instanceof ExitStatus) {
+          return;
+        } else if (e !== 'unwind') {
+          // And actual unexpected user-exectpion occured
+          if (e && typeof e === 'object' && e.stack) err('exception thrown: ' + [e, e.stack]);
+          throw e;
+        }
+      }
+    }
+  
+  function runtimeKeepalivePop() {
+      assert(runtimeKeepaliveCounter > 0);
+      runtimeKeepaliveCounter -= 1;
+    }
+  var Browser={mainLoop:{running:false,scheduler:null,method:"",currentlyRunningMainloop:0,func:null,arg:0,timingMode:0,timingValue:0,currentFrameNumber:0,queue:[],pause:function() {
           Browser.mainLoop.scheduler = null;
           // Incrementing this signals the previous main loop that it's now become old, and it must return.
           Browser.mainLoop.currentlyRunningMainloop++;
@@ -4984,18 +5056,7 @@ var ASM_CONSTS = {
               return; // |return false| skips a frame
             }
           }
-          try {
-            func();
-          } catch (e) {
-            if (e instanceof ExitStatus) {
-              return;
-            } else if (e == 'unwind') {
-              return;
-            } else {
-              if (e && typeof e === 'object' && e.stack) err('exception thrown: ' + [e, e.stack]);
-              throw e;
-            }
-          }
+          callUserCallback(func);
           if (Module['postMainLoop']) Module['postMainLoop']();
         }},isFullscreen:false,pointerLock:false,moduleContextCreatedCallbacks:[],workers:[],init:function() {
         if (!Module["preloadPlugins"]) Module["preloadPlugins"] = []; // needs to exist even in workers
@@ -5316,15 +5377,16 @@ var ASM_CONSTS = {
         var RAF = Browser.fakeRequestAnimationFrame;
         RAF(func);
       },safeRequestAnimationFrame:function(func) {
+        
         return Browser.requestAnimationFrame(function() {
-          if (ABORT) return;
-          func();
+          
+          callUserCallback(func);
         });
       },safeSetTimeout:function(func, timeout) {
-        noExitRuntime = true;
+        
         return setTimeout(function() {
-          if (ABORT) return;
-          func();
+          
+          callUserCallback(func);
         }, timeout);
       },getMimetype:function(name) {
         return {
@@ -5337,7 +5399,7 @@ var ASM_CONSTS = {
           'mp3': 'audio/mpeg'
         }[name.substr(name.lastIndexOf('.')+1)];
       },getUserMedia:function(func) {
-        if(!window.getUserMedia) {
+        if (!window.getUserMedia) {
           window.getUserMedia = navigator['getUserMedia'] ||
                                 navigator['mozGetUserMedia'];
         }
@@ -5365,7 +5427,7 @@ var ASM_CONSTS = {
             break;
           case 'wheel':
             delta = event.deltaY
-            switch(event.deltaMode) {
+            switch (event.deltaMode) {
               case 0:
                 // DOM_DELTA_PIXEL: 100 pixels make up a step
                 delta /= 100;
@@ -5565,7 +5627,7 @@ var ASM_CONSTS = {
   
         if (attribList) {
           // read attribList if it is non-null
-          for(;;) {
+          for (;;) {
             var param = HEAP32[((attribList)>>2)];
             if (param == 0x3021 /*EGL_ALPHA_SIZE*/) {
               var alphaSize = HEAP32[(((attribList)+(4))>>2)];
@@ -5677,7 +5739,7 @@ var ASM_CONSTS = {
         }
         return ret;
       },MAX_TEMP_BUFFER_SIZE:2097152,numTempVertexBuffersPerSize:64,log2ceilLookup:function(i) {
-        return 32 - Math.clz32(i-1);
+        return 32 - Math.clz32(i === 0 ? 0 : i - 1);
       },generateTempBuffers:function(quads, context) {
         var largestIndex = GL.log2ceilLookup(GL.MAX_TEMP_BUFFER_SIZE);
         context.tempVertexBufferCounters1 = [];
@@ -5804,6 +5866,19 @@ var ASM_CONSTS = {
           GLctx.bindBuffer(0x8892 /*GL_ARRAY_BUFFER*/, GL.buffers[GLctx.currentArrayBufferBinding]);
         }
       },createContext:function(canvas, webGLContextAttributes) {
+  
+        // BUG: Workaround Safari WebGL issue: After successfully acquiring WebGL context on a canvas,
+        // calling .getContext() will always return that context independent of which 'webgl' or 'webgl2'
+        // context version was passed. See https://bugs.webkit.org/show_bug.cgi?id=222758 and
+        // https://github.com/emscripten-core/emscripten/issues/13295.
+        // TODO: Once the bug is fixed and shipped in Safari, adjust the Safari version field in above check.
+        if (!canvas.getContextSafariWebGL2Fixed) {
+          canvas.getContextSafariWebGL2Fixed = canvas.getContext;
+          canvas.getContext = function(ver, attrs) {
+            var gl = canvas.getContextSafariWebGL2Fixed(ver, attrs);
+            return ((ver == 'webgl') == (gl instanceof WebGLRenderingContext)) ? gl : null;
+          }
+        }
   
         var ctx = 
           (webGLContextAttributes.majorVersion > 1)
@@ -5942,7 +6017,7 @@ var ASM_CONSTS = {
       // EGL 1.4 spec says default EGL_CONTEXT_CLIENT_VERSION is GLES1, but this is not supported by Emscripten.
       // So user must pass EGL_CONTEXT_CLIENT_VERSION == 2 to initialize EGL.
       var glesContextVersion = 1;
-      for(;;) {
+      for (;;) {
         var param = HEAP32[((contextAttribs)>>2)];
         if (param == 0x3098 /*EGL_CONTEXT_CLIENT_VERSION*/) {
           glesContextVersion = HEAP32[(((contextAttribs)+(4))>>2)];
@@ -6050,7 +6125,7 @@ var ASM_CONSTS = {
         return 0;
       }
       EGL.setErrorCode(0x3000 /* EGL_SUCCESS */);
-      switch(attribute) {
+      switch (attribute) {
       case 0x3020: // EGL_BUFFER_SIZE
         HEAP32[((value)>>2)] = EGL.contextAttributes.alpha ? 32 : 24;
         return 1;
@@ -6171,10 +6246,6 @@ var ASM_CONSTS = {
       return EGL.errorCode;
     }
 
-  function _eglGetProcAddress(name_) {
-      return _emscripten_GetProcAddress(name_);
-    }
-
   function _eglInitialize(display, majorVersion, minorVersion) {
       if (display == 62000 /* Magic ID for Emscripten 'default display' */) {
         if (majorVersion) {
@@ -6226,7 +6297,7 @@ var ASM_CONSTS = {
       EGL.setErrorCode(0x3000 /* EGL_SUCCESS */);
       if (EGL.stringCache[name]) return EGL.stringCache[name];
       var ret;
-      switch(name) {
+      switch (name) {
         case 0x3053 /* EGL_VENDOR */: ret = allocateUTF8("Emscripten"); break;
         case 0x3054 /* EGL_VERSION */: ret = allocateUTF8("1.4 Emscripten EGL"); break;
         case 0x3055 /* EGL_EXTENSIONS */:  ret = allocateUTF8(""); break; // Currently not supporting any EGL extensions.
@@ -6299,11 +6370,12 @@ var ASM_CONSTS = {
 
   function _emscripten_asm_const_int(code, sigPtr, argbuf) {
       var args = readAsmConstArgs(sigPtr, argbuf);
+      if (!ASM_CONSTS.hasOwnProperty(code)) abort('No EM_ASM constant found at address ' + code);
       return ASM_CONSTS[code].apply(null, args);
     }
 
   var JSEvents={inEventHandler:0,removeAllEventListeners:function() {
-        for(var i = JSEvents.eventHandlers.length-1; i >= 0; --i) {
+        for (var i = JSEvents.eventHandlers.length-1; i >= 0; --i) {
           JSEvents._removeHandler(i);
         }
         JSEvents.eventHandlers = [];
@@ -6317,13 +6389,13 @@ var ASM_CONSTS = {
         function arraysHaveEqualContent(arrA, arrB) {
           if (arrA.length != arrB.length) return false;
   
-          for(var i in arrA) {
+          for (var i in arrA) {
             if (arrA[i] != arrB[i]) return false;
           }
           return true;
         }
         // Test if the given call was already queued, and if so, don't add it again.
-        for(var i in JSEvents.deferredCalls) {
+        for (var i in JSEvents.deferredCalls) {
           var call = JSEvents.deferredCalls[i];
           if (call.targetFunction == targetFunction && arraysHaveEqualContent(call.argsList, argsList)) {
             return;
@@ -6337,7 +6409,7 @@ var ASM_CONSTS = {
   
         JSEvents.deferredCalls.sort(function(x,y) { return x.precedence < y.precedence; });
       },removeDeferredCalls:function(targetFunction) {
-        for(var i = 0; i < JSEvents.deferredCalls.length; ++i) {
+        for (var i = 0; i < JSEvents.deferredCalls.length; ++i) {
           if (JSEvents.deferredCalls[i].targetFunction == targetFunction) {
             JSEvents.deferredCalls.splice(i, 1);
             --i;
@@ -6349,14 +6421,14 @@ var ASM_CONSTS = {
         if (!JSEvents.canPerformEventHandlerRequests()) {
           return;
         }
-        for(var i = 0; i < JSEvents.deferredCalls.length; ++i) {
+        for (var i = 0; i < JSEvents.deferredCalls.length; ++i) {
           var call = JSEvents.deferredCalls[i];
           JSEvents.deferredCalls.splice(i, 1);
           --i;
           call.targetFunction.apply(null, call.argsList);
         }
       },eventHandlers:[],removeAllHandlersOnTarget:function(target, eventTypeString) {
-        for(var i = 0; i < JSEvents.eventHandlers.length; ++i) {
+        for (var i = 0; i < JSEvents.eventHandlers.length; ++i) {
           if (JSEvents.eventHandlers[i].target == target && 
             (!eventTypeString || eventTypeString == JSEvents.eventHandlers[i].eventTypeString)) {
              JSEvents._removeHandler(i--);
@@ -6387,7 +6459,7 @@ var ASM_CONSTS = {
           JSEvents.eventHandlers.push(eventHandler);
           JSEvents.registerRemoveEventListeners();
         } else {
-          for(var i = 0; i < JSEvents.eventHandlers.length; ++i) {
+          for (var i = 0; i < JSEvents.eventHandlers.length; ++i) {
             if (JSEvents.eventHandlers[i].target == eventHandler.target
              && JSEvents.eventHandlers[i].eventTypeString == eventHandler.eventTypeString) {
                JSEvents._removeHandler(i--);
@@ -6687,17 +6759,17 @@ var ASM_CONSTS = {
 
   function fillGamepadEventData(eventStruct, e) {
       HEAPF64[((eventStruct)>>3)] = e.timestamp;
-      for(var i = 0; i < e.axes.length; ++i) {
+      for (var i = 0; i < e.axes.length; ++i) {
         HEAPF64[(((eventStruct+i*8)+(16))>>3)] = e.axes[i];
       }
-      for(var i = 0; i < e.buttons.length; ++i) {
+      for (var i = 0; i < e.buttons.length; ++i) {
         if (typeof(e.buttons[i]) === 'object') {
           HEAPF64[(((eventStruct+i*8)+(528))>>3)] = e.buttons[i].value;
         } else {
           HEAPF64[(((eventStruct+i*8)+(528))>>3)] = e.buttons[i];
         }
       }
-      for(var i = 0; i < e.buttons.length; ++i) {
+      for (var i = 0; i < e.buttons.length; ++i) {
         if (typeof(e.buttons[i]) === 'object') {
           HEAP32[(((eventStruct+i*4)+(1040))>>2)] = e.buttons[i].pressed;
         } else {
@@ -7309,7 +7381,7 @@ var ASM_CONSTS = {
   function _emscripten_glFlush() { GLctx['flush']() }
 
   function emscriptenWebGLGetBufferBinding(target) {
-      switch(target) {
+      switch (target) {
         case 0x8892 /*GL_ARRAY_BUFFER*/: target = 0x8894 /*GL_ARRAY_BUFFER_BINDING*/; break;
         case 0x8893 /*GL_ELEMENT_ARRAY_BUFFER*/: target = 0x8895 /*GL_ELEMENT_ARRAY_BUFFER_BINDING*/; break;
         case 0x88EB /*GL_PIXEL_PACK_BUFFER*/: target = 0x88ED /*GL_PIXEL_PACK_BUFFER_BINDING*/; break;
@@ -7422,7 +7494,7 @@ var ASM_CONSTS = {
         var query = GLctx.disjointTimerQueryExt['createQueryEXT']();
         if (!query) {
           GL.recordError(0x502 /* GL_INVALID_OPERATION */);
-          while(i < n) HEAP32[(((ids)+(i++*4))>>2)] = 0;
+          while (i < n) HEAP32[(((ids)+(i++*4))>>2)] = 0;
           return;
         }
         var id = GL.getNewId(GL.timerQueriesEXT);
@@ -7504,21 +7576,20 @@ var ASM_CONSTS = {
       }
       program = GL.programs[program];
   
-      switch(pname) {
-        case 0x8A41: /* GL_UNIFORM_BLOCK_NAME_LENGTH */
-          var name = GLctx['getActiveUniformBlockName'](program, uniformBlockIndex);
-          HEAP32[((params)>>2)] = name.length+1;
-          return;
-        default:
-          var result = GLctx['getActiveUniformBlockParameter'](program, uniformBlockIndex, pname);
-          if (!result) return; // If an error occurs, nothing will be written to params.
-          if (typeof result == 'number') {
-            HEAP32[((params)>>2)] = result;
-          } else {
-            for (var i = 0; i < result.length; i++) {
-              HEAP32[(((params)+(i*4))>>2)] = result[i];
-            }
-          }
+      if (pname == 0x8A41 /* GL_UNIFORM_BLOCK_NAME_LENGTH */) {
+        var name = GLctx['getActiveUniformBlockName'](program, uniformBlockIndex);
+        HEAP32[((params)>>2)] = name.length+1;
+        return;
+      }
+  
+      var result = GLctx['getActiveUniformBlockParameter'](program, uniformBlockIndex, pname);
+      if (result === null) return; // If an error occurs, nothing should be written to params.
+      if (pname == 0x8A43 /*GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES*/) {
+        for (var i = 0; i < result.length; i++) {
+          HEAP32[(((params)+(i*4))>>2)] = result[i];
+        }
+      } else {
+        HEAP32[((params)>>2)] = result;
       }
     }
 
@@ -7588,7 +7659,7 @@ var ASM_CONSTS = {
         return;
       }
       var ret = undefined;
-      switch(name_) { // Handle a few trivial GLES values
+      switch (name_) { // Handle a few trivial GLES values
         case 0x8DFA: // GL_SHADER_COMPILER
           ret = 1;
           break;
@@ -7642,7 +7713,7 @@ var ASM_CONSTS = {
             if (result === null) {
               // null is a valid result for some (e.g., which buffer is bound - perhaps nothing is bound), but otherwise
               // can mean an invalid name_, which we need to report as an error
-              switch(name_) {
+              switch (name_) {
                 case 0x8894: // ARRAY_BUFFER_BINDING
                 case 0x8B8D: // CURRENT_PROGRAM
                 case 0x8895: // ELEMENT_ARRAY_BUFFER_BINDING
@@ -8111,7 +8182,7 @@ var ASM_CONSTS = {
   function _emscripten_glGetString(name_) {
       if (GL.stringCache[name_]) return GL.stringCache[name_];
       var ret;
-      switch(name_) {
+      switch (name_) {
         case 0x1F03 /* GL_EXTENSIONS */:
           var exts = GLctx.getSupportedExtensions() || []; // .getSupportedExtensions() can return null if context is lost, so coerce to empty array.
           exts = exts.concat(exts.map(function(e) { return "GL_" + e; }));
@@ -8170,7 +8241,7 @@ var ASM_CONSTS = {
         }
         return stringiCache[index];
       }
-      switch(name) {
+      switch (name) {
         case 0x1F03 /* GL_EXTENSIONS */:
           var exts = GLctx.getSupportedExtensions() || []; // .getSupportedExtensions() can return null if context is lost, so coerce to empty array.
           exts = exts.concat(exts.map(function(e) { return "GL_" + e; }));
@@ -9356,10 +9427,6 @@ var ASM_CONSTS = {
       return requestPointerLock(target);
     }
 
-  function _emscripten_get_heap_size() {
-      return HEAPU8.length;
-    }
-  
   function emscripten_realloc_buffer(size) {
       try {
         // round size grow request up to wasm page size (fixed 64KB per spec)
@@ -9373,7 +9440,7 @@ var ASM_CONSTS = {
       // anyhow)
     }
   function _emscripten_resize_heap(requestedSize) {
-      var oldSize = _emscripten_get_heap_size();
+      var oldSize = HEAPU8.length;
       // With pthreads, races can happen (another thread might increase the size in between), so return a failure, and let the caller retry.
       assert(requestedSize > oldSize);
   
@@ -9400,7 +9467,7 @@ var ASM_CONSTS = {
   
       // Loop through potential heap size increases. If we attempt a too eager reservation that fails, cut down on the
       // attempted size and reserve a smaller bump instead. (max 3 times, chosen somewhat arbitrarily)
-      for(var cutDown = 1; cutDown <= 4; cutDown *= 2) {
+      for (var cutDown = 1; cutDown <= 4; cutDown *= 2) {
         var overGrownHeapSize = oldSize * (1 + 0.2 / cutDown); // ensure geometric growth
         // but limit overreserving (default to capping at +96MB overgrowth at most)
         overGrownHeapSize = Math.min(overGrownHeapSize, requestedSize + 100663296 );
@@ -9824,7 +9891,7 @@ var ASM_CONSTS = {
         assert(e);
         var touches = {};
         var et = e.touches;
-        for(var i = 0; i < et.length; ++i) {
+        for (var i = 0; i < et.length; ++i) {
           var touch = et[i];
           // Verify that browser does not recycle touch objects with old stale data, but reports new ones each time.
           assert(!touch.isChanged);
@@ -9832,7 +9899,7 @@ var ASM_CONSTS = {
           touches[touch.identifier] = touch;
         }
         et = e.changedTouches;
-        for(var i = 0; i < et.length; ++i) {
+        for (var i = 0; i < et.length; ++i) {
           var touch = et[i];
           // Verify that browser does not recycle touch objects with old stale data, but reports new ones each time.
           assert(!touch.onTarget);
@@ -9840,7 +9907,7 @@ var ASM_CONSTS = {
           touches[touch.identifier] = touch;
         }
         et = e.targetTouches;
-        for(var i = 0; i < et.length; ++i) {
+        for (var i = 0; i < et.length; ++i) {
           touches[et[i].identifier].onTarget = 1;
         }
   
@@ -9853,7 +9920,7 @@ var ASM_CONSTS = {
         idx += 5; // Advance to the start of the touch array.
         var targetRect = getBoundingClientRect(target);
         var numTouches = 0;
-        for(var i in touches) {
+        for (var i in touches) {
           var t = touches[i];
           HEAP32[idx + 0] = t.identifier;
           HEAP32[idx + 1] = t.screenX;
@@ -10075,11 +10142,6 @@ var ASM_CONSTS = {
   }
   }
 
-  function _exit(status) {
-      // void _exit(int status);
-      // http://pubs.opengroup.org/onlinepubs/000095399/functions/exit.html
-      exit(status);
-    }
 
   function _fd_close(fd) {try {
   
@@ -10230,7 +10292,7 @@ var ASM_CONSTS = {
   var __MONTH_DAYS_REGULAR=[31,28,31,30,31,30,31,31,30,31,30,31];
   function __addDays(date, days) {
       var newDate = new Date(date.getTime());
-      while(days > 0) {
+      while (days > 0) {
         var leap = __isLeapYear(newDate.getFullYear());
         var currentMonth = newDate.getMonth();
         var daysInCurrentMonth = (leap ? __MONTH_DAYS_LEAP : __MONTH_DAYS_REGULAR)[currentMonth];
@@ -10734,7 +10796,6 @@ var asmLibraryArg = {
   "eglGetConfigAttrib": _eglGetConfigAttrib,
   "eglGetDisplay": _eglGetDisplay,
   "eglGetError": _eglGetError,
-  "eglGetProcAddress": _eglGetProcAddress,
   "eglInitialize": _eglInitialize,
   "eglMakeCurrent": _eglMakeCurrent,
   "eglQueryString": _eglQueryString,
@@ -11099,25 +11160,10 @@ var _fflush = Module["_fflush"] = createExportWrapper("fflush");
 var _malloc = Module["_malloc"] = createExportWrapper("malloc");
 
 /** @type {function(...*):?} */
-var _strstr = Module["_strstr"] = createExportWrapper("strstr");
-
-/** @type {function(...*):?} */
 var _free = Module["_free"] = createExportWrapper("free");
 
 /** @type {function(...*):?} */
-var _realloc = Module["_realloc"] = createExportWrapper("realloc");
-
-/** @type {function(...*):?} */
 var ___errno_location = Module["___errno_location"] = createExportWrapper("__errno_location");
-
-/** @type {function(...*):?} */
-var _saveSetjmp = Module["_saveSetjmp"] = createExportWrapper("saveSetjmp");
-
-/** @type {function(...*):?} */
-var _testSetjmp = Module["_testSetjmp"] = createExportWrapper("testSetjmp");
-
-/** @type {function(...*):?} */
-var _emscripten_GetProcAddress = Module["_emscripten_GetProcAddress"] = createExportWrapper("emscripten_GetProcAddress");
 
 /** @type {function(...*):?} */
 var __get_tzname = Module["__get_tzname"] = createExportWrapper("_get_tzname");
@@ -11245,6 +11291,10 @@ if (!Object.getOwnPropertyDescriptor(Module, "ENV")) Module["ENV"] = function() 
 if (!Object.getOwnPropertyDescriptor(Module, "ERRNO_CODES")) Module["ERRNO_CODES"] = function() { abort("'ERRNO_CODES' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "ERRNO_MESSAGES")) Module["ERRNO_MESSAGES"] = function() { abort("'ERRNO_MESSAGES' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "setErrNo")) Module["setErrNo"] = function() { abort("'setErrNo' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
+if (!Object.getOwnPropertyDescriptor(Module, "inetPton4")) Module["inetPton4"] = function() { abort("'inetPton4' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
+if (!Object.getOwnPropertyDescriptor(Module, "inetNtop4")) Module["inetNtop4"] = function() { abort("'inetNtop4' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
+if (!Object.getOwnPropertyDescriptor(Module, "inetPton6")) Module["inetPton6"] = function() { abort("'inetPton6' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
+if (!Object.getOwnPropertyDescriptor(Module, "inetNtop6")) Module["inetNtop6"] = function() { abort("'inetNtop6' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "readSockaddr")) Module["readSockaddr"] = function() { abort("'readSockaddr' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "writeSockaddr")) Module["writeSockaddr"] = function() { abort("'writeSockaddr' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "DNS")) Module["DNS"] = function() { abort("'DNS' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
@@ -11268,7 +11318,12 @@ if (!Object.getOwnPropertyDescriptor(Module, "dynCallLegacy")) Module["dynCallLe
 if (!Object.getOwnPropertyDescriptor(Module, "getDynCaller")) Module["getDynCaller"] = function() { abort("'getDynCaller' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "dynCall")) Module["dynCall"] = function() { abort("'dynCall' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "callRuntimeCallbacks")) Module["callRuntimeCallbacks"] = function() { abort("'callRuntimeCallbacks' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
-if (!Object.getOwnPropertyDescriptor(Module, "abortStackOverflow")) Module["abortStackOverflow"] = function() { abort("'abortStackOverflow' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
+if (!Object.getOwnPropertyDescriptor(Module, "runtimeKeepaliveCounter")) Module["runtimeKeepaliveCounter"] = function() { abort("'runtimeKeepaliveCounter' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
+if (!Object.getOwnPropertyDescriptor(Module, "keepRuntimeAlive")) Module["keepRuntimeAlive"] = function() { abort("'keepRuntimeAlive' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
+if (!Object.getOwnPropertyDescriptor(Module, "runtimeKeepalivePush")) Module["runtimeKeepalivePush"] = function() { abort("'runtimeKeepalivePush' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
+if (!Object.getOwnPropertyDescriptor(Module, "runtimeKeepalivePop")) Module["runtimeKeepalivePop"] = function() { abort("'runtimeKeepalivePop' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
+if (!Object.getOwnPropertyDescriptor(Module, "callUserCallback")) Module["callUserCallback"] = function() { abort("'callUserCallback' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
+if (!Object.getOwnPropertyDescriptor(Module, "maybeExit")) Module["maybeExit"] = function() { abort("'maybeExit' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "reallyNegative")) Module["reallyNegative"] = function() { abort("'reallyNegative' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "unSign")) Module["unSign"] = function() { abort("'unSign' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "reSign")) Module["reSign"] = function() { abort("'reSign' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
@@ -11457,7 +11512,6 @@ function callMain(args) {
       return;
     } else if (e == 'unwind') {
       // running an evented main loop, don't immediately exit
-      noExitRuntime = true;
       return;
     } else {
       var toLog = e;
@@ -11577,25 +11631,25 @@ function checkUnflushedContent() {
 
 /** @param {boolean|number=} implicit */
 function exit(status, implicit) {
+  EXITSTATUS = status;
+
   checkUnflushedContent();
 
   // if this is just main exit-ing implicitly, and the status is 0, then we
   // don't need to do anything here and can just leave. if the status is
   // non-zero, though, then we need to report it.
   // (we may have warned about this earlier, if a situation justifies doing so)
-  if (implicit && noExitRuntime && status === 0) {
+  if (implicit && keepRuntimeAlive() && status === 0) {
     return;
   }
 
-  if (noExitRuntime) {
+  if (keepRuntimeAlive()) {
     // if exit() was called, we may warn the user if the runtime isn't actually being shut down
     if (!implicit) {
       var msg = 'program exited (with status: ' + status + '), but EXIT_RUNTIME is not set, so halting execution but not exiting the runtime or preventing further async execution (build with EXIT_RUNTIME=1, if you want a true shutdown)';
       err(msg);
     }
   } else {
-
-    EXITSTATUS = status;
 
     exitRuntime();
 
