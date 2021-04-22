@@ -45,7 +45,7 @@ add_subdirectory(${CPP_LONENOISE_DIR})
 # add_subdirectory(${ASSIMP_DIR})
 
 include_directories(
-    include/
+    src/
     ${SDL2_DIR}/include
     ${GLAD_DIR}/include
     ${ASSIMP_INCLUDE_DIRS} 
@@ -56,8 +56,8 @@ include_directories(
     )
 
 file(GLOB PROJECT_INCLUDE 
-    include/*.hpp 
-    include/*.h
+    src/*.hpp 
+    src/*.h
     )
 file(GLOB PROJECT_SRC 
     src/*.cpp
