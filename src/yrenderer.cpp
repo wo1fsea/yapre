@@ -24,6 +24,7 @@
 namespace yapre {
 namespace renderer {
 
+const float kMaxZ = 1024 * 1024;
 unsigned int VBO = 0;
 unsigned int draw_count = 0;
 using DrawData =
@@ -147,8 +148,8 @@ void DrawSprite(const std::string &texture_filename, glm::vec3 position,
     size.x = texture_w;
     size.y = texture_h;
   }
-  
-  position.z = position.z / 1048576;
+
+  position.z = position.z;
   glm::mat4 model = glm::mat4(1.0f);
   model = glm::translate(model, position);
   model = glm::translate(
@@ -161,7 +162,8 @@ void DrawSprite(const std::string &texture_filename, glm::vec3 position,
 
   model = glm::scale(model, glm::vec3(size, 1.0f)); // last scale
   auto [w, h] = GetRenderSize();
-  glm::mat4 projection = glm::ortho(0.0f, 1.f * w, 1.f * h, 0.0f, -1.0f, 1.0f);
+  glm::mat4 projection =
+      glm::ortho(0.0f, 1.f * w, 1.f * h, 0.0f, -kMaxZ, kMaxZ);
   unsigned int draw_id = position.z * 1024 * 1024 + draw_count;
   draw_count++;
 
@@ -185,11 +187,10 @@ void DrawAll() {
   glActiveTexture(GL_TEXTURE0);
   shader->SetInteger("sprite", 0);
 
-  std::sort(draw_list.begin(), draw_list.end(), 
-          [](const DrawData &a, const DrawData &b){
-          return std::get<0>(a) < std::get<0>(b); 
-          }
-          );
+  std::sort(draw_list.begin(), draw_list.end(),
+            [](const DrawData &a, const DrawData &b) {
+              return std::get<0>(a) < std::get<0>(b);
+            });
 
   for (auto [draw_id, texture_id, model, projection, color] : draw_list) {
     shader->SetMatrix4("projection", projection);
