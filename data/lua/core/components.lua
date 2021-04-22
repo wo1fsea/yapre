@@ -5,14 +5,19 @@ yecs.Component:Register("position", {x=0, y=0, z=0})
 yecs.Component:Register("size", {width=0, height=0})
 yecs.Component:Register("sprite", 
 {
-    sprites={
-        {
-            texture="data/image/sprite16.png", 
-            color={r=1,g=1,b=1}, 
-            size={width=-1, heigh=-1}, 
-            offset={x=0, y=0, z=0},
+    sprites={}, 
+    AddSprite=function(self, key, texture, params)
+        params = params or {}
+        self.sprites[key] = {
+            texture = texture or "data/image/sprite16.png", 
+            color = params.color or {r=1,g=1,b=1}, 
+            size = params.size or {width=-1, heigh=-1}, 
+            offset = params.offset or {x=0, y=0, z=0},
         }
-    }, 
+    end,
+    RemoveSprite=function(self, key)
+        self.sprites[key] = nil
+    end,
 })
 
 yecs.Component:Register("input", 

@@ -25,12 +25,7 @@ function app.Init()
     text = yecs.Entity:New({"position", "sprite", "size", "text", "tick"})
     image = yecs.Entity:New({"position", "sprite", "size", "tick"})
     
-    image.sprite.sprites[1] = {
-        texture="data/image/animation/blood/1.png", 
-        color={r=1,g=1,b=1}, 
-        size={width=128, heigh=128}, 
-        offset={x=0, y=0, z=0},
-    }
+    image.sprite:AddSprite("anim", "data/image/animation/blood/1.png", {size={width=128, heigh=128}})
     image.position.x = 8
     image.position.y = 240 - 8 - 128
 
@@ -40,7 +35,7 @@ function app.Init()
         if self.entity.animation_ms == nil then self.entity.animation_ms = 0 end
 
         self.entity.animation_ms = self.entity.animation_ms + ms
-        if self.entity.animation_ms < 1000/24 then return end
+        if self.entity.animation_ms < 1000/12 then return end
         self.entity.animation_ms = 0
 
         if self.entity.animation_idx == nil or self.entity.animation_idx == 0 then 
@@ -50,8 +45,7 @@ function app.Init()
         if self.entity.animation_idx > 20 then 
             self.entity.animation_idx = 20 
         end
-        print(self.entity.animation_idx)
-        self.entity.sprite.sprites[1].texture= string.format("data/image/animation/blood/%d.png", self.entity.animation_idx)
+        self.entity.sprite.sprites["anim"].texture= string.format("data/image/animation/blood/%d.png", self.entity.animation_idx)
         self.entity.animation_idx = self.entity.animation_idx + self.entity.animation_idx_d
     end, 
     10
