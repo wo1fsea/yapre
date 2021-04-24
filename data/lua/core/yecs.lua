@@ -84,6 +84,12 @@ function World:AddSystem(system)
     system:Init()
 end
 
+function World:AddSystems(systems)
+    for _, system in pairs(systems) do
+        self:AddSystem(system)
+    end
+end
+
 function World:RemoveSystem(system)
     if getmetatable(system) ~= "SystemMeta" then
         system = self.systems[system]
@@ -232,8 +238,38 @@ end
 function System:Deinit()
 end
 
+-- EntityFactory
+
+local EntityFactory = {
+    entity_models={},
+}
+
+
+function EntityFactory:Make(entity_type)
+    local data = self.entity_models[entity_type]
+    if not data then return nil end
+
+    local components = data.components
+    local process = data.process
+
+    local entity = yecs.Entity:New(components)
+    if not entity then return nil end
+    
+    if process then
+        process(entity)
+    end
+
+    return entity
+end
+
+function EntityFactory:Register(entity_type, components, process)
+    self.entity_models[entity_type] = {components=components, process=process}
+end
+
 yecs.World = World
 yecs.Entity = Entity
 yecs.Component = Component 
 yecs.System = System
+yecs.EntityFactory = EntityFactory
+
 return yecs

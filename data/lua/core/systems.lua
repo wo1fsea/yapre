@@ -1,5 +1,5 @@
 local systems = {}
-local yecs = require("utils.yecs")
+local yecs = require("core.yecs")
 
 -- dummy system
 local dummy_system = {}
@@ -38,7 +38,7 @@ function sprite_system:Update(delta_ms)
             yapre.DrawSprite(
             sprite_data.texture, 
             position.x + offset.x, position.y + offset.y, position.z + offset.z, 
-            size.width, size.heigh, 
+            size.width, size.height, 
             0., 
             color.r, color.g, color.b 
             ) 
@@ -107,7 +107,7 @@ function input_system:Update(delta_ms)
 end
 
 function input_system:Init()
-    local function OnKey(timestamp, state, multi, keyode)
+    local function OnKey(timestamp, state, multi, keycode)
         print(string.format("%s-[OnKey] %i:%i:%i:%c", self.world, timestamp, state, multi, keycode))
         table.insert(self.key_events, {timestamp=timestamp, state=state, multi=multi, keycode=keycode})
         if self.OnKey then
