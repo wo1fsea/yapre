@@ -1,5 +1,5 @@
 local components = {}
-local yecs = require("utils.yecs")
+local yecs = require("core.yecs")
 
 yecs.Component:Register("position", {x=0, y=0, z=0})
 yecs.Component:Register("size", {width=0, height=0})
@@ -11,7 +11,7 @@ yecs.Component:Register("sprite",
         self.sprites[key] = {
             texture = texture or "data/image/sprite16.png", 
             color = params.color or {r=1,g=1,b=1}, 
-            size = params.size or {width=-1, heigh=-1}, 
+            size = params.size or {width=-1, height=-1}, 
             offset = params.offset or {x=0, y=0, z=0},
         }
     end,
@@ -78,13 +78,21 @@ yecs.Component:Register("tree",
     end
 })
 
-local font_data = require("data.font_data")
+local font_data = require("core.data.font_data")
 yecs.Component:Register("text", 
 {
     _text="",
-    _size=2,
+    _size=1,
+    _max_width=0,
+    _max_height=0,
     SetText=function(self, new_text)
         self._text = new_text
+        self:Format()
+    end,
+    GetText=function(self)
+        return self.text
+    end,
+    Format=function(self)
         local sprite = self.entity.sprite
         if sprite == nil then return end
 
@@ -93,7 +101,7 @@ yecs.Component:Register("text",
         local pos_y = 0
         local pos_z = 1
         local size = self._size
-        new_text:gsub(".", function(c)
+        self._text:gsub(".", function(c)
             if c == "\n" then
                 pos_y = pos_y + font_data.height + 1
                 pos_x = 0
@@ -106,10 +114,20 @@ yecs.Component:Register("text",
                 c_n = -1
                 width = font_data[-1] 
             end
+            
+            if self._max_width > 0 and pos_x + width > self._max_width then
+                pos_y = pos_y + font_data.height + 1
+                pos_x = 0
+            end
+
+            if self._max_height > 0 and pos_y + font_data.height > self._max_height then 
+                return 
+            end
+
             local texture = {
                 texture=string.format("data/image/font/%d.png", c_n), 
                 color={r=1,g=1,b=1}, 
-                size={width=font_data.size*size, heigh=font_data.size*size}, 
+                size={width=font_data.size*size, height=font_data.size*size}, 
                 offset={x=pos_x*size, y=pos_y*size, z=pos_z},
             }
             table.insert(new_sprites, texture)
@@ -119,9 +137,12 @@ yecs.Component:Register("text",
         
         sprite.sprites = new_sprites
     end,
-    GetText=function(self)
-        return self.text
+    SetMaxSize=function(self, w, h)
+        self._max_width = w
+        self._max_height = h
+        self:Format()
     end
+
 })
 
 local default_tick_order = 1
