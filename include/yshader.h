@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include <glad/glad.h>
+#include <OpenGLES/ES2/gl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
