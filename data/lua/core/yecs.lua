@@ -271,5 +271,6 @@ yecs.Entity = Entity
 yecs.Component = Component 
 yecs.System = System
 yecs.EntityFactory = EntityFactory
+yecs.deep_copy = deep_copy
 
 return yecs

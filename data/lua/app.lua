@@ -8,6 +8,7 @@ local button1 = nil
 local button2 = nil
 local label = nil
 local image = nil
+local progress = nil
 
 function app.Init()
     world1 = yecs.World:New("world1")
@@ -18,6 +19,10 @@ function app.Init()
     
     label = yecs.EntityFactory:Make("label")
     image = yecs.EntityFactory:Make("image")
+    progress = yecs.EntityFactory:Make("progress")
+    progress.position = {x=80, y=8, z=0}
+    progress:SetPercent(10)
+    
     image:SetTextureSize(128,128)
     image:SetTexture("data/image/animation/blood/1.png")
 
@@ -50,10 +55,16 @@ function app.Init()
     world1:AddEntity(button2)
     world1:AddEntity(label)
     world1:AddEntity(image)
+    world1:AddEntity(progress)
 end
 
+local p = 0
+local delta_i = 1
 function app.Update(delta_ms)
     world1:Update(delta_ms)
+    p = p + delta_i 
+    if p == 100 or p == 0 then delta_i = -1 * delta_i end
+    progress:SetPercent(p)
 end
 
 function app.Deinit()

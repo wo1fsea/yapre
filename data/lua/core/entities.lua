@@ -131,11 +131,47 @@ function(image)
     function image:StopAnimation(key)
         self.animation:Stop(key) 
     end
-
+    
+    return image
 end
 )
 
 --progress
+yecs.EntityFactory:Register(
+"progress",
+{"position", "sprite", "size"},
+function(progress)
+    local default_size = {width=64, height=4}
+    local default_border_size = {width=68, height=8}
+    local border_color = {r=1, g=1, b=1}
+    local background_color = {r=0, g=0, b=0}
+    local progress_color = {r=0.25, g=0.15, b=1}
+    progress.sprite:AddSprite(
+    "progress_border", 
+    "data/image/ui/blank2.png", 
+    {size=default_border_size, color=border_color})
+
+    progress.sprite:AddSprite(
+    "progress_backgroud", 
+    "data/image/ui/blank2.png", 
+    {size=default_size, offset={x=2, y=2, z=1}, color=background_color})
+    
+    progress.sprite:AddSprite(
+    "progress", 
+    "data/image/ui/blank2.png", 
+    {size=default_size, offset={x=2, y=2, z=2}, color=progress_color})
+    
+    function progress:SetPercent(percent)
+        local sprites = self.sprite.sprites
+        local full_width = sprites["progress_backgroud"].size.width
+        if percent < 0 then percent = 0 end
+        if percent > 100 then percent = 100 end
+        sprites["progress"].size.width = percent * full_width // 100
+    end
+
+    return progress
+end
+)
 
 --panel
 
