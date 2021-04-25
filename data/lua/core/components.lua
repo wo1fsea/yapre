@@ -1,5 +1,6 @@
 local components = {}
 local yecs = require("core.yecs")
+local deep_copy = yecs.deep_copy
 
 yecs.Component:Register("position", {x=0, y=0, z=0})
 yecs.Component:Register("size", {width=0, height=0})
@@ -10,9 +11,9 @@ yecs.Component:Register("sprite",
         params = params or {}
         self.sprites[key] = {
             texture = texture or "data/image/sprite16.png", 
-            color = params.color or {r=1,g=1,b=1}, 
-            size = params.size or {width=-1, height=-1}, 
-            offset = params.offset or {x=0, y=0, z=0},
+            color = deep_copy(params.color) or {r=1,g=1,b=1}, 
+            size = deep_copy(params.size) or {width=-1, height=-1}, 
+            offset = deep_copy(params.offset) or {x=0, y=0, z=0},
         }
     end,
     RemoveSprite=function(self, key)
@@ -163,6 +164,7 @@ yecs.Component:Register("tick",
     end,
 })
 
+local animation_frame_rate = 12
 local animation_callback_key = 1
 yecs.Component:Register("animation", 
 {
@@ -194,7 +196,7 @@ yecs.Component:Register("animation",
         end
 
         if next_timer then
-            yapre.AddTimer(1000//12, function() self:_callback() end)
+            yapre.AddTimer(1000//animation_frame_rate, function() self:_callback() end)
             self._waiting_timer = true
         end
         
@@ -230,6 +232,9 @@ yecs.Component:Register("animation",
    end,
     Stop=function(self, key)
         self._next_idx[key] = nil
+    end,
+    StopAll=function(self)
+        self._next_idx = {}
     end,
 })
 
