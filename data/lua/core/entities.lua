@@ -119,7 +119,6 @@ function(image)
     end
 
     function image:AddAnimationState(key, texture_format, start_idx, end_idx)
-        print("F")
         self.animation:AddState(key, "image", texture_format, start_idx, end_idx)
     end
     function image:RemoveAnimationState(key)
@@ -135,5 +134,9 @@ function(image)
 
 end
 )
+
+--progress
+
+--panel
 
 return entities
