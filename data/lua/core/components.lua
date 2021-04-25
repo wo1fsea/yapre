@@ -163,6 +163,7 @@ yecs.Component:Register("tick",
     end,
 })
 
+local animation_frame_rate = 12
 local animation_callback_key = 1
 yecs.Component:Register("animation", 
 {
@@ -194,7 +195,7 @@ yecs.Component:Register("animation",
         end
 
         if next_timer then
-            yapre.AddTimer(1000//12, function() self:_callback() end)
+            yapre.AddTimer(1000//animation_frame_rate, function() self:_callback() end)
             self._waiting_timer = true
         end
         
@@ -230,6 +231,9 @@ yecs.Component:Register("animation",
    end,
     Stop=function(self, key)
         self._next_idx[key] = nil
+    end,
+    StopAll=function(self)
+        self._next_idx = {}
     end,
 })
 
