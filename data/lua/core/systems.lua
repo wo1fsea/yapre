@@ -48,13 +48,13 @@ end
 yecs.System:Register("sprite", sprite_system)
 
 -- input system
-local input_system = { key_events={}, mouse_events={} }
+local input_system = { _key_events={}, _mouse_events={} }
 
 function input_system:Update(delta_ms)
     local input_entities = self.world:GetEntities(function(entity) return entity.input end)
     local tree_system = self.world.systems["tree"]
 
-    for _, mouse_event in ipairs(self.mouse_events) do
+    for _, mouse_event in ipairs(self._mouse_events) do
         if mouse_event.button ~= 1 then
             goto continue0
         end
@@ -102,14 +102,14 @@ function input_system:Update(delta_ms)
         ::continue0::
     end
 
-    self.key_events={}
-    self.mouse_events={}
+    self._key_events={}
+    self._mouse_events={}
 end
 
 function input_system:Init()
     local function OnKey(timestamp, state, multi, keycode)
         print(string.format("%s-[OnKey] %i:%i:%i:%c", self.world, timestamp, state, multi, keycode))
-        table.insert(self.key_events, {timestamp=timestamp, state=state, multi=multi, keycode=keycode})
+        table.insert(self._key_events, {timestamp=timestamp, state=state, multi=multi, keycode=keycode})
         if self.OnKey then
             self:OnKey(timestamp, state, multi, keycode)
         end
@@ -117,7 +117,7 @@ function input_system:Init()
 
     local function OnMouse(timestamp, state, button, x, y)
         print(string.format("%s-:[OnMouse] %i:%i:%i:(%i,%i)", self.world, timestamp, state, button, x, y))
-        table.insert(self.mouse_events, {timestamp=timestamp, state=state, button=button, x=x, y=y})
+        table.insert(self._mouse_events, {timestamp=timestamp, state=state, button=button, x=x, y=y})
         if self.OnMouse then
             self:OnMouse(timestamp, state, button, x, y)
         end

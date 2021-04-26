@@ -123,6 +123,21 @@ function World:GetEntities(condition)
     return entities
 end
 
+-- behavior
+local Behavior = {
+    behaviors={},
+}
+
+function Behavior:Register(key, behavior)
+	if type(behavior) ~= 'table' then return end
+    self.behaviors[key] = behavior
+end
+
+function Behavior:Get(key)
+    if not key then return {} end
+    return self.behaviors[key] or {}
+end
+
 -- entity
 
 local entity_key = 0
@@ -131,17 +146,25 @@ local Entity = {
     __metatable = "EntityMeta",
     __tostring = function(self) return string.format("<yecs-entity: %s>", self.key) end,
 }
-Entity.__index = function(self, k) return Entity[k] or self.components[k] end
+Entity.__index = function(self, k) return Entity[k] or self._behavior[k] or self.components[k] end
 
-function Entity:New(components)
+function Entity:New(components, behavior_keys)
     components = components or {}
     local component_data = {}
-    
+    local _behavior = {} 
+    for _, bk in ipairs(behavior_keys) do
+        for k, v in pairs(Behavior:Get(bk)) do
+            _behavior[k] = v
+        end
+    end
+
     entity_key = entity_key + 1
     local entity = setmetatable(
     {
         key = tostring(entity_key),
         components = component_data,
+        behavior_keys = behavior_keys,
+        _behavior = _behavior,
     },
     self 
     )
@@ -175,10 +198,18 @@ local component_templates = {}
 
 local Component = {
     key = "",
+    _operations = {},
     __metatable = "ComponentMeta",
     __tostring = function(self) return string.format("<yecs-component: %s>", self.key) end,
 }
-Component.__index = Component
+Component.__index = function(self, k) return Component[k] or self._operations[k] end
+Component.__newindex = function(self, k, v) 
+    if type(v) ~= 'function' then
+        rawset(self, k, v)
+    else
+        self._operations[k] = v
+    end
+end
 
 function Component:Register(key, data)
 	if component_templates[key] ~= nil then return end
@@ -251,19 +282,20 @@ function EntityFactory:Make(entity_type)
 
     local components = data.components
     local process = data.process
+    local behavior_keys = data.behavior_keys
 
-    local entity = yecs.Entity:New(components)
+    local entity = yecs.Entity:New(components, behavior_keys)
     if not entity then return nil end
     
-    if process then
-        process(entity)
+    if entity.Init then
+        entity:Init()
     end
 
     return entity
 end
 
-function EntityFactory:Register(entity_type, components, process)
-    self.entity_models[entity_type] = {components=components, process=process}
+function EntityFactory:Register(entity_type, components, behavior_keys)
+    self.entity_models[entity_type] = {components=components, behavior_keys=behavior_keys}
 end
 
 yecs.World = World
@@ -271,6 +303,7 @@ yecs.Entity = Entity
 yecs.Component = Component 
 yecs.System = System
 yecs.EntityFactory = EntityFactory
+yecs.Behavior = Behavior
 yecs.deep_copy = deep_copy
 
 return yecs

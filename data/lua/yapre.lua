@@ -7,12 +7,12 @@ print("!!!yapre lua!!!")
 
 function Init(str)
     print("Init") 
-    app.Init()
+    app:Init()
     return true
 end
 
 function Update(delta_ms)
-    app.Update(delta_ms)
+    app:Update(delta_ms)
 end
 
 function Deinit()
