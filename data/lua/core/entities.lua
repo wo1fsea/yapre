@@ -174,5 +174,29 @@ end
 )
 
 --panel
+yecs.EntityFactory:Register(
+"panel",
+{"position", "sprite", "size"},
+function(panel)
+    local panel_size = {width=64, height=64}
+    local panel_color = {r=0.2, g=0.2, b=0.5}
+    panel.sprite:AddSprite(
+    "panel", 
+    "data/image/ui/blank2.png", 
+    {size=panel_size, color=panel_color})
+    panel.size = {width=64, height=64}
+    
+    function panel:SetSize(width, height)
+        self.size.width = width
+        self.size.height = height
+        local sprites = self.sprite.sprites
+        local sprite_size = sprites["panel"].size
+        sprite_size.width = width
+        sprite_size.height = height
+    end
+
+    return panel
+end
+)
 
 return entities

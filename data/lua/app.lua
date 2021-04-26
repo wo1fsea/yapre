@@ -9,6 +9,7 @@ local button2 = nil
 local label = nil
 local image = nil
 local progress = nil
+local panel = nil
 
 function app.Init()
     world1 = yecs.World:New("world1")
@@ -20,6 +21,10 @@ function app.Init()
     label = yecs.EntityFactory:Make("label")
     image = yecs.EntityFactory:Make("image")
     progress = yecs.EntityFactory:Make("progress")
+    panel = yecs.EntityFactory:Make("panel")
+    panel:SetSize(128, 128)
+    panel.position = {x=8, y=8, z=0}
+
     progress.position = {x=80, y=8, z=0}
     progress:SetPercent(10)
     
@@ -32,7 +37,7 @@ function app.Init()
 
     label:SetText("O wonder! \nHow many goodly creatures are there here!\nHow beauteous mankind is!\nO brave new world,\nThat has such people in't.")
     label:SetMaxSize(64, -1)
-    label.position = {x=8, y=8, z=0}
+    label.position = {x=8, y=8, z=1}
 
     function button1:OnClicked(x, y)
         image:PlayAnimation("die")
@@ -56,6 +61,7 @@ function app.Init()
     world1:AddEntity(label)
     world1:AddEntity(image)
     world1:AddEntity(progress)
+    world1:AddEntity(panel)
 end
 
 local p = 0
