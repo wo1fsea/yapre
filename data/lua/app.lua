@@ -55,6 +55,8 @@ function app:Init()
     self.world1:AddEntity(self.image)
     self.world1:AddEntity(self.progress)
     self.world1:AddEntity(self.panel)
+
+    return true
 end
 
 local p = 0

@@ -238,7 +238,7 @@ yecs.Component:Register("animation",
             self.next_idx[key] = a.start_idx
 
             if not self.waiting_timer then
-                yapre.AddTimer(1000//12, function() self:_callback() end)
+                yapre.AddTimer(1000//self.frame_rate, function() self:_callback() end)
                 self.waiting_timer = true
             end
         end,
