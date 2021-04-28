@@ -63,6 +63,7 @@ local p = 0
 local delta_i = 1
 function app:Update(delta_ms)
     self.world1:Update(delta_ms)
+    if self.world1.paused then return end
     p = p + delta_i 
     if p == 100 or p == 0 then delta_i = -1 * delta_i end
     self.progress:SetPercent(p)

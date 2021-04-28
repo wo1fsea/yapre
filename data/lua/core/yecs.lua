@@ -29,9 +29,11 @@ function World:New(key)
 
     world = setmetatable(
     {
-        key = key,
-        entities = {},
-        systems = {},
+        paused=false,
+        update_delta=0,
+        key=key,
+        entities={},
+        systems={},
         system_update_queue=setmetatable({}, {__mode='v'}),
     },
     self 
@@ -52,9 +54,28 @@ function World:Destroy()
 end
 
 function World:Update(delta_ms)
-    for _, system in ipairs(self.system_update_queue) do
-        system:Update(delta_ms)
+    self.update_delta = self.update_delta + delta_ms
+
+    if self.paused then
+        for _, system in ipairs(self.system_update_queue) do
+            if system.update_when_paused then
+                system:Update(0)
+            end
+        end
+    else
+        for _, system in ipairs(self.system_update_queue) do
+            system:Update(self.update_delta)
+        end
+        self.update_delta = 0
     end
+end
+
+function World:Pause()
+    self.paused = true 
+end
+
+function World:Resume()
+    self.paused = false
 end
 
 function World:AddEntity(entity)
@@ -236,6 +257,7 @@ local system_templates = {}
 local System = {
     key = "",
     update_order = 1024,
+    update_when_paused = false,
     __metatable = "SystemMeta",
     __tostring = function(self) return string.format("<yecs-system: %s>", self.key) end,
 }
