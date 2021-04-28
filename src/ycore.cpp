@@ -1,9 +1,11 @@
 #include "ycore.h"
-#include "ytimer.h"
 
 #include <SDL.h>
 #include <chrono>
 #include <iostream>
+
+#include "yluabind.hpp"
+#include "ytimer.h"
 
 namespace yapre {
 namespace core {
@@ -17,6 +19,9 @@ bool Init() {
       return false;
   }
   last_time = std::chrono::system_clock::now();
+
+  lua::GStateModule{"yapre"}.Define("Exit", SetToStop);
+
   return true;
 }
 

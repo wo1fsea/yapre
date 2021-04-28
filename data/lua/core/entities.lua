@@ -46,7 +46,7 @@ end
 
 yecs.EntityFactory:Register(
 "button",
-{"position", "sprite", "tree", "size", "input", "animation"},
+{"position", "sprite", "tree", "size", "input", "tick", "animation"},
 {"button"}
 )
 
@@ -142,7 +142,7 @@ end
 
 yecs.EntityFactory:Register(
 "image",
-{"position", "sprite", "size", "animation"},
+{"position", "sprite", "size", "tick", "animation"},
 {"image"})
 
 

@@ -157,20 +157,30 @@ yecs.Component:Register("text",
 local default_tick_order = 1
 yecs.Component:Register("tick", 
 {
-    _callbacks={},
+    _tick_callbacks={}, -- callback(delta_ms)
+    _timer_callbacks={}, -- callback(timeover_ms)
     _operations={
-        AddCallback=function(self, key, callback, tick_order)
-            self._callbacks[key] = {
+        AddTick=function(self, key, callback, tick_order)
+            self._tick_callbacks[key] = {
                 tick_order=tick_order or default_tick_order,
                 callback=callback,
-
-                component=self,
                 entity=self.entity,
             }
         end,
-        RemoveCallback=function(self, key)
-            self._callbacks[key] = nil
+        RemoveTick=function(self, key)
+            self._tick_callbacks[key] = nil
         end,
+        AddTimer=function(self, key, time_ms, callback)
+            self._timer_callbacks[key] = {
+                time_ms=time_ms,
+                callback=callback,
+                entity=self.entity,
+            }
+        end,
+        RemoveTimer=function(self, key)
+            self._timer_callbacks[key] = nil
+        end,
+
     },
 })
 
@@ -209,7 +219,7 @@ yecs.Component:Register("animation",
         end
 
         if next_timer then
-            yapre.AddTimer(1000//self.frame_rate, function() self:_callback() end)
+            entity.tick:AddTimer("animation", 1000//self.frame_rate, function() self:_callback() end)
             self.waiting_timer = true
         end
 
@@ -238,7 +248,7 @@ yecs.Component:Register("animation",
             self.next_idx[key] = a.start_idx
 
             if not self.waiting_timer then
-                yapre.AddTimer(1000//self.frame_rate, function() self:_callback() end)
+                self.entity.tick:AddTimer("animation", 1000//self.frame_rate, function() self:_callback() end)
                 self.waiting_timer = true
             end
         end,
