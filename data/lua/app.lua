@@ -15,16 +15,16 @@ function app:Init()
     self.image = yecs.EntityFactory:Make("image")
     self.progress = yecs.EntityFactory:Make("progress")
     self.panel = yecs.EntityFactory:Make("panel")
-    self.panel:SetSize(128, 128)
-    self.panel.position = {x=8, y=8, z=0}
+    self.panel:SetSize(320, 128)
+    self.panel.position = {x=0, y=0, z=0}
 
-    self.progress.position = {x=80, y=8, z=0}
+    self.progress.position = {x=80, y=8, z=1}
     self.progress:SetPercent(10)
     
     self.image:SetTextureSize(128,128)
     self.image:SetTexture("data/image/animation/blood/1.png")
 
-    self.image.position = {x=8, y=240-8-128, z=0}
+    self.image.position = {x=8, y=240-8-128, z=1}
     self.image:AddAnimationState("die", "data/image/animation/blood/%d.png", 1, 20)
     self.image:AddAnimationState("live", "data/image/animation/blood/%d.png", 1, 1)
 
@@ -37,14 +37,14 @@ function app:Init()
         self.button1:SetState("disabled")
         self.button2:SetState("normal")
     end
-    self.button1.position = {x=320-8-32, y=240-8-32, z=0}
+    self.button1.position = {x=320-8-32, y=240-8-32, z=1}
     
     function self.button2.OnClicked(_, x, y)
         self.image:PlayAnimation("live")
         self.button2:SetState("disabled")
         self.button1:SetState("normal")
     end
-    self.button2.position = {x=320-8-32-32, y=240-8-32, z=0}
+    self.button2.position = {x=320-8-32-32, y=240-8-32, z=1}
     
     self.button1:SetState("normal")
     self.button2:SetState("disabled")
