@@ -13,24 +13,32 @@ local GetColorFromHexStr = function(str)
     return color
 end
 
-palette_data.colors = {
-    GetColorFromHexStr("FF2497fc"), 
-    GetColorFromHexStr("FF283d85"),
-    GetColorFromHexStr("FF271f36"),
-    GetColorFromHexStr("FF592b66"),
-    GetColorFromHexStr("FFa60d0d"),
-    GetColorFromHexStr("FFff5a00"),
-    GetColorFromHexStr("FFfcb500"),
-    GetColorFromHexStr("FFede547"),
-    GetColorFromHexStr("FF85d451"),
-    GetColorFromHexStr("FF029925"),
-    GetColorFromHexStr("FF00401c"),
-    GetColorFromHexStr("FF000000"),
-    GetColorFromHexStr("FF475370"),
-    GetColorFromHexStr("FF798b94"),
-    GetColorFromHexStr("FF99cfc5"),
-    GetColorFromHexStr("FFebffcc"),
+-- https://lospec.com/palette-list/summers-past-16
+_colors = {
+    'FF320011',
+    'FF5f3a60',
+    'FF876672',
+    'FFb7a39d',
+    'FFece8c2',
+    'FF6db7c3',
+    'FF5e80b2',
+    'FF627057',
+    'FF8da24e',
+    'FFd2cb3e',
+    'FFf7d554',
+    'FFe8bf92',
+    'FFe78c5b',
+    'FFc66f5e',
+    'FFc33846',
+    'FF933942',
 }
+
+local colors = {}
+for _, c in ipairs(_colors) do 
+    table.insert(colors, GetColorFromHexStr(c))
+end
+
+palette_data.colors = colors
 
 return palette_data
 
