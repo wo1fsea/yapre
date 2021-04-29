@@ -4,6 +4,7 @@ local yecs = core.yecs
 
 local app = {}
 
+
 function app:Init()
     self.world1 = yecs.World:New("world1")
     self.world1:AddSystems({"sprite", "input", "tree", "tick"})
@@ -15,6 +16,8 @@ function app:Init()
     self.image = yecs.EntityFactory:Make("image")
     self.progress = yecs.EntityFactory:Make("progress")
     self.panel = yecs.EntityFactory:Make("panel")
+    self.palette = yecs.EntityFactory:Make("palette")
+    
     self.panel:SetSize(320, 128)
     self.panel.position = {x=0, y=0, z=0}
 
@@ -55,6 +58,7 @@ function app:Init()
     self.world1:AddEntity(self.image)
     self.world1:AddEntity(self.progress)
     self.world1:AddEntity(self.panel)
+    self.world1:AddEntity(self.palette)
 
     return true
 end

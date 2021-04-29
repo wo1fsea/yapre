@@ -218,4 +218,27 @@ yecs.EntityFactory:Register(
 {"panel"}
 )
 
+-- palette
+local palette_data = require("core.data.palette_data")
+local palette_behavior = {}
+yecs.Behavior:Register("palette", palette_behavior)
+function palette_behavior:Init()
+    local palette_size = 8
+    local offset_x = 0
+    for i, color in ipairs(palette_data.colors) do
+        self.sprite:AddSprite(
+        "palette"..i, 
+        "data/image/ui/blank2.png", 
+        {size={width=palette_size, height=palette_size}, color=color, offset={x=offset_x, y=0, z=1}})
+        offset_x = offset_x + palette_size
+    end
+end
+
+yecs.EntityFactory:Register(
+"palette",
+{"position", "sprite", "size"},
+{"palette"}
+)
+
+
 return entities
