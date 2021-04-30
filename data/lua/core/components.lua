@@ -1,5 +1,7 @@
 local components = {}
 local yecs = require("core.yecs")
+local palette_data = require("core.data.palette_data")
+
 local deep_copy = yecs.deep_copy
 
 yecs.Component:Register("position", {x=0, y=0, z=0})
@@ -134,7 +136,7 @@ yecs.Component:Register("text",
 
                 local texture = {
                     texture=string.format("data/image/font/%d.png", c_n), 
-                    color={r=1,g=1,b=1}, 
+                    color=palette_data.foreground_color, 
                     size={width=font_data.size*size, height=font_data.size*size}, 
                     offset={x=pos_x*size, y=pos_y*size, z=pos_z},
                 }

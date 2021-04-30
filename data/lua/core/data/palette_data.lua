@@ -39,6 +39,23 @@ for _, c in ipairs(_colors) do
 end
 
 palette_data.colors = colors
+palette_data.black = colors[1]
+palette_data.white = colors[5]
+palette_data.blue = colors[6]
+palette_data.green = colors[10]
+palette_data.red = colors[14]
+
+palette_data.main_colors = {
+    palette_data.black,
+    palette_data.white, 
+    palette_data.blue, 
+    palette_data.green, 
+    palette_data.red, 
+}
+
+palette_data.foreground_color = colors[5]
+palette_data.background_color = colors[3]
+palette_data.border_color = colors[1]
 
 return palette_data
 

@@ -76,4 +76,8 @@ end
 function app:Deinit()
 end
 
+function app:Reload()
+
+end
+
 return app

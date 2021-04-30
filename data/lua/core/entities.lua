@@ -1,5 +1,6 @@
 local entities = {}
 local yecs = require("core.yecs")
+local palette_data = require("core.data.palette_data")
 
 -- ui
 -- button
@@ -72,7 +73,7 @@ function image_behavior:Init()
     local default_image_size = {width=32, height=32}
     local default_border_size = {width=36, height=36}
     local default_image_offset = {x=2, y=2, z=1}
-    local border_color = {r=1, g=1, b=1}
+    local border_color = palette_data.border_color 
     self.sprite:AddSprite(
     "image_border", 
     "data/image/ui/blank2.png", 
@@ -152,9 +153,9 @@ yecs.Behavior:Register("progress", progress_behavior)
 function progress_behavior:Init()
     local default_size = {width=64, height=4}
     local default_border_size = {width=68, height=8}
-    local border_color = {r=1, g=1, b=1}
-    local background_color = {r=0, g=0, b=0}
-    local progress_color = {r=0.25, g=0.15, b=1}
+    local border_color = palette_data.border_color 
+    local background_color = palette_data.background_color
+    local progress_color = palette_data.red
     self.sprite:AddSprite(
     "progress_border", 
     "data/image/ui/blank2.png", 
@@ -192,7 +193,7 @@ local panel_behavior = {}
 yecs.Behavior:Register("panel", panel_behavior)
 function panel_behavior:Init()
     local panel_size = {width=64, height=64}
-    local panel_color = {r=0.2, g=0.2, b=0.5}
+    local panel_color = palette_data.blue 
 
     self.sprite:AddSprite(
     "panel", 
@@ -219,7 +220,6 @@ yecs.EntityFactory:Register(
 )
 
 -- palette
-local palette_data = require("core.data.palette_data")
 local palette_behavior = {}
 yecs.Behavior:Register("palette", palette_behavior)
 function palette_behavior:Init()
