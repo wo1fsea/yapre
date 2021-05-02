@@ -1,6 +1,7 @@
 local entities = {}
+
+local palette_data = yapre.palette
 local yecs = require("core.yecs")
-local palette_data = require("core.data.palette_data")
 
 -- ui
 -- button
