@@ -8,5 +8,6 @@ bool Init();
 void Deinit();
 std::tuple<int, int> GetDrawableSize();
 void SwapWinodw();
+void ResetWindowSize();
 } // namespace window_manager
 } // namespace yapre

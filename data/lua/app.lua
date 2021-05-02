@@ -6,6 +6,8 @@ local app = {}
 
 
 function app:Init()
+    yapre.SetRenderSize(320, 240)
+
     self.world1 = yecs.World:New("world1")
     self.world1:AddSystems({"sprite", "input", "tree", "tick"})
 
@@ -74,6 +76,10 @@ function app:Update(delta_ms)
 end
 
 function app:Deinit()
+end
+
+function app:Reload()
+
 end
 
 return app
