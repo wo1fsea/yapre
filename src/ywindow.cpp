@@ -104,5 +104,12 @@ void SwapWinodw() {
   }
 }
 
+void ResetWindowSize(){
+    if (mainWindow) {
+        auto [w, h] = renderer::GetRenderSize();
+        SDL_SetWindowSize(mainWindow, w, h);
+    }
+}
+
 } // namespace window
 } // namespace yapre

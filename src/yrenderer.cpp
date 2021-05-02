@@ -25,6 +25,10 @@ namespace yapre {
 namespace renderer {
 
 const float kMaxZ = 1024 * 1024;
+
+int render_width = 320;
+int render_height = 240;
+
 unsigned int VBO = 0;
 unsigned int draw_count = 0;
 using DrawData =
@@ -32,6 +36,7 @@ using DrawData =
 using TextureData = std::tuple<unsigned int, int, int>;
 std::unordered_map<std::string, TextureData> texture_map;
 std::vector<DrawData> draw_list;
+glm::fvec4 clean_color = glm::fvec4(0.2, 0.2, 0.2, 1);
 
 const float vertices[] = {
     // pos      // tex
@@ -42,8 +47,8 @@ const float vertices[] = {
 Shader *shader = nullptr;
 int viewport_x = 0;
 int viewport_y = 0;
-int viewport_w = kDefaultViewWidth;
-int viewport_h = kDefaultViewHeight;
+int viewport_w = render_width;
+int viewport_h = render_height;
 
 void PrintGlInfo() {
   std::cout << "OpenGL loaded" << std::endl;
@@ -87,14 +92,27 @@ bool Init() {
 
   lua::GStateModule("yapre")
       .Define<void (*)(const std::string &, int, int, int, int, int, float,
-                       float, float, float)>("DrawSprite", DrawSprite);
+                       float, float, float)>("DrawSprite", DrawSprite)
+      .Define("SetClearColor", SetClearColor)
+      .Define("SetRenderSize", SetRenderSize);
+  SetRenderSize(320, 240);
   return true;
 }
 
 void Deinit() { delete shader; }
 
 std::tuple<int, int> GetRenderSize() {
-  return std::make_tuple(kDefaultViewWidth, kDefaultViewHeight);
+  return std::make_tuple(render_width, render_height);
+}
+
+void SetRenderSize(int width, int height) {
+  render_width = width;
+  render_height = height;
+  window::ResetWindowSize();
+
+  lua::GStateModule("yapre")
+      .Define("redner_width", width)
+      .Define("redner_height", height);
 }
 
 std::tuple<unsigned int, int, int> GetTextureId(std::string texture_filename) {
@@ -125,8 +143,6 @@ std::tuple<unsigned int, int, int> GetTextureId(std::string texture_filename) {
 
   stbi_image_free(data);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -228,17 +244,24 @@ void RefreshViewport() {
 void Update(int delta_ms) {
   RefreshViewport();
   glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
-  glClearColor(.2f, .2f, .2f, 0.f);
+  glClearColor(clean_color.r, clean_color.g, clean_color.b, clean_color.a);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   DrawAll();
   window::SwapWinodw();
 }
 
-std::tuple<int, int> convertToViewport(int x, int y) {
+std::tuple<int, int> ConvertToViewport(int x, int y) {
   auto [rw, rh] = GetRenderSize();
   return std::make_tuple((x - viewport_x) * rw / viewport_w,
                          (y - viewport_y) * rh / viewport_h);
+}
+
+void SetClearColor(float R, float G, float B, float A) {
+  clean_color.r = R;
+  clean_color.g = G;
+  clean_color.b = B;
+  clean_color.a = A;
 }
 
 } // namespace renderer

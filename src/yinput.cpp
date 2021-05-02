@@ -69,7 +69,7 @@ void Update(int delta_ms) {
           buttonState += kMouseButtonMiddle;
         }
         auto [x, y] =
-            renderer::convertToViewport(event.motion.x, event.motion.y);
+            renderer::ConvertToViewport(event.motion.x, event.motion.y);
         func(event.motion.timestamp, kMouseStateMove, buttonState, x, y);
       }
       continue;
@@ -85,7 +85,7 @@ void Update(int delta_ms) {
           buttonState = kMouseButtonMiddle;
         }
         auto [x, y] =
-            renderer::convertToViewport(event.motion.x, event.motion.y);
+            renderer::ConvertToViewport(event.motion.x, event.motion.y);
         func(event.button.timestamp,
              event.type == SDL_MOUSEBUTTONDOWN ? kMouseStatePressed
                                                : kMouseStateReleased,
@@ -104,7 +104,7 @@ void Update(int delta_ms) {
 }
 
 void BindKeyboardInputCallback(const std::string &key,
-                               const KeyboardCallBackFunc& callback) {
+                               const KeyboardCallBackFunc &callback) {
   KeyboardCallBackFuncMap[key] = callback;
 }
 
@@ -113,7 +113,7 @@ void UnbindKeyboardInputCallback(const std::string &key) {
 }
 
 void BindMouseInputCallback(const std::string &key,
-                            const MouseCallBackFunc& callback) {
+                            const MouseCallBackFunc &callback) {
 
   MouseCallBackFuncMap[key] = callback;
 }
@@ -121,8 +121,8 @@ void UnbindMouseInputCallback(const std::string &key) {
   MouseCallBackFuncMap.erase(key);
 }
 
-void BindTouchInputCallback(const std::string &key, const TouchCallBackFunc& callback
-                            ) {
+void BindTouchInputCallback(const std::string &key,
+                            const TouchCallBackFunc &callback) {
 
   TouchCallBackFuncMap[key] = callback;
 }

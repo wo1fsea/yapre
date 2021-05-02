@@ -14,7 +14,7 @@ local GetColorFromHexStr = function(str)
 end
 
 -- https://lospec.com/palette-list/summers-past-16
-_colors = {
+local _colors = {
     'FF320011',
     'FF5f3a60',
     'FF876672',
@@ -54,7 +54,7 @@ palette_data.main_colors = {
 }
 
 palette_data.foreground_color = colors[5]
-palette_data.background_color = colors[3]
+palette_data.background_color = colors[2]
 palette_data.border_color = colors[1]
 
 return palette_data
