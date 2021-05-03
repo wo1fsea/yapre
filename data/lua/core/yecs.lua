@@ -159,6 +159,8 @@ local Entity = {
 Entity.__index = function(self, k) return Entity[k] or self._behavior[k] or self.components[k] end
 Entity.__newindex = function(self, k, v) 
     if self.components[k] == nil then
+        -- print("can not add property to entity")
+        -- return
         rawset(self, k, v)
     elseif type(v) == "table" then
         local component = self.components[k]
@@ -182,7 +184,7 @@ function Entity:New(components, behavior_keys)
     {
         key = uuid.new(),
         components = component_data,
-        behavior_keys = behavior_keys,
+        behavior_keys = copy.copy(behavior_keys),
         _behavior = _behavior,
     },
     self 
@@ -209,6 +211,34 @@ function Entity:AddComponent(component)
      
     if component and self.components[component.key] == nil then
         self.components[component.key] = component
+    end
+end
+
+function Entity:AddBehavior(behavior_key)
+    for k, v in pairs(Behavior:Get(behavior_key)) do
+        self._behavior[k] = v
+    end
+    table.insert(self.behavior_keys, behavior_key)
+end
+
+function Entity:Serialize()
+    local data = {}
+    data.key = self.key
+
+    local components = {}
+    for c_k, c in pairs(self.components) do
+        components[c_k] = c:Serialize()
+    end
+
+    data.components = components
+    data.behavior_keys = self.behavior_keys
+    return data
+end
+
+function Entity:Deserialize(data)
+    self.key = data.key
+    for c_k, c_v in pairs(data.components) do
+        self.components[c_k]:Deserialize(c_v)
     end
 end
 
@@ -251,6 +281,23 @@ function Component:New(key)
     return component
 end
 
+function Component:Serialize()
+    local data = {}
+
+    for k, v in pairs(self) do
+        if type(k) == "string" and string.sub(k, 1, 1) ~= "_" and  k ~= "entity"  then
+            data[k] = v
+        end
+    end
+
+    return data
+end
+
+function Component:Deserialize(data)
+    for k, v in pairs(data) do
+        self[k] = v
+    end
+end
 
 -- system
 local system_templates = {}
@@ -302,7 +349,6 @@ function EntityFactory:Make(entity_type)
     if not data then return nil end
 
     local components = data.components
-    local process = data.process
     local behavior_keys = data.behavior_keys
 
     local entity = yecs.Entity:New(components, behavior_keys)

@@ -46,11 +46,17 @@ function test_world:New()
     label:SetMaxSize(64, -1)
     label.position = {x=8, y=8, z=1}
 
-    function button1.OnClicked(_, x, y)
-        image:PlayAnimation("die")
-        button1:SetState("disabled")
-        button2:SetState("normal")
-    end
+    local image_key = image.key
+    local button2_key = button2.key
+    yecs.Behavior:Register("button1.B", {
+         OnClicked=function(self, x, y)
+            yecs.worlds["test_world"].entities[image_key]:PlayAnimation("die")
+            yecs.worlds["test_world"].entities[button2_key]:SetState("normal")
+            self:SetState("disabled")
+        end
+    })
+    button1:AddBehavior("button1.B")
+
     button1.position = {x=320-8-32, y=240-8-32, z=1}
     
     function button2.OnClicked(_, x, y)

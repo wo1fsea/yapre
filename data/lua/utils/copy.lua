@@ -16,7 +16,7 @@ end
 local function copy(obj)
 	if type(obj) ~= 'table' then return obj end
     local c = {}
-	for k, v in next, obj do res[k] = v end
+	for k, v in next, obj do c[k] = v end
 	return setmetatable(c, getmetatable(obj))
 end
 

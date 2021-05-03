@@ -7,7 +7,7 @@ local yecs = require("core.yecs")
 -- button
 local button_behavior = {}
 yecs.Behavior:Register("button", button_behavior)
-function button_behavior:Init (button)
+function button_behavior:Init()
     self.sprite:AddSprite(
     "button", 
     "data/image/ui/button16/1.png", 
@@ -31,6 +31,7 @@ function button_behavior:Init (button)
     end
     function self.input:OnTouchEnded(x, y)
         self.entity.animation:Play("normal")
+        print("F")
         local on_clicked_func = self.entity.OnClicked
         if on_clicked_func then on_clicked_func(self.entity, x, y) end
     end
