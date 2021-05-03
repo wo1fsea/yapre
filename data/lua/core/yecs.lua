@@ -157,6 +157,16 @@ local Entity = {
     __tostring = function(self) return string.format("<yecs-entity: %s>", self.key) end,
 }
 Entity.__index = function(self, k) return Entity[k] or self._behavior[k] or self.components[k] end
+Entity.__newindex = function(self, k, v) 
+    if self.components[k] == nil then
+        rawset(self, k, v)
+    elseif type(v) == "table" then
+        local component = self.components[k]
+        for ck, cv in pairs(v) do
+            component[ck] = cv
+        end
+    end
+end
 
 function Entity:New(components, behavior_keys)
     components = components or {}
@@ -168,10 +178,9 @@ function Entity:New(components, behavior_keys)
         end
     end
 
-    local entity_key = uuid.new()
     local entity = setmetatable(
     {
-        key = tostring(entity_key),
+        key = uuid.new(),
         components = component_data,
         behavior_keys = behavior_keys,
         _behavior = _behavior,
