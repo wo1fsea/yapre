@@ -157,6 +157,7 @@ function progress_behavior:Init()
     local border_color = palette_data.border_color 
     local background_color = palette_data.background_color
     local progress_color = palette_data.red
+
     self.sprite:AddSprite(
     "progress_border", 
     "data/image/ui/blank2.png", 
@@ -172,10 +173,12 @@ function progress_behavior:Init()
     "data/image/ui/blank2.png", 
     {size=default_size, offset={x=2, y=2, z=2}, color=progress_color})
 
+    self:SetPercent(100)
     return self
 end
 
 function progress_behavior:SetPercent(percent)
+    self.percent = percent
     local sprites = self.sprite.sprites
     local full_width = sprites["progress_backgroud"].size.width
     if percent < 0 then percent = 0 end

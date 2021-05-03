@@ -111,8 +111,8 @@ void SetRenderSize(int width, int height) {
   window::ResetWindowSize();
 
   lua::GStateModule("yapre")
-      .Define("redner_width", width)
-      .Define("redner_height", height);
+      .Define("render_width", width)
+      .Define("render_height", height);
 }
 
 std::tuple<unsigned int, int, int> GetTextureId(std::string texture_filename) {
