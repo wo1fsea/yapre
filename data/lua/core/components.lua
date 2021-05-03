@@ -1,8 +1,10 @@
 local components = {}
 local yecs = require("core.yecs")
 local palette_data = require("core.data.palette_data")
+local copy = require("utils.copy")
 
-local deep_copy = yecs.deep_copy
+local deep_copy = copy.deep_copy
+
 
 yecs.Component:Register("position", {x=0, y=0, z=0})
 yecs.Component:Register("size", {width=0, height=0})

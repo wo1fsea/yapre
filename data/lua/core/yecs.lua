@@ -1,20 +1,9 @@
 local yecs = {}
-
-local function deep_copy(obj, seen)
-	-- Handle non-tables and previously-seen tables.
-	if type(obj) ~= 'table' then return obj end
-	if seen and seen[obj] then return seen[obj] end
-
-	-- New table; mark it as seen an copy recursively.
-	local s = seen or {}
-	local res = {}
-	s[obj] = res
-	for k, v in next, obj do res[deep_copy(k, s)] = deep_copy(v, s) end
-	return setmetatable(res, getmetatable(obj))
-end
+local copy = require("utils.copy")
+local uuid = require("utils.uuid")
+local deep_copy = copy.deep_copy
 
 -- world
-
 yecs.worlds = {}
 
 local World = {
@@ -144,6 +133,7 @@ function World:GetEntities(condition)
     return entities
 end
 
+
 -- behavior
 local Behavior = {
     behaviors={},
@@ -159,9 +149,8 @@ function Behavior:Get(key)
     return self.behaviors[key] or {}
 end
 
--- entity
 
-local entity_key = 0
+-- entity
 local Entity = {
     key = "",
     __metatable = "EntityMeta",
@@ -179,7 +168,7 @@ function Entity:New(components, behavior_keys)
         end
     end
 
-    entity_key = entity_key + 1
+    local entity_key = uuid.new()
     local entity = setmetatable(
     {
         key = tostring(entity_key),
@@ -213,6 +202,7 @@ function Entity:AddComponent(component)
         self.components[component.key] = component
     end
 end
+
 
 -- component
 local component_templates = {}
@@ -251,6 +241,7 @@ function Component:New(key)
     )
     return component
 end
+
 
 -- system
 local system_templates = {}
@@ -291,12 +282,11 @@ end
 function System:Deinit()
 end
 
--- EntityFactory
 
+-- EntityFactory
 local EntityFactory = {
     entity_models={},
 }
-
 
 function EntityFactory:Make(entity_type)
     local data = self.entity_models[entity_type]
@@ -326,6 +316,6 @@ yecs.Component = Component
 yecs.System = System
 yecs.EntityFactory = EntityFactory
 yecs.Behavior = Behavior
-yecs.deep_copy = deep_copy
+
 
 return yecs
