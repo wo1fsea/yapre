@@ -82,7 +82,27 @@ yecs.Component:Register("tree",
 
             c_tree.parent = nil
             self.children[c.key] = nil
-        end
+        end,
+        Serialize=function(self)
+            local children = {}
+            local data = {
+                parent=self.parent and self.parent.key,
+                children=children,
+            }
+            
+            for c_key, _ in pairs(self.children) do
+                table.insert(children, c_key)
+            end
+            return data
+        end,
+        Deserialize=function(self, data)
+            local world_entities = self.entity.world.entities
+            self.parent = world_entities[data.parent]
+            
+            for _, c_key in ipairs(data.children) do
+                self.children[c_key] = world_entities[c_key]
+            end
+        end,
     },
 })
 
