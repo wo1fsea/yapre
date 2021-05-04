@@ -6,6 +6,9 @@ local copy = require("utils.copy")
 local deep_copy = copy.deep_copy
 
 
+yecs.Component:Register("data", {})
+yecs.Component:Register("tags", {})
+
 yecs.Component:Register("position", {x=0, y=0, z=0})
 yecs.Component:Register("size", {width=0, height=0})
 yecs.Component:Register("sprite", 
@@ -282,6 +285,11 @@ yecs.Component:Register("animation",
         StopAll=function(self)
             self.next_idx = {}
         end,
+        Deserialize=function(self, data)
+            yecs.Component.Deserialize(self, data)
+            self.entity.tick:AddTimer("animation", 1000//self.frame_rate, function() self:_callback() end)
+        end,
+
     },
 })
 

@@ -62,6 +62,9 @@ function serialization:MakeEntities(entities_data)
         if entity.Init then
             entity:Init()
         end
+        if entity.OnInit then
+            entity:OnInit()
+        end
 
         entity.key = entity_key 
         entities[entity_key] = entity 

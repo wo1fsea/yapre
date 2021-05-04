@@ -69,14 +69,22 @@ end
 
 function World:AddEntity(entity)
     self.entities[entity.key] = entity
+    entity.world = self
 end
 
 function World:RemoveEntity(entity)
+    local entity_key = nil
     if getmetatable(entity) == "EntityMeta" then
-        entity = entity.key
+        entity_key = entity.key
+    else
+        entity_key = entity
+        entity = self.entities[entity_key]
     end
-
-    self.entities[entity] = nil
+    
+    if entity and entity.world == self then
+        entity.world = nil
+        self.entities[entity_key] = nil
+    end
 end
 
 function World:AddSystem(system)  
@@ -133,6 +141,38 @@ function World:GetEntities(condition)
     return entities
 end
 
+function World:GetEntity(condition)
+    for _, entity in pairs(self.entities) do
+        if (not condition) or condition(entity) then
+            return entity
+        end
+    end
+
+    return nil
+end
+
+function World:GetEntitiesByTags(tags)
+    return self:GetEntities(
+    function(entity)
+        if entity.tags == nil then return false end
+        for _, tag in pairs(tags) do
+            if entity.tags[tag] then return true end
+        end
+    end
+    )
+end
+
+function World:GetEntityByTags(tags)
+    return self:GetEntity(
+    function(entity)
+        if entity.tags == nil then return false end
+        for _, tag in pairs(tags) do
+            if entity.tags[tag] then return true end
+        end
+    end
+    )
+end
+
 
 -- behavior
 local Behavior = {
@@ -157,11 +197,12 @@ local Entity = {
     __tostring = function(self) return string.format("<yecs-entity: %s>", self.key) end,
 }
 Entity.__index = function(self, k) return Entity[k] or self._behavior[k] or self.components[k] end
-Entity.__newindex = function(self, k, v) 
-    if self.components[k] == nil then
-        -- print("can not add property to entity")
-        -- return
+Entity.__newindex = function(self, k, v)
+    if k == "world" then
         rawset(self, k, v)
+    elseif self.components[k] == nil then
+        print("can not add property to entity")
+        -- rawset(self, k, v)
     elseif type(v) == "table" then
         local component = self.components[k]
         for ck, cv in pairs(v) do
@@ -252,7 +293,7 @@ local Component = {
     __metatable = "ComponentMeta",
     __tostring = function(self) return string.format("<yecs-component: %s>", self.key) end,
 }
-Component.__index = function(self, k) return Component[k] or self._operations[k] end
+Component.__index = function(self, k) return self._operations[k] or Component[k] end
 Component.__newindex = function(self, k, v) 
     if type(v) ~= 'function' then
         rawset(self, k, v)
@@ -264,15 +305,19 @@ end
 function Component:Register(key, data)
 	if component_templates[key] ~= nil then return end
 	if type(data) ~= 'table' then return end
-
+    
     data["key"] = key
+    if data._operations == nil then
+        data._operations = {}
+    end
+
     component_templates[key] = data
 end
 
 function Component:New(key)
     local component_data = component_templates[key]
     if component_data == nil then return nil end
-
+    
     local component = setmetatable
     (
        deep_copy(component_data),
@@ -285,7 +330,7 @@ function Component:Serialize()
     local data = {}
 
     for k, v in pairs(self) do
-        if type(k) == "string" and string.sub(k, 1, 1) ~= "_" and  k ~= "entity"  then
+        if type(k) == "string" and string.sub(k, 1, 1) ~= "_" and k ~= "entity"  then
             data[k] = v
         end
     end
@@ -344,7 +389,7 @@ local EntityFactory = {
     entity_models={},
 }
 
-function EntityFactory:Make(entity_type)
+function EntityFactory:Make(entity_type, ex_behavior_keys)
     local data = self.entity_models[entity_type]
     if not data then return nil end
 
@@ -354,8 +399,18 @@ function EntityFactory:Make(entity_type)
     local entity = yecs.Entity:New(components, behavior_keys)
     if not entity then return nil end
     
+    if ex_behavior_keys then
+        for _, behavior_key in pairs(ex_behavior_keys) do
+            entity:AddBehavior(behavior_key)
+        end
+    end
+    
     if entity.Init then
         entity:Init()
+    end
+
+    if entity.OnInit then
+        entity:OnInit()
     end
 
     return entity

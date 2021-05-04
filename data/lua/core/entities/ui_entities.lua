@@ -31,7 +31,6 @@ function button_behavior:Init()
     end
     function self.input:OnTouchEnded(x, y)
         self.entity.animation:Play("normal")
-        print("F")
         local on_clicked_func = self.entity.OnClicked
         if on_clicked_func then on_clicked_func(self.entity, x, y) end
     end
@@ -179,7 +178,7 @@ function progress_behavior:Init()
 end
 
 function progress_behavior:SetPercent(percent)
-    self.percent = percent
+    self.data.percent = percent
     local sprites = self.sprite.sprites
     local full_width = sprites["progress_backgroud"].size.width
     if percent < 0 then percent = 0 end
@@ -187,9 +186,14 @@ function progress_behavior:SetPercent(percent)
     sprites["progress"].size.width = percent * full_width // 100
 end
 
+function progress_behavior:GetPercent()
+    return self.data.percent
+end
+
+
 yecs.EntityFactory:Register(
 "progress",
-{"position", "sprite", "size"},
+{"position", "sprite", "size", "data"},
 {"progress"}
 )
 

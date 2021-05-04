@@ -13,13 +13,12 @@ require("utils.table_save")
 
 function app:Init()
     yapre.SetRenderSize(320, 240)
-    
+    -- self:Deserialize() 
     local new_test_world = function()
         self.test_world = test_world:New()
     end
 
     splash_world:New(new_test_world)
-    
     return true
 end
 
@@ -43,16 +42,22 @@ function app:Reload()
 end
 
 function app:Test()
-
-    local data = s:DumpWorld(app.test_world)
-    local r = table.save(data, "./dump.lua")
-    app.test_world:Destroy()
-
-    local d2 = table.load("./dump.lua")
-    app.w2 = s:LoadWorld(d2)
-    for k, v in pairs(yecs.worlds) do 
-        print("f", k)
-    end
 end
+
+function app:Deserialize()
+    if app.test_world then
+        app.test_world:Destroy()
+        app.test_world = nil
+    end
+
+    local data = table.load("./dump.lua")
+    app.test_world = s:LoadWorld(data)
+end
+
+function app:Serialize()
+    local data = s:DumpWorld(app.test_world)
+    table.save(data, "./dump.lua")
+end
+
 
 return app
