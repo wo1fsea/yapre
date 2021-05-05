@@ -3,6 +3,7 @@ local splash_screen = {}
 local core = require("core")
 local yecs = core.yecs
 
+
 function splash_screen:Show(callback)
     local world = yecs.World:New("splash_world")
     world:AddSystems({"sprite", "tick"})
@@ -31,6 +32,8 @@ function splash_screen:Show(callback)
     image.tick:AddTimer("timer", 2000, 
     function()
         world:Destroy()
+        local c = yapre.palette.background_color
+        yapre.SetClearColor(c.r, c.g, c.b, c.a)
         if callback then callback() end
     end
     )

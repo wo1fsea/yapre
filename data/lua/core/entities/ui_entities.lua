@@ -193,7 +193,7 @@ end
 
 yecs.EntityFactory:Register(
 "progress",
-{"position", "sprite", "size", "data"},
+{"position", "sprite", "tree", "size", "data"},
 {"progress"}
 )
 
@@ -202,7 +202,7 @@ local panel_behavior = {}
 yecs.Behavior:Register("panel", panel_behavior)
 function panel_behavior:Init()
     local panel_size = {width=64, height=64}
-    local panel_color = palette_data.blue 
+    local panel_color = palette_data.colors[2] 
 
     self.sprite:AddSprite(
     "panel", 
@@ -224,7 +224,7 @@ end
 
 yecs.EntityFactory:Register(
 "panel",
-{"position", "sprite", "size"},
+{"position", "sprite", "tree", "size"},
 {"panel"}
 )
 
@@ -245,7 +245,7 @@ end
 
 yecs.EntityFactory:Register(
 "palette",
-{"position", "sprite", "size"},
+{"position", "sprite", "tree", "size"},
 {"palette"}
 )
 
