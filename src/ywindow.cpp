@@ -88,7 +88,7 @@ bool Init() {
     return false;
   }
 
-  //SDL_GL_SetSwapInterval(1);
+  // SDL_GL_SetSwapInterval(1);
 
   return true;
 }
@@ -104,11 +104,13 @@ void SwapWinodw() {
   }
 }
 
-void ResetWindowSize(){
-    if (mainWindow) {
-        auto [w, h] = renderer::GetRenderSize();
-        SDL_SetWindowSize(mainWindow, w, h);
-    }
+void ResetWindowSize() {
+#ifndef __EMSCRIPTEN__
+  if (mainWindow) {
+    auto [w, h] = renderer::GetRenderSize();
+    SDL_SetWindowSize(mainWindow, w, h);
+  }
+#endif
 }
 
 } // namespace window

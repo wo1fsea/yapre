@@ -1,12 +1,13 @@
 local entities = {}
+
+local palette_data = yapre.palette
 local yecs = require("core.yecs")
-local palette_data = require("core.data.palette_data")
 
 -- ui
 -- button
 local button_behavior = {}
 yecs.Behavior:Register("button", button_behavior)
-function button_behavior:Init (button)
+function button_behavior:Init()
     self.sprite:AddSprite(
     "button", 
     "data/image/ui/button16/1.png", 
@@ -156,6 +157,7 @@ function progress_behavior:Init()
     local border_color = palette_data.border_color 
     local background_color = palette_data.background_color
     local progress_color = palette_data.red
+
     self.sprite:AddSprite(
     "progress_border", 
     "data/image/ui/blank2.png", 
@@ -171,10 +173,12 @@ function progress_behavior:Init()
     "data/image/ui/blank2.png", 
     {size=default_size, offset={x=2, y=2, z=2}, color=progress_color})
 
+    self:SetPercent(100)
     return self
 end
 
 function progress_behavior:SetPercent(percent)
+    self.data.percent = percent
     local sprites = self.sprite.sprites
     local full_width = sprites["progress_backgroud"].size.width
     if percent < 0 then percent = 0 end
@@ -182,9 +186,14 @@ function progress_behavior:SetPercent(percent)
     sprites["progress"].size.width = percent * full_width // 100
 end
 
+function progress_behavior:GetPercent()
+    return self.data.percent
+end
+
+
 yecs.EntityFactory:Register(
 "progress",
-{"position", "sprite", "size"},
+{"position", "sprite", "tree", "size", "data"},
 {"progress"}
 )
 
@@ -193,7 +202,7 @@ local panel_behavior = {}
 yecs.Behavior:Register("panel", panel_behavior)
 function panel_behavior:Init()
     local panel_size = {width=64, height=64}
-    local panel_color = palette_data.blue 
+    local panel_color = palette_data.colors[2] 
 
     self.sprite:AddSprite(
     "panel", 
@@ -215,7 +224,7 @@ end
 
 yecs.EntityFactory:Register(
 "panel",
-{"position", "sprite", "size"},
+{"position", "sprite", "tree", "size"},
 {"panel"}
 )
 
@@ -223,7 +232,7 @@ yecs.EntityFactory:Register(
 local palette_behavior = {}
 yecs.Behavior:Register("palette", palette_behavior)
 function palette_behavior:Init()
-    local palette_size = 8
+    local palette_size = 4
     local offset_x = 0
     for i, color in ipairs(palette_data.colors) do
         self.sprite:AddSprite(
@@ -236,9 +245,68 @@ end
 
 yecs.EntityFactory:Register(
 "palette",
-{"position", "sprite", "size"},
+{"position", "sprite", "tree", "size"},
 {"palette"}
 )
 
+-- palette
+local progress_selector_behavior = {}
+yecs.Behavior:Register("progress_selector", progress_selector_behavior)
+function progress_selector_behavior:Init()
+    local block_width = 2
+    local block_interval = 1 
+    local block_height = 2
+    local block_height_selected = 4
+    local block_num = 100
+    local color = palette_data.white
+
+    self.data.block_height = block_height
+    self.data.block_height_selected = block_height_selected
+    self.data.block_num = block_num
+
+    local offset_x = block_interval
+    for idx = 1, block_num, 1 do
+        self.sprite:AddSprite(
+        "progress_selector_block"..idx, 
+        "data/image/ui/blank2.png", 
+        {size={width=block_width, height=block_height}, color=color, offset={x=offset_x, y=0, z=1}})
+        offset_x = offset_x + block_interval + block_width 
+    end
+
+    self:SetCurrent(1)
+end
+
+function progress_selector_behavior:SetCurrent(cur_idx)
+    local sprite = nil
+    local block_height = self.data.block_height
+    local block_height_selected = self.data.block_height_selected
+    self.data.current_idx = cur_idx
+
+    for idx = 1, self.data.block_num, 1 do
+        sprite = self.sprite.sprites["progress_selector_block"..idx]
+        if sprite then
+            sprite.size.height = block_height
+        end
+    end
+
+    sprite = self.sprite.sprites["progress_selector_block"..cur_idx]
+    if sprite then
+        sprite.size.height = block_height_selected
+    end
+end
+
+function progress_selector_behavior:GetCurrent()
+    return self.data.current_idx 
+end
+
+function progress_selector_behavior:GetMax()
+    return self.data.block_num
+end
+
+yecs.EntityFactory:Register(
+"progress_selector",
+{"position", "sprite", "tree", "size", "data"},
+{"progress_selector"}
+)
 
 return entities

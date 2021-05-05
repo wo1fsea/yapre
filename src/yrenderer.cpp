@@ -61,7 +61,7 @@ bool Init() {
 
   gladLoadGLLoader(SDL_GL_GetProcAddress);
   PrintGlInfo();
-  glEnable(GL_DEPTH_TEST);
+  //glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -111,8 +111,8 @@ void SetRenderSize(int width, int height) {
   window::ResetWindowSize();
 
   lua::GStateModule("yapre")
-      .Define("redner_width", width)
-      .Define("redner_height", height);
+      .Define("render_width", width)
+      .Define("render_height", height);
 }
 
 std::tuple<unsigned int, int, int> GetTextureId(std::string texture_filename) {

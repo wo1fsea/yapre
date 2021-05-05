@@ -1,8 +1,13 @@
 local components = {}
 local yecs = require("core.yecs")
 local palette_data = require("core.data.palette_data")
+local copy = require("utils.copy")
 
-local deep_copy = yecs.deep_copy
+local deep_copy = copy.deep_copy
+
+
+yecs.Component:Register("data", {})
+yecs.Component:Register("tags", {})
 
 yecs.Component:Register("position", {x=0, y=0, z=0})
 yecs.Component:Register("size", {width=0, height=0})
@@ -82,7 +87,27 @@ yecs.Component:Register("tree",
 
             c_tree.parent = nil
             self.children[c.key] = nil
-        end
+        end,
+        Serialize=function(self)
+            local children = {}
+            local data = {
+                parent=self.parent and self.parent.key,
+                children=children,
+            }
+            
+            for c_key, _ in pairs(self.children) do
+                table.insert(children, c_key)
+            end
+            return data
+        end,
+        Deserialize=function(self, data)
+            local world_entities = self.entity.world.entities
+            self.parent = world_entities[data.parent]
+            
+            for _, c_key in ipairs(data.children) do
+                self.children[c_key] = world_entities[c_key]
+            end
+        end,
     },
 })
 
@@ -260,6 +285,11 @@ yecs.Component:Register("animation",
         StopAll=function(self)
             self.next_idx = {}
         end,
+        Deserialize=function(self, data)
+            yecs.Component.Deserialize(self, data)
+            self.entity.tick:AddTimer("animation", 1000//self.frame_rate, function() self:_callback() end)
+        end,
+
     },
 })
 

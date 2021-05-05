@@ -54,7 +54,7 @@ palette_data.main_colors = {
 }
 
 palette_data.foreground_color = colors[5]
-palette_data.background_color = colors[2]
+palette_data.background_color = colors[16]
 palette_data.border_color = colors[1]
 
 return palette_data
