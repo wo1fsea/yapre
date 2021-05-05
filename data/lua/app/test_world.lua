@@ -51,7 +51,7 @@ yecs.Behavior:Register("image_behavior", {
     end
 })
 
-function test_world:New()
+function test_world:Make()
     local world = yecs.World:New("test_world")
     world:AddSystems({"sprite", "input", "tree", "tick"})
 
@@ -93,7 +93,7 @@ function test_world:New()
     world:AddEntity(label)
     world:AddEntity(image)
     world:AddEntity(progress)
-    world:AddEntity(panel)
+    -- world:AddEntity(panel)
     world:AddEntity(palette)
 
     return world 

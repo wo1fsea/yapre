@@ -1,9 +1,9 @@
-local splash_world = {}
+local splash_screen = {}
 
 local core = require("core")
 local yecs = core.yecs
 
-function splash_world:New(callback)
+function splash_screen:Show(callback)
     local world = yecs.World:New("splash_world")
     world:AddSystems({"sprite", "tick"})
 
@@ -31,7 +31,7 @@ function splash_world:New(callback)
     image.tick:AddTimer("timer", 2000, 
     function()
         world:Destroy()
-        callback()
+        if callback then callback() end
     end
     )
     
@@ -47,4 +47,4 @@ function splash_world:New(callback)
     return world
 end
 
-return splash_world
+return splash_screen

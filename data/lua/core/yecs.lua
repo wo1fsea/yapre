@@ -59,6 +59,19 @@ function World:Update(delta_ms)
     end
 end
 
+function World:UpdateAllWorlds(delta_ms)
+    local worlds = {}
+    
+    for _, world in pairs(yecs.worlds) do
+       table.insert(worlds, world)
+    end
+
+    for _, world in pairs(worlds) do
+        world:Update(delta_ms)
+    end
+end
+
+
 function World:Pause()
     self.paused = true 
 end
@@ -272,7 +285,7 @@ function Entity:Serialize()
     end
 
     data.components = components
-    data.behavior_keys = self.behavior_keys
+    data.behavior_keys = copy.copy(self.behavior_keys)
     return data
 end
 
@@ -335,7 +348,7 @@ function Component:Serialize()
         end
     end
 
-    return data
+    return deep_copy(data)
 end
 
 function Component:Deserialize(data)

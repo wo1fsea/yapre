@@ -4,34 +4,28 @@ local yecs = core.yecs
 local reload = require("utils.reload")
 
 local test_world = require("app.test_world")
-local splash_world = require("core.splash_world")
+local splash_screen = require("core.splash_screen")
+
+local rewind_controller = require("app.rewind_controller")
 
 local app = {}
 
 local s = require("core.serialization")
-require("utils.table_save")
 
 function app:Init()
     yapre.SetRenderSize(320, 240)
     -- self:Deserialize() 
-    local new_test_world = function()
-        self.test_world = test_world:New()
+    local make_test_world = function()
+        self.test_world = test_world:Make()
+        self.rewind_controller = rewind_controller:Make(self.test_world)
     end
 
-    splash_world:New(new_test_world)
+    splash_screen:Show(make_test_world)
     return true
 end
 
 function app:Update(delta_ms)
-    local worlds = {}
-    
-    for _, world in pairs(yecs.worlds) do
-       table.insert(worlds, world)
-    end
-
-    for _, world in pairs(worlds) do
-        world:Update(delta_ms)
-    end
+    yecs.World:UpdateAllWorlds(delta_ms)
 end
 
 function app:Deinit()
