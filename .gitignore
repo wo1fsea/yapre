@@ -34,7 +34,7 @@
 *.swp
 
 /build/
-/tools/
+/tools/emsdk
 /compile_commands.json
 
 .cache
