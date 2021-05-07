@@ -1,16 +1,12 @@
+local app = {}
 
 local core = require("core")
 local yecs = core.yecs
-local reload = require("utils.reload")
 
-local test_world = require("app.test_world")
 local splash_screen = require("core.splash_screen")
-
+local test_world = require("app.test_world")
 local rewind_controller = require("app.rewind_controller")
 
-local app = {}
-
-local s = require("core.serialization")
 
 function app:Init()
     yapre.SetRenderSize(320, 240)
@@ -38,6 +34,7 @@ function app:Deinit()
 end
 
 function app:Reload()
+    -- local reload = require("utils.reload")
     -- reload.ReloadAll()
 end
 
