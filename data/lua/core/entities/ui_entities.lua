@@ -61,6 +61,9 @@ end
 function label_behavior:SetMaxSize(width, height)
     self.text:SetMaxSize(width, height)
 end
+function label_behavior:SetFontSize(size)
+    self.text:SetFontSize(size)
+end
 
 yecs.EntityFactory:Register(
 "label",
