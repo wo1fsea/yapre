@@ -150,7 +150,7 @@ yecs.Component:Register("text",
                     width = font_data[-1] 
                 end
 
-                if self.max_width > 0 and pos_x + width > self.max_width then
+                if self.max_width > 0 and (pos_x + width) * size > self.max_width then
                     pos_y = pos_y + font_data.height + 1
                     pos_x = 0
                 end
@@ -175,6 +175,10 @@ yecs.Component:Register("text",
         SetMaxSize=function(self, w, h)
             self.max_width = w
             self.max_height = h
+            self:Format()
+        end,
+        SetFontSize=function(self, v)
+            self.size = v
             self:Format()
         end
     },
