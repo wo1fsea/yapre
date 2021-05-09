@@ -27,6 +27,7 @@ function test_label:Make()
     local world_label_a = yecs.EntityFactory:Make("label")
     local world_label_b = yecs.EntityFactory:Make("label")
     local world_label_c = yecs.EntityFactory:Make("label")
+    local world_label_d = yecs.EntityFactory:Make("label")
 
     time_label:SetFontSize(2)
     time_label.position = {x=8, y=yapre.render_height-16-4, z=1}
@@ -35,6 +36,7 @@ function test_label:Make()
     world_label_a:SetText(worlds)
     world_label_b:SetText(worlds)
     world_label_c:SetText(worlds)
+    world_label_d:SetText("Label test")
 
     world_label_a:SetMaxSize(32, -1)
     world_label_a.position = {x=8, y=8, z=1}
@@ -46,10 +48,15 @@ function test_label:Make()
     world_label_c.position = {x=48, y=9*4+8+8, z=1}
     world_label_c:SetFontSize(2)
 
+    world_label_d:SetMaxSize(yapre.render_width-48-8, -1)
+    world_label_d.position = {x=48, y=yapre.render_height-56, z=1}
+    world_label_d:SetFontSize(4)
+
     world:AddEntity(time_label)
     world:AddEntity(world_label_a)
     world:AddEntity(world_label_b)
     world:AddEntity(world_label_c)
+    world:AddEntity(world_label_d)
 
     return world
 end
