@@ -15,7 +15,7 @@ bool to_stop = false;
 std::chrono::time_point<std::chrono::system_clock> last_time;
 
 bool Init() {
-  // chdir("/storage/emulated/0/Android/data/com.yapre/files");
+  //chdir("/storage/emulated/0/Android/data/run.yapre/files/data");
   chdir("./data");
    for (bool (*fptr)(void) : kInitFPtrs) {
     if (!fptr())
