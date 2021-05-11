@@ -72,11 +72,11 @@ function test_world:Make()
     progress:SetPercent(10)
 
     image:SetTextureSize(128,128)
-    image:SetTexture("data/image/animation/blood/1.png")
+    image:SetTexture("./image/animation/blood/1.png")
 
     image.position = {x=8, y=yapre.render_height-8-128, z=1}
-    image:AddAnimationState("die", "data/image/animation/blood/%d.png", 1, 20)
-    image:AddAnimationState("live", "data/image/animation/blood/%d.png", 1, 1)
+    image:AddAnimationState("die", "./image/animation/blood/%d.png", 1, 20)
+    image:AddAnimationState("live", "./image/animation/blood/%d.png", 1, 1)
 
     label:SetText("O wonder! \nHow many goodly creatures are there here!\nHow beauteous mankind is!\nO brave new world,\nThat has such people in't.")
     label:SetMaxSize(64, -1)

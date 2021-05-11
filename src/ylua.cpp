@@ -14,7 +14,7 @@ extern "C" {
 namespace yapre {
 namespace lua {
 
-const char *kDefaultLuaEntryFilePath = "data/lua/yapre.lua";
+const char *kDefaultLuaEntryFilePath = "./lua/yapre.lua";
 lua_State *mainLuaState = nullptr;
 
 lua_State *GetMainLuaState() {

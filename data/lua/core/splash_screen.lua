@@ -21,7 +21,7 @@ function splash_screen:Show(callback)
     local image_x = yapre.render_width / 2 - image_w / 2
     local image_y = yapre.render_height / 2 - image_h / 2
     
-    image:SetTexture("data/image/splash.png")
+    image:SetTexture("./image/splash.png")
     image:SetTextureSize(image_w, image_h)
     image:SetBorderEnabled(false)
     image.position = {x=image_x, y=image_y, z=1}
