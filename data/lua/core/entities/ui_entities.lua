@@ -10,14 +10,14 @@ yecs.Behavior:Register("button", button_behavior)
 function button_behavior:Init()
     self.sprite:AddSprite(
     "button", 
-    "data/image/ui/button16/1.png", 
+    "./image/ui/button16/1.png", 
     {size={width=32, height=32}})
     self.size.width = 32
     self.size.height = 32
 
-    self.animation:AddState("normal", "button",  "data/image/ui/button16/%d.png", 1, 1)
-    self.animation:AddState("pressed", "button",  "data/image/ui/button16/%d.png", 2, 2)
-    self.animation:AddState("disabled", "button",  "data/image/ui/button16/%d.png", 3, 3)
+    self.animation:AddState("normal", "button",  "./image/ui/button16/%d.png", 1, 1)
+    self.animation:AddState("pressed", "button",  "./image/ui/button16/%d.png", 2, 2)
+    self.animation:AddState("disabled", "button",  "./image/ui/button16/%d.png", 3, 3)
     function self.input:OnTouchBegan(x, y)
         self.entity.animation:Play("pressed")
         local on_touch_began_func = self.entity.OnTouchBegan
@@ -80,12 +80,12 @@ function image_behavior:Init()
     local border_color = palette_data.border_color 
     self.sprite:AddSprite(
     "image_border", 
-    "data/image/ui/blank2.png", 
+    "./image/ui/blank2.png", 
     {size=default_border_size, color=border_color})
 
     self.sprite:AddSprite(
     "image", 
-    "data/image/ui/blank2.png", 
+    "./image/ui/blank2.png", 
     {size=default_image_size, offset=default_image_offset})
 
     return self
@@ -127,7 +127,7 @@ function image_behavior:SetBorderEnabled(enable)
 
     button.sprite:AddSprite(
     "image_border", 
-    "data/image/ui/blank2.png", 
+    "./image/ui/blank2.png", 
     {size=size, color=border_color})
 end
 
@@ -163,17 +163,17 @@ function progress_behavior:Init()
 
     self.sprite:AddSprite(
     "progress_border", 
-    "data/image/ui/blank2.png", 
+    "./image/ui/blank2.png", 
     {size=default_border_size, color=border_color})
 
     self.sprite:AddSprite(
     "progress_backgroud", 
-    "data/image/ui/blank2.png", 
+    "./image/ui/blank2.png", 
     {size=default_size, offset={x=2, y=2, z=1}, color=background_color})
 
     self.sprite:AddSprite(
     "progress", 
-    "data/image/ui/blank2.png", 
+    "./image/ui/blank2.png", 
     {size=default_size, offset={x=2, y=2, z=2}, color=progress_color})
 
     self:SetPercent(100)
@@ -209,7 +209,7 @@ function panel_behavior:Init()
 
     self.sprite:AddSprite(
     "panel", 
-    "data/image/ui/blank2.png", 
+    "./image/ui/blank2.png", 
     {size=panel_size, color=panel_color})
     self.size = {width=64, height=64}
 
@@ -240,7 +240,7 @@ function palette_behavior:Init()
     for i, color in ipairs(palette_data.colors) do
         self.sprite:AddSprite(
         "palette"..i, 
-        "data/image/ui/blank2.png", 
+        "./image/ui/blank2.png", 
         {size={width=palette_size, height=palette_size}, color=color, offset={x=offset_x, y=0, z=1}})
         offset_x = offset_x + palette_size
     end
@@ -271,7 +271,7 @@ function progress_selector_behavior:Init()
     for idx = 1, block_num, 1 do
         self.sprite:AddSprite(
         "progress_selector_block"..idx, 
-        "data/image/ui/blank2.png", 
+        "./image/ui/blank2.png", 
         {size={width=block_width, height=block_height}, color=color, offset={x=offset_x, y=0, z=1}})
         offset_x = offset_x + block_interval + block_width 
     end

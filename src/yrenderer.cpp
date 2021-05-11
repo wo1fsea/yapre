@@ -68,8 +68,8 @@ bool Init() {
   std::string vertexCode;
   std::string fragmentCode;
   std::string geometryCode;
-  std::ifstream vertexShaderFile("data/shaders/sprite.vs");
-  std::ifstream fragmentShaderFile("data/shaders/sprite.fs");
+  std::ifstream vertexShaderFile("./shaders/sprite.vs");
+  std::ifstream fragmentShaderFile("./shaders/sprite.fs");
   std::stringstream vShaderStream, fShaderStream;
   vShaderStream << vertexShaderFile.rdbuf();
   fShaderStream << fragmentShaderFile.rdbuf();

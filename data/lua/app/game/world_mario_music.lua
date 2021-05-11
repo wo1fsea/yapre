@@ -180,7 +180,7 @@ function mario_music:Make()
     local stop_btn = yecs.EntityFactory:Make("button", {"mario_music_stop_btn_behavior"})
     local image = yecs.EntityFactory:Make("image")
     image:SetTextureSize(32, 32)
-    image:SetTexture("data/image/mario.png")
+    image:SetTexture("./image/mario.png")
 
     play_btn.position = {x=yapre.render_width/2-32, y=yapre.render_height/2, z=1}
     stop_btn.position = {x=yapre.render_width/2, y=yapre.render_height/2, z=1}

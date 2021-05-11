@@ -1,4 +1,4 @@
-package.path = package.path .. ";./data/lua/?.lua;./data/lua/?/init.lua"
+package.path = package.path .. ";./lua/?.lua;./lua/?/init.lua"
 
 require("utils.strict")
 require("utils.table_save")
