@@ -1,11 +1,9 @@
-rm -rf build/android
-mkdir -p build/android
+rm -rf ./build/android
+mkdir -p ./build/android
 
-export ANDROID_HOME="Users/huangquanyong/Library/Android/sdk/"
-export ANDROID_NDK_HOME="Users/huangquanyong/Library/Android/sdk/ndk-bundle"
+cp -r ./platform/android/run.yapre ./build/android/run.yapre
 
-cd ./external/SDL/build-scripts
-sh ./androidbuild.sh com.yapre ../../../src/main.cpp
-
-mv ../build/com.yapre ../../../build/android
+ln -s ../../../../../src ./build/android/run.yapre/app/jni/src
+ln -s ../../../../../external ./build/android/run.yapre/app/jni/external
+ln -s ../../../../../../../data ./build/android/run.yapre/app/src/main/assets/data
 
