@@ -105,7 +105,7 @@ void SwapWinodw() {
 }
 
 void ResetWindowSize() {
-#ifndef __EMSCRIPTEN__
+#ifdef YAPRE_DESKTOP
   if (mainWindow) {
     auto [w, h] = renderer::GetRenderSize();
     SDL_SetWindowSize(mainWindow, w, h);

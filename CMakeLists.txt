@@ -22,6 +22,10 @@ else()
     endif()
 endif()
 
+if(YAPRE_BUILD_PLATFORM STREQUAL "windows" OR YAPRE_BUILD_PLATFORM STREQUAL "mac")
+    add_compile_definitions(YAPRE_DESKTOP)
+endif()
+
 set(GLAD_DIR "external/glad")
 add_subdirectory(${GLAD_DIR})
 
