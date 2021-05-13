@@ -24,4 +24,4 @@ jobs:
           submodules: recursive
       - name: Build
         run: |
-          ./build_emscripten.sh
+          sh ./build_emscripten.sh
