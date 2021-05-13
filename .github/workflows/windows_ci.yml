@@ -18,7 +18,10 @@ jobs:
       fail-fast: true
       max-parallel: 4
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
