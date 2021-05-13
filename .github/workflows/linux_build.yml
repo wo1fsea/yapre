@@ -1,4 +1,4 @@
-name: emscripten_build
+name: linux_build
 on:
   push:
     branches:
