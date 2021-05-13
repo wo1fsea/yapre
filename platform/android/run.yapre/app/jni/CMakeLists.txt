@@ -68,6 +68,7 @@ file(GLOB PROJECT_RESOURCE
 source_group("include" FILES ${PROJECT_INCLUDE})
 source_group("src" FILES ${PROJECT_SRC})
 
+add_compile_options(-DYAPRE_ANDROID)
 add_library(
         ${PROJECT_NAME}
         SHARED

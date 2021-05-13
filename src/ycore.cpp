@@ -15,9 +15,17 @@ bool to_stop = false;
 std::chrono::time_point<std::chrono::system_clock> last_time;
 
 bool Init() {
-  //chdir("/storage/emulated/0/Android/data/run.yapre/files/data");
-  chdir("./data");
-   for (bool (*fptr)(void) : kInitFPtrs) {
+
+// setup data path
+#ifdef YAPRE_ANDROID
+  std::string data_path = SDL_AndroidGetExternalStoragePath();
+  data_path += "/data";
+#else
+  std::string data_path = "./data";
+#endif
+  chdir(data_path.c_str());
+
+  for (bool (*fptr)(void) : kInitFPtrs) {
     if (!fptr())
       return false;
   }
