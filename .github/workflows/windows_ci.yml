@@ -18,6 +18,10 @@ jobs:
       fail-fast: true
       max-parallel: 4
     steps:
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+      - run: echo "🍏 This job's status is ${{ job.status }}."
       - name: Build
         shell: powershell
         run: |
