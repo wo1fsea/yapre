@@ -1,4 +1,4 @@
-name: mac_ci
+name: windows_build
 on:
   push:
     branches:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: windows-latest
     env:
       configuration: Release
     strategy:
@@ -22,6 +22,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: Build
+      - name: List files in the repository
         run: |
-          sh ./build_mac.sh
+          ls ${{ github.workspace }}
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+      - name: Build
+        shell: powershell
+        run: |
+          .\build_windows.bat
