@@ -22,10 +22,6 @@ else()
     endif()
 endif()
 
-if(YAPRE_BUILD_PLATFORM STREQUAL "windows" OR YAPRE_BUILD_PLATFORM STREQUAL "mac")
-    add_compile_definitions(YAPRE_DESKTOP)
-endif()
-
 set(GLAD_DIR "external/glad")
 add_subdirectory(${GLAD_DIR})
 
@@ -80,6 +76,19 @@ file(GLOB PROJECT_RESOURCE
 source_group("include" FILES ${PROJECT_INCLUDE})
 source_group("src" FILES ${PROJECT_SRC})
 
+if(YAPRE_BUILD_PLATFORM STREQUAL "windows")
+    add_compile_options(-DYAPRE_WINDOWS)
+elseif(YAPRE_BUILD_PLATFORM STREQUAL "mac")
+    add_compile_options(-DYAPRE_ANDROID)
+elseif(YAPRE_BUILD_PLATFORM STREQUAL "linux")
+    add_compile_options(-DYAPRE_LINUX)
+elseif(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
+    add_compile_options(-DYAPRE_EMSCRIPTEN)
+elseif(YAPRE_BUILD_PLATFORM STREQUAL "android")
+    add_compile_options(-DYAPRE_ANDROID)
+elseif(YAPRE_BUILD_PLATFORM STREQUAL "ios")
+    add_compile_options(-DYAPRE_IOS)
+endif()
 add_executable(
     ${PROJECT_NAME} 
     ${PROJECT_INCLUDE} 

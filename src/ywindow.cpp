@@ -105,7 +105,7 @@ void SwapWinodw() {
 }
 
 void ResetWindowSize() {
-#ifdef YAPRE_DESKTOP
+#if defined(YPARE_WINDOWS) || defined(YPARE_MAC) ||defined(YPARE_LINUX) 
   if (mainWindow) {
     auto [w, h] = renderer::GetRenderSize();
     SDL_SetWindowSize(mainWindow, w, h);
