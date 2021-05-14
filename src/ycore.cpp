@@ -3,7 +3,13 @@
 #include <SDL.h>
 #include <chrono>
 #include <iostream>
+
+#ifdef YAPRE_WINDOWS
+#include <direct.h>
+#define chdir _chdir
+#else
 #include <unistd.h>
+#endif
 
 #include "yluabind.hpp"
 #include "ytimer.h"
