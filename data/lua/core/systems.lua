@@ -1,5 +1,6 @@
 local systems = {}
 local yecs = require("core.yecs")
+local emscripten_keycode_mapping = require("core.data.emscripten_keycode_mapping")
 
 -- dummy system
 local dummy_system = {}
@@ -109,7 +110,10 @@ end
 
 function input_system:Init()
     local function OnKey(timestamp, state, multi, keycode)
-        print(string.format("%s-[OnKey] %i:%i:%i:%c", self.world, timestamp, state, multi, keycode))
+        if yapre.platform == "emscripten" then
+            keycode = emscripten_keycode_mapping:GetKeyCode(keycode)
+        end
+        print(string.format("%s-[OnKey] %i:%i:%i:%i", self.world, timestamp, state, multi, keycode))
         table.insert(self._key_events, {timestamp=timestamp, state=state, multi=multi, keycode=keycode})
         if self.OnKey then
             self:OnKey(timestamp, state, multi, keycode)
