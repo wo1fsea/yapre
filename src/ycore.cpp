@@ -20,6 +20,22 @@ namespace core {
 bool to_stop = false;
 std::chrono::time_point<std::chrono::system_clock> last_time;
 
+#if defined(YAPRE_WINDOWS)
+const std::string platform = "windows";
+#elif defined(YAPRE_MAC)
+const std::string platform = "mac";
+#elif defined(YAPRE_LIUNX)
+const std::string platform = "linux";
+#elif defined(YAPRE_ANDROID)
+const std::string platform = "android";
+#elif defined(YAPRE_IOS)
+const std::string platform = "ios";
+#elif defined(YAPRE_EMSCRIPTEN)
+const std::string platform = "emscripten";
+#else
+const std::string platform = "unknown";
+#endif
+
 bool Init() {
 
 // setup data path
@@ -38,6 +54,7 @@ bool Init() {
   last_time = std::chrono::system_clock::now();
 
   lua::GStateModule{"yapre"}.Define("Exit", SetToStop);
+  lua::GStateModule{"yapre"}.Define("platform", platform);
 
   return true;
 }
