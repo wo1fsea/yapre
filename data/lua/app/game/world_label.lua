@@ -1,9 +1,9 @@
-local test_label = {}
+local world_label = {}
 
 local core = require("core")
 local yecs = core.yecs
 
-yecs.Behavior:Register("test_label_time_label_behavior", {
+yecs.Behavior:Register("world_label_time_label_behavior", {
     OnInit=function(self)
         self:AddComponent("tick")
         self:AddComponent("data")
@@ -19,11 +19,11 @@ yecs.Behavior:Register("test_label_time_label_behavior", {
 })
 
 
-function test_label:Make()
-    local world = yecs.World:New("test_label")
+function world_label:Make()
+    local world = yecs.World:New("world_label")
     world:AddSystems({"sprite", "input", "tree", "tick"})
 
-    local time_label = yecs.EntityFactory:Make("label", {"test_label_time_label_behavior"})
+    local time_label = yecs.EntityFactory:Make("label", {"world_label_time_label_behavior"})
     local world_label_a = yecs.EntityFactory:Make("label")
     local world_label_b = yecs.EntityFactory:Make("label")
     local world_label_c = yecs.EntityFactory:Make("label")
@@ -61,4 +61,4 @@ function test_label:Make()
     return world
 end
 
-return test_label
+return world_label

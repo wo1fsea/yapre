@@ -19,6 +19,7 @@ function button_behavior:Init()
     self.animation:AddState("pressed", "button",  "./image/ui/button16/%d.png", 2, 2)
     self.animation:AddState("disabled", "button",  "./image/ui/button16/%d.png", 3, 3)
     function self.input:OnTouchBegan(x, y)
+        self.entity.animation:StopAll()
         self.entity.animation:Play("pressed")
         local on_touch_began_func = self.entity.OnTouchBegan
         if on_touch_began_func then on_touch_began_func(self.entity, x, y) end
@@ -30,6 +31,7 @@ function button_behavior:Init()
         return true
     end
     function self.input:OnTouchEnded(x, y)
+        self.entity.animation:StopAll()
         self.entity.animation:Play("normal")
         local on_clicked_func = self.entity.OnClicked
         if on_clicked_func then on_clicked_func(self.entity, x, y) end
@@ -113,7 +115,7 @@ function image_behavior:SetBorderEnabled(enable)
         self.sprite:RemoveSprite("image_border")
         return
     end
-    local image_sprite = button.sprite.sprites["image"]
+    local image_sprite = self.sprite.sprites["image"]
     if not image_sprite then
         local size = default_border_size
     else
@@ -125,7 +127,7 @@ function image_behavior:SetBorderEnabled(enable)
         end
     end
 
-    button.sprite:AddSprite(
+    self.sprite:AddSprite(
     "image_border", 
     "./image/ui/blank2.png", 
     {size=size, color=border_color})

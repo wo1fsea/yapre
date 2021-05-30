@@ -261,7 +261,7 @@ yecs.Component:Register("animation",
     end,
 
     _operations={
-        AddState=function(self, key, sprite_key, texture_format, start_idx, end_idx)
+        AddState=function(self, key, sprite_key, texture_format, start_idx, end_idx, loop)
             self.animations[key] = {
                 sprite_key=sprite_key,
                 texture_format=texture_format,

@@ -37,7 +37,7 @@ yecs.Behavior:Register("world_image_image2_behavior", {
 
 
 function world_image:Make()
-    local world = yecs.World:New("test_label")
+    local world = yecs.World:New("world_image")
     world:AddSystems({"sprite", "input", "tree", "tick"})
 
     local image1 = yecs.EntityFactory:Make("image")
