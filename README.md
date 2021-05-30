@@ -1,6 +1,6 @@
 # yapre
 
-![yapre](./banner.png)
+![yapre](./vis/png/banner.png)
 
 **Build Status**
 
