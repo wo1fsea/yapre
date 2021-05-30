@@ -12,7 +12,7 @@ def TrimImage(image_filepath, bbox):
     new_img.save(image_filepath)
 
 def ConvertToSize(image_filepath, size):
-    new_img = Image.new('RGBA', size, 0x45283c)
+    new_img = Image.new('RGBA', size, (69, 40, 60,255))
     img = Image.open(image_filepath)
     if img.mode != "RGBA":
         img = img.convert("RGBA")
@@ -22,7 +22,7 @@ def ConvertToSize(image_filepath, size):
     new_img.paste(img, (x, y, x+img.size[0], y+img.size[1]))
     
     
-    new_img = new_img.resize((64, 64))
+    new_img = new_img.resize((64, 64), Image.NEAREST)
     new_img.save(image_filepath)
 
 
