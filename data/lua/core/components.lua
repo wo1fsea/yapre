@@ -241,8 +241,11 @@ yecs.Component:Register("animation",
                 local s = sprite.sprites[a.sprite_key]
                 if s then 
                     s.texture = string.format(a.texture_format, idx)
-                    if idx + 1 < a.end_idx then
+                    if idx + 1 <= a.end_idx then
                         next_idx[k] = idx + 1
+                        next_timer = true
+                    elseif a.loop then
+                        next_idx[k] = a.start_idx
                         next_timer = true
                     end
                 end
@@ -258,12 +261,13 @@ yecs.Component:Register("animation",
     end,
 
     _operations={
-        AddState=function(self, key, sprite_key, texture_format, start_idx, end_idx)
+        AddState=function(self, key, sprite_key, texture_format, start_idx, end_idx, loop)
             self.animations[key] = {
                 sprite_key=sprite_key,
                 texture_format=texture_format,
                 start_idx=start_idx,
                 end_idx=end_idx,
+                loop=loop,
             }
         end,
         RemoveState=function(self, key)

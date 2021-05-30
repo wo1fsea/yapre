@@ -1,9 +1,9 @@
-local mario_music = {}
+local world_mario_music = {}
 
 local core = require("core")
 local yecs = core.yecs
 
-mario_music.data = {
+world_mario_music.data = {
     {0, 659, 125},
     {125, 659, 125},
     {375, 659, 125},
@@ -113,14 +113,14 @@ mario_music.data = {
     {26130, 523, 125},
 }
 
-yecs.Behavior:Register("mario_music_play_btn_behavior", {
+yecs.Behavior:Register("world_mario_music_play_btn_behavior", {
     OnClicked=function(self, x, y)
         local data = self.data
         if data.playing then return end
         data.playing = true
         data.delta_ms = 0
 
-        self.world:GetEntityByTags({"mario_music_stop_btn"}):SetState("normal")
+        self.world:GetEntityByTags({"world_mario_music_stop_btn"}):SetState("normal")
         self:SetState("disabled")
     end,
     OnInit=function(self)
@@ -131,19 +131,19 @@ yecs.Behavior:Register("mario_music_play_btn_behavior", {
         data.playing = false
         data.delta_ms = 0
         
-        self.tags["mario_music_play_btn"] = true
-        self.tick:AddTick("mario_music_play", 
+        self.tags["world_mario_music_play_btn"] = true
+        self.tick:AddTick("world_mario_music_play", 
         function(tick_ms) 
             if not data.playing then
-                self.world:GetEntityByTags({"mario_music_stop_btn"}):SetState("disabled")
+                self.world:GetEntityByTags({"world_mario_music_stop_btn"}):SetState("disabled")
                 self:SetState("normal")
                 return
             end
 
-            self.world:GetEntityByTags({"mario_music_stop_btn"}):SetState("normal")
+            self.world:GetEntityByTags({"world_mario_music_stop_btn"}):SetState("normal")
             self:SetState("disabled")
 
-            for _, md in ipairs(mario_music.data) do
+            for _, md in ipairs(world_mario_music.data) do
                 if md[1] > data.delta_ms + tick_ms then 
                     break 
                 elseif md[1] > data.delta_ms then
@@ -157,9 +157,9 @@ yecs.Behavior:Register("mario_music_play_btn_behavior", {
     end
 })
 
-yecs.Behavior:Register("mario_music_stop_btn_behavior", {
+yecs.Behavior:Register("world_mario_music_stop_btn_behavior", {
     OnClicked=function(self, x, y)
-        local play_btn = self.world:GetEntityByTags({"mario_music_play_btn"})
+        local play_btn = self.world:GetEntityByTags({"world_mario_music_play_btn"})
         play_btn:SetState("normal")
         play_btn.data.playing = false
         play_btn.data.delta_ms = 0
@@ -167,17 +167,17 @@ yecs.Behavior:Register("mario_music_stop_btn_behavior", {
     end,
     OnInit=function(self)
         self:AddComponent("tags")
-        self.tags["mario_music_stop_btn"] = true
+        self.tags["world_mario_music_stop_btn"] = true
     end
 })
 
 
-function mario_music:Make()
-    local world = yecs.World:New("mario_music")
+function world_mario_music:Make()
+    local world = yecs.World:New("world_mario_music")
     world:AddSystems({"sprite", "input", "tree", "tick"})
 
-    local play_btn = yecs.EntityFactory:Make("button", {"mario_music_play_btn_behavior"})
-    local stop_btn = yecs.EntityFactory:Make("button", {"mario_music_stop_btn_behavior"})
+    local play_btn = yecs.EntityFactory:Make("button", {"world_mario_music_play_btn_behavior"})
+    local stop_btn = yecs.EntityFactory:Make("button", {"world_mario_music_stop_btn_behavior"})
     local image = yecs.EntityFactory:Make("image")
     image:SetTextureSize(32, 32)
     image:SetTexture("./image/mario.png")
@@ -193,4 +193,4 @@ function mario_music:Make()
     return world 
 end
 
-return mario_music
+return world_mario_music
