@@ -131,8 +131,8 @@ function image_behavior:SetBorderEnabled(enable)
     {size=size, color=border_color})
 end
 
-function image_behavior:AddAnimationState(key, texture_format, start_idx, end_idx)
-    self.animation:AddState(key, "image", texture_format, start_idx, end_idx)
+function image_behavior:AddAnimationState(key, texture_format, start_idx, end_idx, loop)
+    self.animation:AddState(key, "image", texture_format, start_idx, end_idx, loop)
 end
 function image_behavior:RemoveAnimationState(key)
     self.animation:RemoveState(key)

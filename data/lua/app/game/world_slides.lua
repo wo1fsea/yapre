@@ -29,8 +29,8 @@ function slides:Make()
     local next_btn = yecs.EntityFactory:Make("button", {"slides_next_btn_behavior"})
     local prev_btn = yecs.EntityFactory:Make("button", {"slides_prev_btn_behavior"})
 
-    next_btn.position = {x=yapre.render_width-32, y=yapre.render_height-32, z=1}
-    prev_btn.position = {x=yapre.render_width-32*2, y=yapre.render_height-32, z=1}
+    next_btn.position = {x=yapre.render_width-4-32, y=yapre.render_height-32, z=1}
+    prev_btn.position = {x=yapre.render_width-4-32*2, y=yapre.render_height-32, z=1}
 
     world:AddEntity(next_btn)
     world:AddEntity(prev_btn)
