@@ -17,6 +17,13 @@ It is a toy project for everyone to make retro games on any platform(for now Win
 Try the demo app in your webbrowser by typping [yapre.run](https://yapre.run) in your address bar!
 
 
+## Examples
+
+![example1](./docs/example1.gif)
+![example2](./docs/example2.gif)
+![example3](./docs/example3.gif)
+![example4](./docs/example4.gif)
+
 ## API
 
 ### System
