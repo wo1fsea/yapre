@@ -12,6 +12,7 @@ function button_behavior:Init()
     "button", 
     "./image/ui/button16/1.png", 
     {size={width=32, height=32}})
+
     self.size.width = 32
     self.size.height = 32
 
@@ -46,6 +47,14 @@ function button_behavior:SetState(state)
     animation:Stop("pressed")
     animation:Stop("disabled")
     animation:Play(state)
+end
+
+function button_behavior:SetButtonSize(width, height)
+    local image_sprite = self.sprite.sprites["button"]
+    if image_sprite then
+        image_sprite.size = {width=width, height=height}
+    end
+    self.size = {width=width, height=height}
 end
 
 yecs.EntityFactory:Register(

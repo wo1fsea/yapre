@@ -245,7 +245,7 @@ function tick_system:Update(delta_ms)
         elseif t1.tick_order > t2.tick_order  then
             return false
         else
-            return tonumber(t1.entity.key) < tonumber(t2.entity.key)
+            return false 
         end
     end
     )
