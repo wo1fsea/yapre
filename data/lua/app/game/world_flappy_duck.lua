@@ -125,8 +125,8 @@ yecs.Behavior:Register("world_flappy_duck_cactus_behavior", {
                 local cs = self.world:GetEntitiesByTags({"cactus"})
                 local p_x = yapre.render_width
                 for _, c in pairs(cs) do
-                    if c.position.x + 80 > p_x then
-                        p_x = c.position.x + 80
+                    if c.data.x + 80 > p_x then
+                        p_x = c.data.x + 80
                     end
                 end
 
@@ -251,7 +251,7 @@ yecs.Behavior:Register("world_flappy_duck_background_behavior", {
             self.data.x = self.data.x - self.data.speed / delta_ms
             if self.data.x < -self.size.width then
                 local bs = self.world:GetEntitiesByTags({self.data.tag})
-                local p_x = yapre.render_width
+                local p_x = 0 -- yapre.render_width
                 for _, b in pairs(bs) do
                     if b.data.x + self.data.interval + self.size.width > p_x then
                         p_x = b.data.x + self.data.interval + self.size.width
@@ -289,6 +289,7 @@ function world_flappy_duck:MakeBackground(world)
 
         background_stars:SetTexture( "./image/flappy_duck/stars.png")
         background_stars.data.tag = "background_stars"
+        background_stars.tags[background_stars.data.tag] = true
         background_stars.data.x = 16 * (idx-1) + 128 * (idx-1)
         background_stars.data.y = math.random(32)
         background_stars.data.z = 3
@@ -307,6 +308,7 @@ function world_flappy_duck:MakeBackground(world)
 
         background_layer:SetTexture( "./image/flappy_duck/skybg1.png")
         background_layer.data.tag = "background_layer1"
+        background_layer.tags[background_layer.data.tag] = true
         background_layer.data.x = 127 * (idx-1)
         background_layer.data.y = 160
         background_layer.data.z = 2
@@ -325,6 +327,7 @@ function world_flappy_duck:MakeBackground(world)
 
         background_layer:SetTexture( "./image/flappy_duck/skybg2.png")
         background_layer.data.tag = "background_layer2"
+        background_layer.tags[background_layer.data.tag] = true
         background_layer.data.x = 127 * (idx-1)
         background_layer.data.y = 200
         background_layer.data.z = 4
