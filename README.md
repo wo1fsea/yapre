@@ -21,8 +21,70 @@ Try the demo app in your webbrowser by typping [yapre.run](https://yapre.run) in
 
 ![example1](./docs/example1.gif)
 ![example2](./docs/example2.gif)
+
 ![example3](./docs/example3.gif)
 ![example4](./docs/example4.gif)
+
+## Build
+
+### windows
+
+```
+> cd yapre
+> .\build_scripts\build_windows.bat
+```
+
+### mac
+
+```
+> cd yapre
+> sh ./build_scripts/build_mac.sh
+```
+
+### linux
+
+```
+> cd yapre
+> sh ./build_scripts/build_linux.sh
+```
+
+### generate ios xcode project on mac
+
+#### for devices
+
+```
+> cd yapre
+> sh ./build_scripts/build_ios.sh
+```
+
+#### for simulators
+
+```
+> cd yapre
+> sh ./build_scripts/build_ios_simulator.sh
+```
+
+### generate android studio project on mac
+
+```
+> cd yapre
+> sh ./build_scripts/build_android.sh
+```
+
+### build emscripten version on mac/linux
+
+#### build
+
+```
+> cd yapre
+> sh ./build_scripts/build_emscripten.sh
+```
+
+#### test run
+
+```
+> sh ./build_scripts/run_emscripten.sh
+```
 
 ## API
 
