@@ -30,6 +30,7 @@ Try the demo app in your webbrowser by typping [yapre.run](https://yapre.run) in
 ### windows
 
 ```
+> git clone --recurse-submodules -j8 git@github.com:wo1fsea/yapre.git
 > cd yapre
 > .\build_scripts\build_windows.bat
 ```
@@ -37,6 +38,7 @@ Try the demo app in your webbrowser by typping [yapre.run](https://yapre.run) in
 ### mac
 
 ```
+> git clone --recurse-submodules -j8 git@github.com:wo1fsea/yapre.git
 > cd yapre
 > sh ./build_scripts/build_mac.sh
 ```
@@ -44,6 +46,7 @@ Try the demo app in your webbrowser by typping [yapre.run](https://yapre.run) in
 ### linux
 
 ```
+> git clone --recurse-submodules -j8 git@github.com:wo1fsea/yapre.git
 > cd yapre
 > sh ./build_scripts/build_linux.sh
 ```
@@ -53,6 +56,7 @@ Try the demo app in your webbrowser by typping [yapre.run](https://yapre.run) in
 #### for devices
 
 ```
+> git clone --recurse-submodules -j8 git@github.com:wo1fsea/yapre.git
 > cd yapre
 > sh ./build_scripts/build_ios.sh
 ```
@@ -60,6 +64,7 @@ Try the demo app in your webbrowser by typping [yapre.run](https://yapre.run) in
 #### for simulators
 
 ```
+> git clone --recurse-submodules -j8 git@github.com:wo1fsea/yapre.git
 > cd yapre
 > sh ./build_scripts/build_ios_simulator.sh
 ```
@@ -67,6 +72,7 @@ Try the demo app in your webbrowser by typping [yapre.run](https://yapre.run) in
 ### generate android studio project on mac
 
 ```
+> git clone --recurse-submodules -j8 git@github.com:wo1fsea/yapre.git
 > cd yapre
 > sh ./build_scripts/build_android.sh
 ```
@@ -76,6 +82,7 @@ Try the demo app in your webbrowser by typping [yapre.run](https://yapre.run) in
 #### build
 
 ```
+> git clone --recurse-submodules -j8 git@github.com:wo1fsea/yapre.git
 > cd yapre
 > sh ./build_scripts/build_emscripten.sh
 ```
