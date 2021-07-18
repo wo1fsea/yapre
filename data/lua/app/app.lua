@@ -9,6 +9,7 @@ local game = require("app.game")
 function app:Init()
     yapre.SetRenderSize(320, 240)
     splash_screen:Show(function() game:Init() end)
+    dbg()
     return true
 end
 
