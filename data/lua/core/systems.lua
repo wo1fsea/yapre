@@ -39,8 +39,10 @@ function sprite_system:Update(delta_ms)
             local color = sprite_data.color
             yapre.DrawSprite(
             sprite_data.texture, 
-            position.x + offset.x, position.y + offset.y, position.z + offset.z, 
-            size.width, size.height, 
+            math.floor(position.x + offset.x),  
+            math.floor(position.y + offset.y),  
+            math.floor(position.z + offset.z), 
+            math.floor(size.width),  math.floor(size.height), 
             0., 
             color.r, color.g, color.b 
             ) 

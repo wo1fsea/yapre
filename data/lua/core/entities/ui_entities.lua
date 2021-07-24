@@ -75,6 +75,9 @@ end
 function label_behavior:SetFontSize(size)
     self.text:SetFontSize(size)
 end
+function label_behavior:GetRenderSize()
+    return self.text:GetRenderSize()
+end
 
 yecs.EntityFactory:Register(
 "label",
