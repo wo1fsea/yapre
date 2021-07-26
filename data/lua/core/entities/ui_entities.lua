@@ -249,7 +249,7 @@ yecs.EntityFactory:Register(
 local palette_behavior = {}
 yecs.Behavior:Register("palette", palette_behavior)
 function palette_behavior:Init()
-    local palette_size = 4
+    local palette_size = 8
     local offset_x = 0
     for i, color in ipairs(palette_data.colors) do
         self.sprite:AddSprite(

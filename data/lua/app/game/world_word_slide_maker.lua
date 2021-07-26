@@ -13,11 +13,15 @@ function world_word_slide:Make()
     world:AddSystems({"sprite", "input", "tree", "tick"})
 
     local words = yecs.EntityFactory:Make("label") 
+    words:SetFontSize(self.font_size)
     words:SetText(self.words)
 
     local rs = words:GetRenderSize()
-    print(rs.width, rs.height, self.words)
-    words.position = {x=yapre.render_width/2-rs.width/2, y=yapre.render_height/2+rs.height, z=1}
+    words.position = {
+        x=yapre.render_width/2-rs.width*self.font_size/2, 
+        y=yapre.render_height/2-rs.height*self.font_size/2, 
+        z=1
+    }
 
     world:AddEntity(words)
 
