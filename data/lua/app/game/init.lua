@@ -42,7 +42,7 @@ function game:Init()
         world_flappy_duck,
         world_word_slide_maker:Make("palette\n", 2),
         world_palette,
-        world_word_slide_maker:Make("PM\n\na) #1GAM (?)\nb) 15min task", 2),
+        world_word_slide_maker:Make("PM\n\na) #1GAM (?)\nb) 15min task\n", 2),
         world_word_slide_maker:Make("many thinks\n", 2),
         -- world_label,
     }
