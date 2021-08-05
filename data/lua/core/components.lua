@@ -118,6 +118,8 @@ yecs.Component:Register("text",
     size=1,
     max_width=0,
     max_height=0,
+    render_width=0,
+    render_height=0,
 
     _operations={
         SetText=function(self, new_text)
@@ -135,6 +137,8 @@ yecs.Component:Register("text",
             local pos_x = 0
             local pos_y = 0
             local pos_z = 1
+            self.render_width = 0
+            self.render_height = 0
             local size = self.size
             self.text:gsub(".", function(c)
                 if c == "\n" then
@@ -168,8 +172,11 @@ yecs.Component:Register("text",
                 table.insert(new_sprites, texture)
                 pos_x = pos_x + width
                 pos_z = pos_z + 1
+                
+                self.render_width = math.max(pos_x, self.render_width)
             end)
 
+            self.render_height = pos_y
             sprite.sprites = new_sprites
         end,
         SetMaxSize=function(self, w, h)
@@ -180,7 +187,10 @@ yecs.Component:Register("text",
         SetFontSize=function(self, v)
             self.size = v
             self:Format()
-        end
+        end,
+        GetRenderSize=function(self)
+            return {width=self.render_width, height=self.render_height}
+        end,
     },
 
 })
