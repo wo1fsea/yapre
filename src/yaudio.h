@@ -17,6 +17,5 @@ bool Init();
 void Deinit();
 void Update(int delta_ms);
 void Beep(double freq, int duration);
-void PlayMario();
 }; // namespace audio
 }; // namespace yapre
