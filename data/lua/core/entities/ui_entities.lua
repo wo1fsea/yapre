@@ -266,7 +266,7 @@ yecs.EntityFactory:Register(
 {"palette"}
 )
 
--- palette
+-- progress_selector
 local progress_selector_behavior = {}
 yecs.Behavior:Register("progress_selector", progress_selector_behavior)
 function progress_selector_behavior:Init()
