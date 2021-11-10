@@ -5,6 +5,8 @@ local yecs = core.yecs
 
 local serialization = require("core.serialization")
 
+local dump_interval = 1000 -- 1s
+
 rewind_controller.dump_data = {}
 rewind_controller.dump_data_cur_idx = 1
 rewind_controller.dump_data_max_num = 100
@@ -152,7 +154,7 @@ function rewind_controller:ShowControlPanel(v)
 end
 
 function rewind_controller:AddTimer()
-    yapre.AddTimer(250, function()
+    yapre.AddTimer(dump_interval, function()
         if not self.paused then self:Dump() end
         self:AddTimer()
     end)

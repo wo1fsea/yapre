@@ -165,7 +165,7 @@ yecs.EntityFactory:Register(
 {"image"})
 
 
---progress
+-- progress
 local progress_behavior = {}
 yecs.Behavior:Register("progress", progress_behavior)
 function progress_behavior:Init()
@@ -214,7 +214,7 @@ yecs.EntityFactory:Register(
 {"progress"}
 )
 
---panel
+-- panel
 local panel_behavior = {}
 yecs.Behavior:Register("panel", panel_behavior)
 function panel_behavior:Init()
@@ -266,7 +266,7 @@ yecs.EntityFactory:Register(
 {"palette"}
 )
 
--- palette
+-- progress_selector
 local progress_selector_behavior = {}
 yecs.Behavior:Register("progress_selector", progress_selector_behavior)
 function progress_selector_behavior:Init()
@@ -325,5 +325,7 @@ yecs.EntityFactory:Register(
 {"position", "sprite", "tree", "size", "data"},
 {"progress_selector"}
 )
+
+
 
 return entities
