@@ -1,5 +1,9 @@
 package.path = package.path .. ";./lua/?.lua;./lua/?/init.lua"
 
+yapre.dbg = require("utils.debugger")
+yapre.dbg.read = yapre.DebugRead
+yapre.dbg.write = yapre.DebugWrite
+
 require("utils.strict")
 require("utils.table_save")
 

@@ -1,10 +1,14 @@
 #include "yrepl.h"
 #include "ycore.h"
 #include "ylua.h"
+#include "yluabind.hpp"
 
 #include "linenoise.hpp"
 
+#include <chrono>
+#include <istream>
 #include <memory>
+#include <mutex>
 #include <ostream>
 #include <string>
 #include <thread>
@@ -14,13 +18,14 @@ namespace repl {
 
 #ifdef __EMSCRIPTEN__
 
-bool Init() {return true;}
+bool Init() { return true; }
 void Deinit() {}
 void Update(int delta_ms) {}
 
 #else
 
 std::thread *console = nullptr;
+std::mutex input_mutex;
 std::string input = "";
 
 bool Init() {
@@ -53,14 +58,22 @@ bool Init() {
       if (quit) {
         break;
       }
-      // Add text to history
-      linenoise::AddHistory(line.c_str());
-      input = line;
+
+      {
+        std::lock_guard<std::mutex> guard(input_mutex);
+        // Add text to history
+        linenoise::AddHistory(line.c_str());
+        input = line;
+      }
     }
 
     // Save history
     linenoise::SaveHistory(path);
   });
+
+  lua::GStateModule("yapre").Define("DebugRead", DebugRead);
+  lua::GStateModule("yapre").Define("DebugWrite", DebugWrite);
+
   return true;
 }
 void Deinit() {
@@ -69,13 +82,30 @@ void Deinit() {
 }
 
 void Update(int delta_ms) {
-  if (input != "") {
-    std::cout << "========== lua ==========" << std::endl;
-    std::cout << lua::DoString(input) << std::endl;
-    std::cout << "========== lua ==========" << std::endl;
-    input = "";
+  if (input_mutex.try_lock()) {
+    if (input != "") {
+      std::cout << "========== lua ==========" << std::endl;
+      std::cout << lua::DoString(input) << std::endl;
+      std::cout << "========== lua ==========" << std::endl;
+      input = "";
+    }
+    input_mutex.unlock();
   }
 }
+
+std::string DebugRead() {
+  using namespace std::chrono_literals;
+  while (input == "" || !input_mutex.try_lock()) {
+    std::this_thread::sleep_for(100ms);
+  }
+
+  auto result = input;
+  input = "";
+  input_mutex.unlock();
+  return result;
+}
+
+void DebugWrite(std::string data) { std::cout << data; }
 
 #endif
 
