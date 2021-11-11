@@ -7,7 +7,6 @@ extern "C" {
 #include "lauxlib.h"
 #include "lua.h"
 #include "lualib.h"
-#include "debugger_lua.h"
 }
 
 #include "yluabind.hpp"
@@ -22,7 +21,6 @@ lua_State *GetMainLuaState() {
   if (!mainLuaState) {
     mainLuaState = luaL_newstate();
     luaL_openlibs(mainLuaState);
-    dbg_setup(mainLuaState, "debugger", "dbg", NULL, NULL);
   }
   return mainLuaState;
 }
