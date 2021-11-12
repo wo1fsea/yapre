@@ -37,8 +37,8 @@ add_subdirectory(${LUA_DIR})
 set(CPP_LONENOISE_DIR "external/cpp-linenoise")
 add_subdirectory(${CPP_LONENOISE_DIR})
 
-set(DEBUGGER_LUA "external/debugger_lua")
-add_subdirectory(${DEBUGGER_LUA})
+# set(DEBUGGER_LUA "external/debugger_lua")
+# add_subdirectory(${DEBUGGER_LUA})
 
 # option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 # option(ASSIMP_BUILD_TESTS OFF)
@@ -108,7 +108,7 @@ if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
         glm_static
         std_image
         lua
-        debugger_lua
+        # debugger_lua
         # assimp 
         )
 else()
@@ -120,7 +120,7 @@ else()
         glm_static
         std_image
         lua
-        debugger_lua
+        # debugger_lua
         # assimp 
         )
 endif()
