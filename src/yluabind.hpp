@@ -9,6 +9,7 @@ extern "C" {
 #include <functional>
 #include <iostream>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -105,6 +106,47 @@ template <> struct StateVar<char const *> {
   }
   static inline char const *Get(lua_State *l, int index) {
     return luaL_checkstring(l, index);
+  }
+};
+
+template <typename... Targs> struct StateVar<std::tuple<Targs...>> {
+
+  template <size_t idx>
+  static void _Put(lua_State *l, std::tuple<Targs...> value) {
+    StateVar<typename std::tuple_element<idx, std::tuple<Targs...>>::type>::Put(
+        l, std::get<idx>(value));
+    lua_rawseti(l, -2, idx + 1);
+    _Put<idx + 1>(l, value);
+  }
+
+  template <>
+  static void _Put<sizeof...(Targs)>(lua_State *l, std::tuple<Targs...> value) {
+  }
+
+  static inline void Put(lua_State *l, std::tuple<Targs...> value) {
+    lua_newtable(l);
+    _Put<0>(l, value);
+  }
+
+  static inline std::tuple<Targs...> Get(lua_State *l, int index) {
+    return _Get(std::make_index_sequence<sizeof...(Targs)>{}, l, index);
+  }
+
+  template <std::size_t... Is>
+  static inline std::tuple<Targs...> _Get(std::index_sequence<Is...> const &,
+                                          lua_State *l, int index) {
+    std::tuple<Targs...> t;
+    int top_of_stack = lua_gettop(l);
+    if (top_of_stack != 0) {
+      for (lua_Integer i = 1; i <= sizeof...(Targs); ++i) {
+        lua_geti(l, top_of_stack, i);
+      }
+      t = std::make_tuple(
+          StateVar<Targs>::Get(l, (int)(-sizeof...(Targs) + Is))...);
+    }
+
+    lua_settop(l, top_of_stack);
+    return t;
   }
 };
 
