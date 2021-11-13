@@ -10,12 +10,41 @@ extern "C" {
 #include <iostream>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace yapre {
 namespace lua {
 
 lua_State *GetMainLuaState();
+
+static void DumpStack(lua_State *l) {
+  int top = lua_gettop(l);
+  printf("DumpStack\n");
+  for (int i = 1; i <= top; i++) {
+    printf("%d\t%s\t", i, luaL_typename(l, i));
+    switch (lua_type(l, i)) {
+    case LUA_TNUMBER:
+      printf("%g\n", lua_tonumber(l, i));
+      break;
+    case LUA_TSTRING:
+      printf("%s\n", lua_tostring(l, i));
+      break;
+    case LUA_TBOOLEAN:
+      printf("%s\n", (lua_toboolean(l, i) ? "true" : "false"));
+      break;
+    case LUA_TNIL:
+      printf("%s\n", "nil");
+      break;
+    default:
+      printf("%p\n", lua_topointer(l, i));
+      break;
+    }
+  }
+}
+
+static void GDumpStack() { DumpStack(GetMainLuaState()); }
 
 template <typename T, typename Enable = void> struct StateVar {
   static inline void Put(lua_State *l, T value);
@@ -76,6 +105,62 @@ template <> struct StateVar<char const *> {
   }
   static inline char const *Get(lua_State *l, int index) {
     return luaL_checkstring(l, index);
+  }
+};
+
+template <typename T> struct StateVar<std::vector<T>> {
+  static inline void Put(lua_State *l, std::vector<T> value) {
+    lua_newtable(l);
+    int idx = 1;
+    for (auto &item : value) {
+      StateVar<T>::Put(l, item);
+      lua_rawseti(l, -2, idx++);
+    }
+  }
+
+  static inline std::vector<T> Get(lua_State *l, int index) {
+    std::vector<T> v;
+    int top_of_stack = lua_gettop(l);
+    if (top_of_stack != 0) {
+      for (lua_Integer i = 1; lua_geti(l, top_of_stack, i) != LUA_TNIL; ++i) {
+        T item = StateVar<T>::Get(l, -1);
+        v.emplace_back(item);
+        lua_settop(l, top_of_stack);
+      }
+    }
+    return v;
+  }
+};
+
+template <typename T> struct StateVar<std::unordered_map<std::string, T>> {
+  static inline void Put(lua_State *l,
+                         std::unordered_map<std::string, T> value) {
+    lua_newtable(l);
+    int idx = 1;
+    for (auto &item : value) {
+      StateVar<T>::Put(l, item.second);
+      lua_setfield(l, -2, item.first.c_str());
+    }
+  }
+
+  static inline std::unordered_map<std::string, T> Get(lua_State *l,
+                                                       int index) {
+    int top_of_stack = lua_gettop(l);
+    std::unordered_map<std::string, T> m;
+
+    if (top_of_stack != 0) {
+      lua_pushnil(l); /* first key */
+      while (lua_next(l, top_of_stack) != 0) {
+        /* uses 'key' (at index -2) and 'value' (at index -1) */
+        auto v = StateVar<T>::Get(l, -1);
+        std::string k = StateVar<std::string>::Get(l, -2);
+        m.emplace(k, v);
+        /* removes 'value'; keeps 'key' for next iteration */
+        lua_pop(l, 1);
+      }
+    }
+    lua_settop(l, top_of_stack);
+    return m;
   }
 };
 
