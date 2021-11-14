@@ -184,7 +184,6 @@ template <typename T> struct StateVar<std::unordered_map<std::string, T>> {
       lua_setfield(l, -2, item.first.c_str());
     }
   }
-
   static inline std::unordered_map<std::string, T> Get(lua_State *l,
                                                        int index) {
     int top_of_stack = lua_gettop(l);
@@ -238,23 +237,34 @@ public:
   }
 };
 
+static const char *StateVarStdFuncionMeta = "StateVarStdFuncionMeta";
+
 template <typename R, typename... Targs> struct _CFuncWrapper;
 template <typename R, typename... Targs>
 struct StateVar<std::function<R(Targs...)>> {
-  static inline void Put(lua_State *l,
-                         const std::function<R(Targs...)> &value) {
+  using FuncType = std::function<R(Targs...)>;
 
-    // TODO: this may case someting badly wrong
-    void *user_data_ptr = lua_newuserdata(l, sizeof(value));
-    auto user_data_func_ptr =
-        new (user_data_ptr) std::function<R(Targs...)>(value);
-    lua_pushcclosure(l, _CFuncWrapper<R, Targs...>::Call, 1);
-    // user_data_func_ptr->~function<R(Targs...)>();
-
-    // auto user_data_func_ptr = new std::function<R(Targs...)>(value);
-    // lua_pushlightuserdata(l, user_data_func_ptr);
-    // lua_pushcclosure(l, _CFuncWrapper<R, Targs...>::Call, 1);
+  static int __gc(lua_State *l) {
+    delete *static_cast<FuncType **>(
+        luaL_checkudata(l, 1, StateVarStdFuncionMeta));
+    return 0;
   }
+
+  static inline void Put(lua_State *l, const FuncType &value) {
+    void *user_data_ptr = lua_newuserdata(l, sizeof(FuncType *));
+    *static_cast<FuncType **>(user_data_ptr) = new FuncType(value);
+
+    if (luaL_newmetatable(l, StateVarStdFuncionMeta)) {
+      static const luaL_Reg __index[] = {{"__gc", __gc}, {nullptr, nullptr}};
+      luaL_setfuncs(l, __index, 0);
+      lua_pushvalue(l, -1);
+      lua_setfield(l, -2, "__index");
+    }
+    lua_setmetatable(l, -2);
+
+    lua_pushcclosure(l, _CFuncWrapper<R, Targs...>::Call, 1);
+  }
+
   static inline LuaFuncVar<R, Targs...> Get(lua_State *l, int index) {
     return LuaFuncVar<R, Targs...>(l, index);
   }
@@ -325,9 +335,9 @@ template <typename R, typename... Targs> struct _CFuncWrapper {
   template <std::size_t... Is>
   static int _Call(std::index_sequence<Is...> const &, lua_State *l) {
     auto func =
-        reinterpret_cast<FuncType *>(lua_touserdata(l, lua_upvalueindex(1)));
-    R result =
-        (*func)(StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
+        reinterpret_cast<FuncType **>(lua_touserdata(l, lua_upvalueindex(1)));
+    R result = (**func)(
+        StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
             l, (int)(-sizeof...(Targs) + Is))...);
     lua_settop(l, 0);
     StateVar<R>::Put(l, result);
@@ -343,8 +353,8 @@ template <typename... Targs> struct _CFuncWrapper<void, Targs...> {
   template <std::size_t... Is>
   static int _Call(std::index_sequence<Is...> const &, lua_State *l) {
     auto func =
-        reinterpret_cast<FuncType *>(lua_touserdata(l, lua_upvalueindex(1)));
-    (*func)(StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
+        reinterpret_cast<FuncType **>(lua_touserdata(l, lua_upvalueindex(1)));
+    (**func)(StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
         l, ((uint32_t)Is - sizeof...(Targs)))...);
     lua_settop(l, 0);
     return 0;
