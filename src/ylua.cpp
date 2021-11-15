@@ -25,7 +25,55 @@ lua_State *GetMainLuaState() {
   return mainLuaState;
 }
 
+std::vector<std::string> GetV(std::vector<std::string> v) {
+  for (auto i : v) {
+    std::cout << i << std::endl;
+  }
+  return v;
+}
+
+std::unordered_map<std::string, std::string>
+GetM(std::unordered_map<std::string, std::string> m) {
+  for (auto i : m) {
+    std::cout << i.first << ", " << i.second << std::endl;
+  }
+  return m;
+}
+
+std::unordered_map<std::string, std::tuple<int, double, std::string>>
+GetTT(std::unordered_map<std::string, std::tuple<int, double, std::string>> t) {
+  return t;
+}
+
+std::tuple<int, double, std::string>
+GetT(std::tuple<int, double, std::string> t) {
+  return t;
+}
+
+class Object {
+private:
+  double x;
+
+public:
+  Object(double x) : x(x) {}
+  std::vector<std::string> Print(std::vector<std::string> v) {
+    for (auto i : v) {
+      std::cout << i << std::endl;
+    }
+    return v;
+  }
+  void t() {}
+};
+
 bool Init() {
+  // todo: test
+  GStateModule{"yapre"}.Define("GetV", GetV);
+  GStateModule{"yapre"}.Define("GetM", GetM);
+  GStateModule{"yapre"}.Define("GetT", GetT);
+  Object obj(1);
+  auto a = std::function([&obj]() { obj.t(); });
+  GStateModule{"yapre"}.Define("OF", a);
+
   int result = luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);
   if (result != 0) {
     auto s = lua_tostring(GetMainLuaState(), -1);
