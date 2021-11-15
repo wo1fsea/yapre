@@ -113,10 +113,10 @@ template <typename... Targs> struct StateVar<std::tuple<Targs...>> {
   using TupleType = std::tuple<Targs...>;
   template <size_t idx> using GetElement = std::tuple_element<idx, TupleType>;
 
-  template <size_t idx> static void _Put(lua_State *l, TupleType value) {
-    StateVar<typename GetElement<idx>::Type>::Put(l, std::get<idx>(value));
-    lua_rawseti(l, -2, idx + 1);
-    if (idx < sizeof...(Targs)) {
+  template <size_t idx> inline static void _Put(lua_State *l, TupleType value) {
+    if constexpr (idx < sizeof...(Targs)) {
+      StateVar<typename GetElement<idx>::type>::Put(l, std::get<idx>(value));
+      lua_rawseti(l, -2, idx + 1);
       _Put<idx + 1>(l, value);
     }
   }
