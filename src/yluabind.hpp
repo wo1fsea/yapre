@@ -111,30 +111,29 @@ template <> struct StateVar<char const *> {
 
 template <typename... Targs> struct StateVar<std::tuple<Targs...>> {
   using TupleType = std::tuple<Targs...>;
+  template <size_t idx> using GetElement = std::tuple_element<idx, TupleType>;
 
-  template <size_t idx>
-  static void _Put(lua_State *l, std::tuple<Targs...> value) {
-    StateVar<typename std::tuple_element<idx, std::tuple<Targs...>>::type>::Put(
-        l, std::get<idx>(value));
+  template <size_t idx> static void _Put(lua_State *l, TupleType value) {
+    StateVar<typename GetElement<idx>::Type>::Put(l, std::get<idx>(value));
     lua_rawseti(l, -2, idx + 1);
-    if(idx < sizeof...(Targs)){
-        _Put<idx + 1>(l, value);
+    if (idx < sizeof...(Targs)) {
+      _Put<idx + 1>(l, value);
     }
   }
 
-  static inline void Put(lua_State *l, std::tuple<Targs...> value) {
+  static inline void Put(lua_State *l, TupleType value) {
     lua_newtable(l);
     _Put<0>(l, value);
   }
 
-  static inline std::tuple<Targs...> Get(lua_State *l, int index) {
+  static inline TupleType Get(lua_State *l, int index) {
     return _Get(std::make_index_sequence<sizeof...(Targs)>{}, l, index);
   }
 
   template <std::size_t... Is>
-  static inline TupleType _Get(std::index_sequence<Is...> const &,
-                                          lua_State *l, int index) {
-    std::tuple<Targs...> t;
+  static inline TupleType _Get(std::index_sequence<Is...> const &, lua_State *l,
+                               int index) {
+    TupleType t;
     int top_of_stack = lua_gettop(l);
     if (top_of_stack != 0) {
       for (lua_Integer i = 1; i <= sizeof...(Targs); ++i) {
@@ -150,7 +149,8 @@ template <typename... Targs> struct StateVar<std::tuple<Targs...>> {
 };
 
 template <typename T> struct StateVar<std::vector<T>> {
-  static inline void Put(lua_State *l, std::vector<T> value) {
+  using VectorType = std::vector<T>;
+  static inline void Put(lua_State *l, VectorType value) {
     lua_newtable(l);
     int idx = 1;
     for (auto &item : value) {
@@ -159,8 +159,8 @@ template <typename T> struct StateVar<std::vector<T>> {
     }
   }
 
-  static inline std::vector<T> Get(lua_State *l, int index) {
-    std::vector<T> v;
+  static inline VectorType Get(lua_State *l, int index) {
+    VectorType v;
     int top_of_stack = lua_gettop(l);
     if (top_of_stack != 0) {
       for (lua_Integer i = 1; lua_geti(l, top_of_stack, i) != LUA_TNIL; ++i) {
@@ -174,8 +174,8 @@ template <typename T> struct StateVar<std::vector<T>> {
 };
 
 template <typename T> struct StateVar<std::unordered_map<std::string, T>> {
-  static inline void Put(lua_State *l,
-                         std::unordered_map<std::string, T> value) {
+  using MapType = std::unordered_map<std::string, T>;
+  static inline void Put(lua_State *l, MapType value) {
     lua_newtable(l);
     int idx = 1;
     for (auto &item : value) {
@@ -183,19 +183,16 @@ template <typename T> struct StateVar<std::unordered_map<std::string, T>> {
       lua_setfield(l, -2, item.first.c_str());
     }
   }
-  static inline std::unordered_map<std::string, T> Get(lua_State *l,
-                                                       int index) {
+  static inline MapType Get(lua_State *l, int index) {
     int top_of_stack = lua_gettop(l);
-    std::unordered_map<std::string, T> m;
+    MapType m;
 
     if (top_of_stack != 0) {
-      lua_pushnil(l); /* first key */
+      lua_pushnil(l);
       while (lua_next(l, top_of_stack) != 0) {
-        /* uses 'key' (at index -2) and 'value' (at index -1) */
         auto v = StateVar<T>::Get(l, -1);
         std::string k = StateVar<std::string>::Get(l, -2);
         m.emplace(k, v);
-        /* removes 'value'; keeps 'key' for next iteration */
         lua_pop(l, 1);
       }
     }
@@ -354,7 +351,7 @@ template <typename... Targs> struct _CFuncWrapper<void, Targs...> {
     auto func =
         reinterpret_cast<FuncType **>(lua_touserdata(l, lua_upvalueindex(1)));
     (**func)(StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
-        l, ((uint32_t)Is - sizeof...(Targs)))...);
+        l, (int)(-sizeof...(Targs) + Is))...);
     lua_settop(l, 0);
     return 0;
   }
