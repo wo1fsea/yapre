@@ -110,6 +110,7 @@ template <> struct StateVar<char const *> {
 };
 
 template <typename... Targs> struct StateVar<std::tuple<Targs...>> {
+  using TupleType = std::tuple<Targs...>;
 
   template <size_t idx>
   static void _Put(lua_State *l, std::tuple<Targs...> value) {
@@ -123,7 +124,7 @@ template <typename... Targs> struct StateVar<std::tuple<Targs...>> {
   static void _Put<sizeof...(Targs)>(lua_State *l, std::tuple<Targs...> value) {
   }
 
-  static inline void Put(lua_State *l, std::tuple<Targs...> value) {
+  static inline void Put(lua_State *l, value) {
     lua_newtable(l);
     _Put<0>(l, value);
   }
@@ -133,7 +134,7 @@ template <typename... Targs> struct StateVar<std::tuple<Targs...>> {
   }
 
   template <std::size_t... Is>
-  static inline std::tuple<Targs...> _Get(std::index_sequence<Is...> const &,
+  static inline TupleType _Get(std::index_sequence<Is...> const &,
                                           lua_State *l, int index) {
     std::tuple<Targs...> t;
     int top_of_stack = lua_gettop(l);
