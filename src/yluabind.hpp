@@ -360,6 +360,17 @@ template <typename... Targs> struct _CFuncWrapper<void, Targs...> {
   }
 };
 
+template <typename T> struct LuaClass {
+  template <typename R, typename... Targs>
+  LuaClass<T> &member(const std::string &name, R (T::*mem)(Targs...)) {
+    return *this;
+  }
+  template <typename... Targs>
+  std::function<T(Targs...)> ctor(const std::string &name = "") {
+    return [](Targs... args) { return T(args...); };
+  }
+};
+
 struct StateModule {
   lua_State *l;
   const std::string name;

@@ -74,6 +74,8 @@ bool Init() {
   auto a = std::function([&obj]() { obj.t(); });
   GStateModule{"yapre"}.Define("OF", a);
 
+  LuaClass<Object>().ctor<double>("a");
+
   int result = luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);
   if (result != 0) {
     auto s = lua_tostring(GetMainLuaState(), -1);
