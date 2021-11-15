@@ -117,14 +117,12 @@ template <typename... Targs> struct StateVar<std::tuple<Targs...>> {
     StateVar<typename std::tuple_element<idx, std::tuple<Targs...>>::type>::Put(
         l, std::get<idx>(value));
     lua_rawseti(l, -2, idx + 1);
-    _Put<idx + 1>(l, value);
+    if(idx < sizeof...(Targs)){
+        _Put<idx + 1>(l, value);
+    }
   }
 
-  template <>
-  static void _Put<sizeof...(Targs)>(lua_State *l, std::tuple<Targs...> value) {
-  }
-
-  static inline void Put(lua_State *l, value) {
+  static inline void Put(lua_State *l, std::tuple<Targs...> value) {
     lua_newtable(l);
     _Put<0>(l, value);
   }
