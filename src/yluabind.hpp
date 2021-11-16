@@ -454,7 +454,10 @@ template <typename T> struct LuaClass {
   template <typename R, typename... Targs>
   static inline std::function<R(T *, Targs...)>
   _GenMemCallFunc(R (T::*mem)(Targs...)) {
-    return [mem](T *self, Targs... args) { return (self->*mem)(args...); };
+    return [mem](T *self, Targs... args) {
+      //  todo: check self
+      return (self->*mem)(args...);
+    };
   }
 
   template <typename R, typename... Targs>
