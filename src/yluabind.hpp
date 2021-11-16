@@ -58,7 +58,7 @@ template <typename T> struct StateVar<T *> {
   }
   static inline T *Get(lua_State *l, int index) {
     if (lua_isuserdata(l, index)) {
-      return static_cast<T *>(lua_touserdata(l, index));
+      return *static_cast<T **>(lua_touserdata(l, index));
     }
     return nullptr;
   }

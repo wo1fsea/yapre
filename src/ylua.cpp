@@ -52,15 +52,16 @@ GetT(std::tuple<int, double, std::string> t) {
 
 class Object {
 private:
-  double x;
+  int x = 11;
 
 public:
-  Object(double x) : x(x) {}
+  Object(int x) : x(x) {}
   Object() {}
   std::vector<std::string> Print(std::vector<std::string> v) {
     for (auto i : v) {
       std::cout << i << std::endl;
     }
+    std::cout << x << x << std::endl;
     return v;
   }
   void t() {}
