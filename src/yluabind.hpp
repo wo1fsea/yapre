@@ -52,6 +52,30 @@ template <typename T, typename Enable = void> struct StateVar {
   static inline T Get(lua_State *l, int index);
 };
 
+template <typename T> struct StateVar<T *> {
+  static inline void Put(lua_State *l, T *value) {
+    *static_cast<T **>(lua_newuserdata(l, sizeof(T *))) = value;
+  }
+  static inline T *Get(lua_State *l, int index) {
+    if (lua_isuserdata(l, index)) {
+      return static_cast<T *>(lua_touserdata(l, index));
+    }
+    return nullptr;
+  }
+};
+
+struct StateVarT {
+  template <typename T> static inline void Put(lua_State *l, T value) {
+    StateVar<T>::Put(l, value);
+  }
+};
+
+struct GStateVarT {
+  template <typename T> static inline void Put(T value) {
+    StateVarT::Put(GetMainLuaState, value);
+  }
+};
+
 template <> struct StateVar<void> {
   static inline void Put(lua_State *l) { lua_pushnil(l); }
 };
@@ -241,6 +265,7 @@ struct StateVar<std::function<R(Targs...)>> {
   using FuncType = std::function<R(Targs...)>;
 
   static int __gc(lua_State *l) {
+    std::cout << "FFF" << std::endl;
     delete *static_cast<FuncType **>(
         luaL_checkudata(l, 1, StateVarStdFuncionMeta));
     return 0;
@@ -360,24 +385,14 @@ template <typename... Targs> struct _CFuncWrapper<void, Targs...> {
   }
 };
 
-template <typename T> struct LuaClass {
-  template <typename R, typename... Targs>
-  LuaClass<T> &member(const std::string &name, R (T::*mem)(Targs...)) {
-    return *this;
-  }
-  template <typename... Targs>
-  std::function<T(Targs...)> ctor(const std::string &name = "") {
-    return [](Targs... args) { return T(args...); };
-  }
-};
-
 struct StateModule {
-  lua_State *l;
+  lua_State *const l;
   const std::string name;
 
   StateModule(lua_State *l_, const std::string &name_) : l(l_), name(name_) {}
 
-  template <typename T> StateModule Define(const std::string &key, T value) {
+  template <typename T>
+  const StateModule &Define(const std::string &key, T value) const {
     lua_getglobal(l, name.c_str());
     if (lua_isnil(l, -1)) {
       lua_pop(l, 1);
@@ -394,6 +409,80 @@ struct GStateModule : public StateModule {
   GStateModule(const std::string &name)
       : StateModule(GetMainLuaState(), name) {}
 };
+
+template <typename T> struct LuaClass {
+  static std::string lua_meta_name;
+  lua_State *const l;
+
+  const std::string name;
+  const StateModule state_module;
+
+  static int _ObjectFree(lua_State *l) {
+    std::cout << "GCGGGGGGGGGGGGGGGGG" << std::endl;
+    delete *static_cast<T **>(luaL_checkudata(l, 1, lua_meta_name.c_str()));
+    return 0;
+  }
+
+  static int _ObjectNew(lua_State *l) {
+    *static_cast<T **>(lua_newuserdata(l, sizeof(T *))) = new T();
+
+    if (luaL_getmetatable(l, lua_meta_name.c_str())) {
+      lua_setmetatable(l, -2);
+    }
+    return 1;
+  }
+
+  LuaClass(lua_State *l_, const std::string &module_name,
+           const std::string &class_name)
+      : l(l_), name(class_name), state_module(l, module_name) {
+
+    if (lua_meta_name == "") {
+      lua_meta_name = "CPP_OBJECT_META_" + name;
+    }
+
+    if (luaL_newmetatable(l, lua_meta_name.c_str())) {
+      static const luaL_Reg __index[] = {{"__gc", _ObjectFree},
+                                         {nullptr, nullptr}};
+      luaL_setfuncs(l, __index, 0);
+      lua_pushvalue(l, -1);
+      lua_setfield(l, -2, "__index");
+    }
+
+    lua_pop(l, 1);
+  }
+
+  template <typename R, typename... Targs>
+  static inline std::function<R(T *, Targs...)>
+  _GenMemCallFunc(R (T::*mem)(Targs...)) {
+    return [mem](T *self, Targs... args) { return (self->*mem)(args...); };
+  }
+
+  template <typename R, typename... Targs>
+  LuaClass<T> &Member(const std::string &name, R (T::*mem)(Targs...)) {
+    if (luaL_getmetatable(l, lua_meta_name.c_str())) {
+      lua_getfield(l, -1, "__index");
+
+      StateVarT::Put(l, _GenMemCallFunc(mem));
+      lua_setfield(l, -2, name.c_str());
+
+      lua_pop(l, 2);
+    }
+
+    return *this;
+  }
+
+  void Define() { lua_register(l, name.c_str(), LuaClass<T>::_ObjectNew); }
+
+  template <typename... Targs> std::function<T *(Targs...)> Ctor() {
+    return [](Targs... args) { return new T(args...); };
+  }
+};
+template <typename T> std::string LuaClass<T>::lua_meta_name;
+/*
+ *
+...
+   ...
+ */
 
 } // namespace lua
 } // namespace yapre

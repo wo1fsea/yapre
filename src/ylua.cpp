@@ -56,6 +56,7 @@ private:
 
 public:
   Object(double x) : x(x) {}
+  Object() {}
   std::vector<std::string> Print(std::vector<std::string> v) {
     for (auto i : v) {
       std::cout << i << std::endl;
@@ -74,7 +75,9 @@ bool Init() {
   auto a = std::function([&obj]() { obj.t(); });
   GStateModule{"yapre"}.Define("OF", a);
 
-  LuaClass<Object>().ctor<double>("a");
+  LuaClass<Object>(GetMainLuaState(), "yapre", "Object")
+      .Member("a", &Object::Print)
+      .Define();
 
   int result = luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);
   if (result != 0) {
