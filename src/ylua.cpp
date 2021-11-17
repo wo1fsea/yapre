@@ -61,7 +61,13 @@ public:
     for (auto i : v) {
       std::cout << i << std::endl;
     }
-    std::cout << x << x << std::endl;
+    std::cout << "x=" << x << std::endl;
+    return v;
+  }
+  static std::vector<std::string> PrintS(std::vector<std::string> v) {
+    for (auto i : v) {
+      std::cout << i << std::endl;
+    }
     return v;
   }
   void t() {}
@@ -76,11 +82,11 @@ bool Init() {
   auto a = std::function([&obj]() { obj.t(); });
   GStateModule{"yapre"}.Define("OF", a);
 
-  LuaClass<Object>(GetMainLuaState(), "yapre", "Object")
+  GLuaClass<Object>("yapre", "Object")
+      .Ctor<>("new")
+      .Ctor<int>("n1")
       .Member("a", &Object::Print)
-      .Ctor<>("f0")
-      .Ctor<int>("f1")
-      .Define();
+      .Member("b", &Object::PrintS);
 
   int result = luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);
   if (result != 0) {
