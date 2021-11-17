@@ -259,7 +259,7 @@ public:
   }
 };
 
-static const char *StateVarStdFuncionMeta = "StateVarStdFuncionMeta";
+static const char *StateVarStdFuncionMeta = "STATE_VAR_STD_FUNCTION_META";
 
 template <typename R, typename... Targs> struct _CFuncWrapper;
 template <typename R, typename... Targs>
@@ -357,6 +357,9 @@ template <typename R, typename... Targs> struct _CFuncWrapper {
   static int _Call(std::index_sequence<Is...> const &, lua_State *l) {
     auto func =
         reinterpret_cast<FuncType **>(lua_touserdata(l, lua_upvalueindex(1)));
+
+    lua_settop(l, sizeof...(Targs));
+
     R result = (**func)(
         StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
             l, (int)(-sizeof...(Targs) + Is))...);
@@ -375,6 +378,9 @@ template <typename... Targs> struct _CFuncWrapper<void, Targs...> {
   static int _Call(std::index_sequence<Is...> const &, lua_State *l) {
     auto func =
         reinterpret_cast<FuncType **>(lua_touserdata(l, lua_upvalueindex(1)));
+
+    lua_settop(l, sizeof...(Targs));
+
     (**func)(StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
         l, (int)(-sizeof...(Targs) + Is))...);
     lua_settop(l, 0);
@@ -449,6 +455,9 @@ struct LuaClassMemFuncHelper {
 template <typename T, typename... Targs> struct LuaClassCtorFuncHelper {
   template <std::size_t... Is>
   static int _Call(std::index_sequence<Is...> const &, lua_State *l) {
+
+    lua_settop(l, sizeof...(Targs));
+
     *static_cast<T **>(lua_newuserdata(l, sizeof(T *))) =
         new T(StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(
             l, (int)(-sizeof...(Targs) + Is))...);
@@ -479,7 +488,7 @@ template <typename T> struct LuaClass {
       : l(l_), name(class_name) {
 
     if (LuaClassMetaName<T>::name == "") {
-      LuaClassMetaName<T>::name = "CPP_OBJECT_META_[" + name + "]";
+      LuaClassMetaName<T>::name = "CPP_OBJECT_META[" + name + "]";
     }
 
     // moudule
