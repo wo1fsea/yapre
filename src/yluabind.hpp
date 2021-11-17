@@ -58,7 +58,7 @@ template <typename T> struct StateVar<T *> {
   }
   static inline T *Get(lua_State *l, int index) {
     if (lua_isuserdata(l, index)) {
-      return *static_cast<T **>(lua_touserdata(l, index));
+      return *reinterpret_cast<T **>(lua_touserdata(l, index));
     }
     return nullptr;
   }
@@ -72,12 +72,14 @@ struct StateVarT {
 
 struct GStateVarT {
   template <typename T> static inline void Put(T value) {
-    StateVarT::Put(GetMainLuaState, value);
+    StateVarT::Put(GetMainLuaState(), value);
   }
 };
 
 template <> struct StateVar<void> {
-  static inline void Put(lua_State *l) { lua_pushnil(l); }
+  static  void Put(lua_State *l) {
+      //lua_pushnil(l);
+  }
 };
 
 template <> struct StateVar<bool> {
@@ -193,6 +195,7 @@ template <typename T> struct StateVar<std::vector<T>> {
         lua_settop(l, top_of_stack);
       }
     }
+    lua_settop(l, top_of_stack);
     return v;
   }
 };
@@ -282,7 +285,6 @@ struct StateVar<std::function<R(Targs...)>> {
       lua_setfield(l, -2, "__index");
     }
     lua_setmetatable(l, -2);
-
     lua_pushcclosure(l, _CFuncWrapper<R, Targs...>::Call, 1);
   }
 
