@@ -78,6 +78,8 @@ bool Init() {
 
   LuaClass<Object>(GetMainLuaState(), "yapre", "Object")
       .Member("a", &Object::Print)
+      .Ctor<>("f0")
+      .Ctor<int>("f1")
       .Define();
 
   int result = luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);

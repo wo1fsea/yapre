@@ -58,7 +58,7 @@ template <typename T> struct StateVar<T *> {
   }
   static inline T *Get(lua_State *l, int index) {
     if (lua_isuserdata(l, index)) {
-      return *reinterpret_cast<T **>(lua_touserdata(l, index));
+      return *static_cast<T **>(lua_touserdata(l, index));
     }
     return nullptr;
   }
@@ -77,8 +77,8 @@ struct GStateVarT {
 };
 
 template <> struct StateVar<void> {
-  static  void Put(lua_State *l) {
-      //lua_pushnil(l);
+  static inline void Put(lua_State *l) {
+      lua_pushnil(l);
   }
 };
 
@@ -412,6 +412,66 @@ struct GStateModule : public StateModule {
       : StateModule(GetMainLuaState(), name) {}
 };
 
+template <typename T> struct _LuaClassMemFuncHelper
+{
+    static inline void Put(lua_State *l, T);
+};
+
+template <typename R, typename... Targs> struct _LuaClassMemFuncHelper<R (*)(Targs...)>
+{
+    static inline std::function<R(Targs...)>
+        _GenMemCallFunc(R (*mem)(Targs...)) {
+            return [mem](Targs... args) {
+                //  todo: check self
+                return (*mem)(args...);
+            };
+        }
+
+    static inline void Put(lua_State *l, R (*mem)(Targs...)){
+        StateVarT::Put(l, _GenMemCallFunc(mem));
+    }
+};
+
+template <typename T, typename R, typename... Targs> struct _LuaClassMemFuncHelper< R (T::*)(Targs...)>
+{
+    static inline std::function<R(T*, Targs...)>
+        _GenMemCallFunc(R (T::*mem)(Targs...)) {
+            return [mem](T *self, Targs... args) {
+                //  todo: check self
+                return (self->*mem)(args...);
+            };
+        }
+
+    static inline void Put(lua_State *l, R (T::*mem)(Targs...) ){
+        StateVarT::Put(l, _GenMemCallFunc(mem));
+    }
+};
+
+struct LuaClassMemFuncHelper
+{
+    template <typename T> 
+    static inline void Put(lua_State *l, T mem){
+        _LuaClassMemFuncHelper<T>::Put(l, mem);
+    }
+};
+
+template<typename T, typename... Targs> struct LuaClassCtorFuncHelper {
+  template <std::size_t... Is>
+  static int _Call(std::index_sequence<Is...> const &, lua_State *l) {
+    *static_cast<T **>(lua_newuserdata(l, sizeof(T *))) = new T(StateVar<std::remove_cv_t<std::remove_reference_t<Targs>>>::Get(l, (int)(-sizeof...(Targs) + Is))...);
+
+    if (luaL_getmetatable(l, LuaClass<T>::lua_meta_name.c_str())) {
+      lua_setmetatable(l, -2);
+    }
+    return 1;
+  }
+
+  static int Call(lua_State *l) {
+    return _Call(std::make_index_sequence<sizeof...(Targs)>{}, l);
+  }
+};
+
+
 template <typename T> struct LuaClass {
   static std::string lua_meta_name;
   lua_State *const l;
@@ -453,24 +513,13 @@ template <typename T> struct LuaClass {
     lua_pop(l, 1);
   }
 
-  template <typename R, typename... Targs>
-  static inline std::function<R(T *, Targs...)>
-  _GenMemCallFunc(R (T::*mem)(Targs...)) {
-    return [mem](T *self, Targs... args) {
-      //  todo: check self
-      return (self->*mem)(args...);
-    };
-  }
-
-  template <typename R, typename... Targs>
-  LuaClass<T> &Member(const std::string &name, R (T::*mem)(Targs...)) {
+  template <typename F>
+  LuaClass<T> &Member(const std::string &name, F mem) {
     if (luaL_getmetatable(l, lua_meta_name.c_str())) {
-      lua_getfield(l, -1, "__index");
-
-      StateVarT::Put(l, _GenMemCallFunc(mem));
+      _LuaClassMemFuncHelper<F>::Put(l, mem);
       lua_setfield(l, -2, name.c_str());
 
-      lua_pop(l, 2);
+      lua_pop(l, 1);
     }
 
     return *this;
@@ -478,10 +527,18 @@ template <typename T> struct LuaClass {
 
   void Define() { lua_register(l, name.c_str(), LuaClass<T>::_ObjectNew); }
 
-  template <typename... Targs> std::function<T *(Targs...)> Ctor() {
-    return [](Targs... args) { return new T(args...); };
+  template <typename... Targs>  LuaClass<T> & Ctor(const std::string &name="new") {
+      using CtorFuncHelperType = LuaClassCtorFuncHelper<T, typename Targs...>;
+      if (luaL_getmetatable(l, lua_meta_name.c_str())) {
+          lua_pushcfunction(l, CtorFuncHelperType::Call);
+          lua_setfield(l, -2, name.c_str());
+
+          lua_pop(l, 1);
+      }
+      return *this;
   }
 };
+
 template <typename T> std::string LuaClass<T>::lua_meta_name;
 /*
  *
