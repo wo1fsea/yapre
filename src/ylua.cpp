@@ -25,6 +25,54 @@ lua_State *GetMainLuaState() {
   return mainLuaState;
 }
 
+std::vector<std::string> GetV(std::vector<std::string> v) {
+  for (auto i : v) {
+    std::cout << i << std::endl;
+  }
+  return v;
+}
+
+std::unordered_map<std::string, std::string>
+GetM(std::unordered_map<std::string, std::string> m) {
+  for (auto i : m) {
+    std::cout << i.first << ", " << i.second << std::endl;
+  }
+  return m;
+}
+
+std::unordered_map<std::string, std::tuple<int, double, std::string>>
+GetTT(std::unordered_map<std::string, std::tuple<int, double, std::string>> t) {
+  return t;
+}
+
+std::tuple<int, double, std::string>
+GetT(std::tuple<int, double, std::string> t) {
+  return t;
+}
+
+class Object {
+private:
+  int x = 11;
+
+public:
+  Object(int x) : x(x) {}
+  Object() {}
+  std::vector<std::string> Print(std::vector<std::string> v) {
+    for (auto i : v) {
+      std::cout << i << std::endl;
+    }
+    std::cout << "x=" << x << std::endl;
+    return v;
+  }
+  static std::vector<std::string> PrintS(std::vector<std::string> v) {
+    for (auto i : v) {
+      std::cout << i << std::endl;
+    }
+    return v;
+  }
+  void t() {}
+};
+
 bool Init() {
   int result = luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);
   if (result != 0) {
