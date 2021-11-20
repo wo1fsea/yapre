@@ -74,20 +74,6 @@ public:
 };
 
 bool Init() {
-  // todo: test
-  GStateModule{"yapre"}.Define("GetV", GetV);
-  GStateModule{"yapre"}.Define("GetM", GetM);
-  GStateModule{"yapre"}.Define("GetT", GetT);
-  Object obj(1);
-  auto a = std::function([&obj]() { obj.t(); });
-  GStateModule{"yapre"}.Define("OF", a);
-
-  GLuaClass<Object>("yapre", "Object")
-      .Ctor<>("new")
-      .Ctor<int>("n1")
-      .Member("a", &Object::Print)
-      .Member("b", &Object::PrintS);
-
   int result = luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);
   if (result != 0) {
     auto s = lua_tostring(GetMainLuaState(), -1);
