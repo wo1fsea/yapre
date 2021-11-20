@@ -38,6 +38,25 @@ Try the demo app in your webbrowser by typping [yapre.run](https://yapre.run) in
 </tr>
 </table>
 
+<table>
+<tr>
+<td>
+<img width="320px" src="./docs/platform_mac.png">
+</td>
+<td>
+<img width="320px" src="./docs/ platform_web.png">
+</td>
+<tr>
+</tr>
+<td>
+<img width="320px" src="./docs/platform_android.png">
+</td>
+<td>
+<img width="320px" src="./docs/platform_iphone.png">
+</td>
+</tr>
+</table>
+
 ## Build
 
 ### windows
