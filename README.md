@@ -19,11 +19,24 @@ Try the demo app in your webbrowser by typping [yapre.run](https://yapre.run) in
 
 ## Examples
 
-![example1](./docs/example1.gif)
-![example2](./docs/example2.gif)
-
-![example3](./docs/example3.gif)
-![example4](./docs/example4.gif)
+<table>
+<tr>
+<td>
+<img width="320px" src="./docs/example1.gif">
+</td>
+<td>
+<img width="320px" src="./docs/example2.gif">
+</td>
+<tr>
+</tr>
+<td>
+<img width="320px" src="./docs/example3.gif">
+</td>
+<td>
+<img width="320px" src="./docs/example4.gif">
+</td>
+</tr>
+</table>
 
 ## Build
 
