@@ -20,22 +20,22 @@ Try the demo app in your webbrowser by typping [yapre.run](https://yapre.run) in
 ## Examples
 
 <table>
-  <tr>
-    <td>
-		  <img width="200px" src="./docs/example1.gif">
-    </td>
-    <td>
-       <img width="200px" src="./docs/example2.gif">
-    </td>
-  <tr>
-  </tr>
-    <td>
-       <img width="200px" src="./docs/example3.gif">
-    </td>
-    <td>
-       <img width="200px" src="./docs/example4.gif">
-    </td>
-  </tr>
+<tr>
+<td>
+<img width="320px" src="./docs/example1.gif">
+</td>
+<td>
+<img width="320px" src="./docs/example2.gif">
+</td>
+<tr>
+</tr>
+<td>
+<img width="320px" src="./docs/example3.gif">
+</td>
+<td>
+<img width="320px" src="./docs/example4.gif">
+</td>
+</tr>
 </table>
 
 ![example1](./docs/example1.gif)
