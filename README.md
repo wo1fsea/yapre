@@ -38,12 +38,6 @@ Try the demo app in your webbrowser by typping [yapre.run](https://yapre.run) in
 </tr>
 </table>
 
-![example1](./docs/example1.gif)
-![example2](./docs/example2.gif)
-
-![example3](./docs/example3.gif)
-![example4](./docs/example4.gif)
-
 ## Build
 
 ### windows
