@@ -1,5 +1,6 @@
 #pragma once
 #include "glm/glm.hpp"
+#include "ytexture.h"
 #include <string>
 #include <tuple>
 
@@ -17,6 +18,11 @@ void DrawSprite(const std::string &texture_filename,
                 glm::vec3 color = glm::vec3(1.0f));
 void DrawSprite(const std::string &texture_filename, int x, int y, int z,
                 int width, int height, float rotate, float R, float G, float B);
+void DrawSprite(Texture *texture, glm::vec3 position = glm::vec3(0.0f),
+                glm::vec2 size = glm::vec2(-1.0f), float rotate = 0.0f,
+                glm::vec3 color = glm::vec3(1.0f));
+void DrawSprite(Texture *texture, int x, int y, int z, int width, int height,
+                float rotate, float R, float G, float B);
 void SetClearColor(float R, float G, float B, float A);
 void ResetWindowSize();
 } // namespace renderer
