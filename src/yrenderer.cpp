@@ -131,7 +131,6 @@ void DrawSprite(const std::string &texture_filename, glm::vec3 position,
     texture_ptr = std::make_shared<Texture>(texture_filename);
     texture_map[texture_filename] = texture_ptr;
   }
-  texture_ptr->UpdateData();
   DrawSprite(texture_ptr.get(), position, size, rotate, color);
 }
 
@@ -144,6 +143,8 @@ void DrawSprite(const std::string &texture_filename, int x, int y, int z,
 
 void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
                 float rotate, glm::vec3 color) {
+
+  texture->UpdateData();
 
   if (size.x < 0 || size.y < 0) {
     size.x = texture->Width();
