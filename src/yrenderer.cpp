@@ -162,7 +162,9 @@ void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
   model = glm::translate(model, glm::vec3(-0.5f * size.x, -0.5f * size.y,
                                           0.0f)); // move origin back
 
-  model = glm::scale(model, glm::vec3(size, 1.0f)); // last scale
+  model = glm::scale(model, glm::vec3(real_size * size.x / texture->Width(),
+                                      real_size * size.y / texture->Height(),
+                                      1.0f)); // last scale
 
   auto [w, h] = GetRenderSize();
   glm::mat4 projection =

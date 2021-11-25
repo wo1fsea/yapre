@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cassert>
+#include <cstring>
+#include <iostream>
 #include <memory>
 #include <string>
 
@@ -39,8 +41,26 @@ public:
 
     data_ptr = std::shared_ptr<unsigned char[]>(
         new unsigned char[real_size * real_size * channel]);
+
+    /* no need to resize
     stbir_resize_uint8(file_data, n_width, n_height, 0, data_ptr.get(),
                        real_size, real_size, 0, channel);
+                       */
+    for (int x = 0; x < real_size; ++x) {
+      for (int y = 0; y < real_size; ++y) {
+        int r_idx = (x + real_size * y) * channel;
+        if (x < width && y < height) {
+          int idx = (x + width * y) * channel;
+          for (int c = 0; c < channel; ++c) {
+            data_ptr[r_idx + c] = file_data[idx + c];
+          }
+        } else {
+          for (int c = 0; c < channel; ++c) {
+            data_ptr[r_idx + c] = 0;
+          }
+        }
+      }
+    }
     stbi_image_free(file_data);
 
     glGenTextures(1, &texture_id);
