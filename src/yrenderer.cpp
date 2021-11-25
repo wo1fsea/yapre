@@ -9,6 +9,7 @@
 
 #include "yluabind.hpp"
 #include "yshader.h"
+#include "ytexture.h"
 #include "ywindow.h"
 
 #include <SDL.h>
@@ -33,8 +34,7 @@ unsigned int VBO = 0;
 unsigned int draw_count = 0;
 using DrawData =
     std::tuple<unsigned int, unsigned int, glm::mat4, glm::mat4, glm::vec3>;
-using TextureData = std::tuple<unsigned int, int, int>;
-std::unordered_map<std::string, TextureData> texture_map;
+std::unordered_map<std::string, std::shared_ptr<Texture>> texture_map;
 std::vector<DrawData> draw_list;
 glm::fvec4 clean_color = glm::fvec4(0.2, 0.2, 0.2, 1);
 
@@ -61,7 +61,7 @@ bool Init() {
 
   gladLoadGLLoader(SDL_GL_GetProcAddress);
   PrintGlInfo();
-  //glEnable(GL_DEPTH_TEST);
+  // glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -93,8 +93,14 @@ bool Init() {
   lua::GStateModule("yapre")
       .Define<void (*)(const std::string &, int, int, int, int, int, float,
                        float, float, float)>("DrawSprite", DrawSprite)
+      .Define<void (*)(Texture *, int, int, int, int, int, float, float, float,
+                       float)>("DrawSpriteWithImageData", DrawSprite)
       .Define("SetClearColor", SetClearColor)
       .Define("SetRenderSize", SetRenderSize);
+
+  lua::GLuaClass<Texture>("yapre", "Texture")
+      .Ctor<unsigned int, unsigned int>("new")
+      .Member("SetPixel", &Texture::SetPixel);
   SetRenderSize(320, 240);
   return true;
 }
@@ -115,55 +121,35 @@ void SetRenderSize(int width, int height) {
       .Define("render_height", height);
 }
 
-std::tuple<unsigned int, int, int> GetTextureId(std::string texture_filename) {
-  auto i = texture_map.find(texture_filename);
-  if (i != texture_map.end()) {
-    return i->second;
-  }
-
-  int n_channels;
-  unsigned int texture_id = 0;
-  int width, height;
-  unsigned char *data =
-      stbi_load(texture_filename.c_str(), &width, &height, &n_channels, 0);
-
-  int len = width > height ? width : height;
-  int n_len = 2;
-  while (n_len < len) {
-    n_len *= 2;
-  }
-  auto tmp = std::make_unique<unsigned char[]>(n_len * n_len * n_channels);
-  stbir_resize_uint8(data, width, height, 0, tmp.get(), n_len, n_len, 0,
-                     n_channels);
-
-  glGenTextures(1, &texture_id);
-  glBindTexture(GL_TEXTURE_2D, texture_id);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, n_len, n_len, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, tmp.get());
-
-  stbi_image_free(data);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  auto texture_info = std::make_tuple(texture_id, width, height);
-  texture_map[texture_filename] = texture_info;
-  return texture_info;
-}
-
 void DrawSprite(const std::string &texture_filename, glm::vec3 position,
                 glm::vec2 size, float rotate, glm::vec3 color) {
+  std::shared_ptr<Texture> texture_ptr;
+  auto i = texture_map.find(texture_filename);
+  if (i != texture_map.end()) {
+    texture_ptr = i->second;
+  } else {
+    texture_ptr = std::make_shared<Texture>(texture_filename);
+    texture_map[texture_filename] = texture_ptr;
+  }
+  texture_ptr->UpdateData();
+  DrawSprite(texture_ptr.get(), position, size, rotate, color);
+}
 
-  auto [texture_id, texture_w, texture_h] = GetTextureId(texture_filename);
+void DrawSprite(const std::string &texture_filename, int x, int y, int z,
+                int width, int height, float rotate, float R, float G,
+                float B) {
+  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height),
+             rotate, glm::vec3(R, G, B));
+}
+
+void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
+                float rotate, glm::vec3 color) {
 
   if (size.x < 0 || size.y < 0) {
-    size.x = texture_w;
-    size.y = texture_h;
+    size.x = texture->Width();
+    size.y = texture->Height();
   }
+  int real_size = texture->RealSize();
 
   position.z = position.z;
   glm::mat4 model = glm::mat4(1.0f);
@@ -176,7 +162,10 @@ void DrawSprite(const std::string &texture_filename, glm::vec3 position,
   model = glm::translate(model, glm::vec3(-0.5f * size.x, -0.5f * size.y,
                                           0.0f)); // move origin back
 
-  model = glm::scale(model, glm::vec3(size, 1.0f)); // last scale
+  model = glm::scale(model, glm::vec3(real_size * size.x / texture->Width(),
+                                      real_size * size.y / texture->Height(),
+                                      1.0f)); // last scale
+
   auto [w, h] = GetRenderSize();
   glm::mat4 projection =
       glm::ortho(0.0f, 1.f * w, 1.f * h, 0.0f, -kMaxZ, kMaxZ);
@@ -184,15 +173,14 @@ void DrawSprite(const std::string &texture_filename, glm::vec3 position,
   draw_count++;
 
   draw_list.emplace_back(
-      std::make_tuple(draw_id, texture_id, model, projection, color));
+      std::make_tuple(draw_id, texture->TextureID(), model, projection, color));
   return;
 }
 
-void DrawSprite(const std::string &texture_filename, int x, int y, int z,
-                int width, int height, float rotate, float R, float G,
-                float B) {
-  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height),
-             rotate, glm::vec3(R, G, B));
+void DrawSprite(Texture *image_data, int x, int y, int z, int width, int height,
+                float rotate, float R, float G, float B) {
+  DrawSprite(image_data, glm::vec3(x, y, z), glm::vec2(width, height), rotate,
+             glm::vec3(R, G, B));
 }
 
 void DrawAll() {
