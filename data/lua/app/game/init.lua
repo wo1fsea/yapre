@@ -25,7 +25,6 @@ function game:Deinit()
 end
 
 function game:NextWorld()
-    yapre.dbg()
     if self.cur_world_idx == #self.worlds_to_show then return end
 
     self.worlds[self.cur_world_idx]:Destroy()
