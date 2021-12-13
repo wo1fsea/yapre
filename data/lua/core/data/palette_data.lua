@@ -1,7 +1,12 @@
 local palette_data = {}
 
 local GetColorFromHexStr = function(str)
-    local color = {a=0, r=0, g=0, b=0}
+    local color = {
+        a = 0,
+        r = 0,
+        g = 0,
+        b = 0
+    }
     local tmp = {}
     for cc in string.gmatch(str, "..") do
         table.insert(tmp, tonumber(cc, 16))
@@ -14,27 +19,11 @@ local GetColorFromHexStr = function(str)
 end
 
 -- https://lospec.com/palette-list/summers-past-16
-local _colors = {
-    'FF320011',
-    'FF5f3a60',
-    'FF876672',
-    'FFb7a39d',
-    'FFece8c2',
-    'FF6db7c3',
-    'FF5e80b2',
-    'FF627057',
-    'FF8da24e',
-    'FFd2cb3e',
-    'FFf7d554',
-    'FFe8bf92',
-    'FFe78c5b',
-    'FFc66f5e',
-    'FFc33846',
-    'FF933942',
-}
+local _colors = {'FF320011', 'FF5f3a60', 'FF876672', 'FFb7a39d', 'FFece8c2', 'FF6db7c3', 'FF5e80b2', 'FF627057',
+                 'FF8da24e', 'FFd2cb3e', 'FFf7d554', 'FFe8bf92', 'FFe78c5b', 'FFc66f5e', 'FFc33846', 'FF933942'}
 
 local colors = {}
-for _, c in ipairs(_colors) do 
+for _, c in ipairs(_colors) do
     table.insert(colors, GetColorFromHexStr(c))
 end
 
@@ -45,13 +34,8 @@ palette_data.blue = colors[6]
 palette_data.green = colors[10]
 palette_data.red = colors[14]
 
-palette_data.main_colors = {
-    palette_data.black,
-    palette_data.white, 
-    palette_data.blue, 
-    palette_data.green, 
-    palette_data.red, 
-}
+palette_data.main_colors = {palette_data.black, palette_data.white, palette_data.blue, palette_data.green,
+                            palette_data.red}
 
 palette_data.foreground_color = colors[5]
 palette_data.background_color = colors[16]

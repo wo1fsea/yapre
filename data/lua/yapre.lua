@@ -1,3 +1,5 @@
+local yapre = yapre
+
 package.path = package.path .. ";./lua/?.lua;./lua/?/init.lua"
 
 yapre.dbg = require("utils.debugger")

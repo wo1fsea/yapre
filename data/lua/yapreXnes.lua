@@ -1,3 +1,5 @@
+local yapre = yapre
+
 package.path = package.path .. ";./lua/?.lua;./lua/?/init.lua"
 
 yapre.dbg = require("utils.debugger")
@@ -19,10 +21,9 @@ local PADS = require("nes.pads")
 
 local file = "./roms/Super Mario Bros (E).nes"
 local loglvl = 0
-local Nes = NES:new(
-{
+local Nes = NES:new({
     file = file,
-    loglevel = loglvl,
+    loglevel = loglvl
     --[[
     pc = false,
     palette = UTILS.map(
@@ -32,10 +33,9 @@ local Nes = NES:new(
     end
     )
     --]]
-}
-)
+})
 local width = 256
-local height = 240 
+local height = 240
 local pixSize = 1
 local sound = false
 local DEBUG = false
@@ -57,7 +57,7 @@ local keyButtons = {
     ["a"] = Pad.LEFT,
     [97] = Pad.LEFT,
     ["s"] = Pad.DOWN,
-    [120] = Pad.DOWN,
+    [115] = Pad.DOWN,
     ["d"] = Pad.RIGHT,
     [100] = Pad.RIGHT,
     ["o"] = Pad.A,
@@ -67,9 +67,8 @@ local keyButtons = {
     ["z"] = Pad.SELECT,
     [122] = Pad.SELECT,
     ["x"] = Pad.START,
-    [120] = Pad.START,
+    [120] = Pad.START
 }
-
 
 local function keypressed(key)
     for k, v in pairs(keyButtons) do
@@ -87,7 +86,6 @@ local function keyreleased(key)
     end
 end
 
-
 local function OnKey(timestamp, state, multi, keycode)
     --[[
     if yapre.platform == "emscripten" then
@@ -103,19 +101,18 @@ local function OnKey(timestamp, state, multi, keycode)
     end
 end
 
- -- local app = require("main")
+-- local app = require("main")
 local imageData = yapre.Texture.new(width, height)
 
 function Init()
 
     imageData = yapre.Texture.new(width * pixSize, height * pixSize)
-    --Nes:run()
+    -- Nes:run()
     Nes:reset()
     yapre.SetRenderSize(width * pixSize, height * pixSize)
     yapre.BindKeyboardInputCallback("nes_on_key", OnKey)
     return true
 end
-
 
 local function drawScreen()
     --[[
@@ -125,10 +122,9 @@ local function drawScreen()
         end
     end
     --]]
-    
+
     yapre.DrawSpriteWithImageData(imageData, 0, 0, 0, width, height, 0, 1, 1, 1)
 end
-
 
 local function update()
     tickRatetmp = tickRatetmp + 1
@@ -151,7 +147,7 @@ rate = rate * 1000
 local d = 0
 
 function Update(delta_ms)
-    d =  d + delta_ms
+    d = d + delta_ms
     if d < rate then
         return
     end
@@ -163,41 +159,15 @@ function Update(delta_ms)
     local px = nil
     local iy = 0
     local ix = 0
-    for y = 0, height-1 do
+    for y = 0, height - 1 do
         iy = y * width
-        for x = 0, width-1 do
+        for x = 0, width - 1 do
             ix = iy + x
             px = pxs[ix + 1]
-            imageData:SetPixel(x, y,  math.floor(px[1]),  math.floor(px[2]),  math.floor(px[3]), 255)
+            imageData:SetPixel(x, y, math.floor(px[1]), math.floor(px[2]), math.floor(px[3]), 255)
         end
     end
     drawScreen()
-end
-
-local function Update1(delta_ms)
-    delta = delta_ms / 1000.
-    
-    time = time + delta
-    timeTwo = timeTwo + delta
-    while time > rate do
-        time = time - rate
-        update()
-    end
-    if timeTwo > 1 then
-        timeTwo = 0
-        tickRate = tickRatetmp
-        tickRatetmp = 0
-    end
-    fps = 1 / delta
-    local pxs = Nes.cpu.ppu.output_pixels
-    for i = 1, pixelCount do
-        local x = (i - 1) % width
-        local y = math.floor((i - 1) / width) % height
-        local px = pxs[i]
-        imageData:SetPixel(x, y,  math.floor(px[1] * 1),  math.floor(px[2] * 1),  math.floor(px[3] * 1), 255)
-    end
-    draw()
-
 end
 
 function Deinit()

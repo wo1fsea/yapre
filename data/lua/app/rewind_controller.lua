@@ -1,3 +1,4 @@
+local yapre = yapre
 local rewind_controller = {}
 
 local core = require("core")
@@ -18,17 +19,19 @@ function rewind_controller:OnKey(timestamp, state, multi, keycode)
             self:PauseOrResume()
             return
         end
-        
-        if not self.paused then return end
+
+        if not self.paused then
+            return
+        end
 
         if keycode == "s" then
             self:Save()
-            return 
+            return
         end
-        
+
         local delta = 1
-        if keycode == "a" then 
-            delta = -1 
+        if keycode == "a" then
+            delta = -1
         elseif keycode == "d" then
             delta = 1
         else
@@ -41,15 +44,15 @@ function rewind_controller:OnKey(timestamp, state, multi, keycode)
         local max_idx = ps:GetMax()
 
         cur_idx = cur_idx + delta
-        if cur_idx > max_idx then 
+        if cur_idx > max_idx then
             cur_idx = max_idx
         elseif cur_idx < 1 then
             cur_idx = 1
         end
-       
+
         local r_idx = self.dump_data_cur_idx - 1 - ps:GetMax() + cur_idx
-        if r_idx < 1 then 
-            cur_idx = cur_idx - r_idx + 1 
+        if r_idx < 1 then
+            cur_idx = cur_idx - r_idx + 1
             r_idx = 1
         end
 
@@ -65,7 +68,6 @@ function rewind_controller:Make(game_worlds)
         self:OnKey(timestamp, state, multi, keycode)
     end
 
-    
     local control_panel = yecs.EntityFactory:Make("panel")
     world:AddEntity(control_panel)
     control_panel:SetSize(yapre.render_width, 30)
@@ -82,25 +84,25 @@ function rewind_controller:Make(game_worlds)
     label.position.x = 10
     label.position.y = 10
     control_panel.tree:AddChild(label)
-    
+
     self.game_worlds = game_worlds
     self.progress_selector = progress_selector
     self.control_panel = control_panel
     self.world = world
-    
+
     self:ShowControlPanel(false)
     self:AddTimer()
     return world
 end
 
-function rewind_controller:Dump() 
+function rewind_controller:Dump()
     local game_worlds = self.game_worlds
-    
+
     local data = {}
     for game_world_key, game_world in pairs(game_worlds) do
         data[game_world_key] = serialization:DumpWorld(game_world)
     end
-    
+
     local idx = self.dump_data_cur_idx
     idx = idx % self.dump_data_max_num
     self.dump_data[idx] = data
@@ -110,8 +112,10 @@ end
 function rewind_controller:Load(idx)
     idx = idx % self.dump_data_max_num
     local data = self.dump_data[idx]
-    if not data then return end 
-    
+    if not data then
+        return
+    end
+
     local game_worlds = self.game_worlds
     for game_world_key, game_world in pairs(game_worlds) do
         game_world:Destroy()
@@ -146,7 +150,7 @@ function rewind_controller:PauseOrResume()
 end
 
 function rewind_controller:ShowControlPanel(v)
-    if v then 
+    if v then
         self.control_panel.position.y = 0
     else
         self.control_panel.position.y = -yapre.render_height
@@ -155,17 +159,20 @@ end
 
 function rewind_controller:AddTimer()
     yapre.AddTimer(dump_interval, function()
-        if not self.paused then self:Dump() end
+        if not self.paused then
+            self:Dump()
+        end
         self:AddTimer()
     end)
 end
 
 function rewind_controller:Save()
-    if not self.paused then return end
-    local data = self.dump_data[self.dump_data_cur_idx-1] 
+    if not self.paused then
+        return
+    end
+    local data = self.dump_data[self.dump_data_cur_idx - 1]
     data = serialization:DumpWorld(self.world)
     table.save(data, "./dump.lua")
 end
-
 
 return rewind_controller

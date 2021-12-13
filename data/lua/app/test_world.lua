@@ -1,51 +1,51 @@
+local yapre = yapre
 local test_world = {}
 
 local core = require("core")
 local yecs = core.yecs
 
 yecs.Behavior:Register("increase_progress_behavior", {
-    OnInit=function(self)
+    OnInit = function(self)
         self:AddComponent("tick")
         local progress_delta = 1
-        self.tick:AddTick("increase_progress", 
-        function() 
+        self.tick:AddTick("increase_progress", function()
             local percent = self:GetPercent()
-            if percent == 100 then 
+            if percent == 100 then
                 progress_delta = -1
             elseif percent == 0 then
                 progress_delta = 1
             end
-            self:SetPercent(percent+progress_delta)
+            self:SetPercent(percent + progress_delta)
         end)
-    end,
+    end
 })
 
 yecs.Behavior:Register("button1_behavior", {
-    OnClicked=function(self, x, y)
+    OnClicked = function(self, x, y)
         self.world:GetEntityByTags({"image"}):PlayAnimation("die")
         self.world:GetEntityByTags({"button2"}):SetState("normal")
         self:SetState("disabled")
     end,
-    OnInit=function(self)
+    OnInit = function(self)
         self:AddComponent("tags")
         self.tags["button1"] = true
     end
 })
 
 yecs.Behavior:Register("button2_behavior", {
-    OnClicked=function(self, x, y)
+    OnClicked = function(self, x, y)
         self.world:GetEntityByTags({"image"}):PlayAnimation("live")
         self.world:GetEntityByTags({"button1"}):SetState("normal")
         self:SetState("disabled")
     end,
-    OnInit=function(self)
+    OnInit = function(self)
         self:AddComponent("tags")
         self.tags["button2"] = true
     end
 })
 
 yecs.Behavior:Register("image_behavior", {
-    OnInit=function(self)
+    OnInit = function(self)
         self:AddComponent("tags")
         self.tags["image"] = true
     end
@@ -66,24 +66,49 @@ function test_world:Make()
     local palette = yecs.EntityFactory:Make("palette")
 
     panel:SetSize(320, 128)
-    panel.position = {x=0, y=0, z=0}
+    panel.position = {
+        x = 0,
+        y = 0,
+        z = 0
+    }
 
-    progress.position = {x=80, y=8, z=1}
+    progress.position = {
+        x = 80,
+        y = 8,
+        z = 1
+    }
     progress:SetPercent(10)
 
-    image:SetTextureSize(128,128)
+    image:SetTextureSize(128, 128)
     image:SetTexture("./image/animation/blood/1.png")
 
-    image.position = {x=8, y=yapre.render_height-8-128, z=1}
+    image.position = {
+        x = 8,
+        y = yapre.render_height - 8 - 128,
+        z = 1
+    }
     image:AddAnimationState("die", "./image/animation/blood/%d.png", 1, 20)
     image:AddAnimationState("live", "./image/animation/blood/%d.png", 1, 1)
 
-    label:SetText("O wonder! \nHow many goodly creatures are there here!\nHow beauteous mankind is!\nO brave new world,\nThat has such people in't.")
+    label:SetText(
+        "O wonder! \nHow many goodly creatures are there here!\nHow beauteous mankind is!\nO brave new world,\nThat has such people in't.")
     label:SetMaxSize(64, -1)
-    label.position = {x=8, y=8, z=1}
+    label.position = {
+        x = 8,
+        y = 8,
+        z = 1
+    }
 
-    button1.position = {x=yapre.render_width-8-32, y=yapre.render_height-8-32, z=1}
-    button2.position = {x=yapre.render_width-8-32-32, y=yapre.render_height-8-32, z=1}
+    button1.position = {
+        x = yapre.render_width - 8 - 32,
+        y = yapre.render_height - 8 - 32,
+        z = 1
+    }
+    button2.position = {
+        x = yapre.render_width - 8 - 32 - 32,
+        y = yapre.render_height - 8 - 32,
+        z = 1
+    }
 
     button1:SetState("normal")
     button2:SetState("disabled")
@@ -96,7 +121,7 @@ function test_world:Make()
     -- world:AddEntity(panel)
     world:AddEntity(palette)
 
-    return world 
+    return world
 end
 
 return test_world

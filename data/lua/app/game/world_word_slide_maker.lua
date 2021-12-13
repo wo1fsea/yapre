@@ -1,7 +1,9 @@
+local yapre = yapre
+
 local world_word_slide_maker = {}
 local world_word_slide = {
-    words="",
-    font_size=2,
+    words = "",
+    font_size = 2
 }
 
 local core = require("core")
@@ -9,15 +11,19 @@ local copy = require("utils.copy")
 local yecs = core.yecs
 
 function world_word_slide:Make()
-    local world = yecs.World:New("world_word_slide_"..self.words)
+    local world = yecs.World:New("world_word_slide_" .. self.words)
     world:AddSystems({"sprite", "input", "tree", "tick"})
 
-    local words = yecs.EntityFactory:Make("label") 
+    local words = yecs.EntityFactory:Make("label")
     words:SetText(self.words)
 
     local rs = words:GetRenderSize()
     print(rs.width, rs.height, self.words)
-    words.position = {x=yapre.render_width/2-rs.width/2, y=yapre.render_height/2+rs.height, z=1}
+    words.position = {
+        x = yapre.render_width / 2 - rs.width / 2,
+        y = yapre.render_height / 2 + rs.height,
+        z = 1
+    }
 
     world:AddEntity(words)
 
