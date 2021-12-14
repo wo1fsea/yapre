@@ -1,79 +1,101 @@
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <style>
-            canvas.emscripten {
-                width: 100%;
-                height: 80%;
-                border: 0px none;
-                background-color: #333333;
-            }
 
-            textarea.emscripten {
-                resize: none;
-                width: 100%;
-                height: 20%;
-                border: 0px none;
-                background-color: #222222;
-                color: #ffffff;
-                margin: 0px;
-            }
-            body {
-                background-color: black;
-            }
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <style>
+        canvas.emscripten {
+            width: calc(100% - 16px);
+            height: calc(100% - 16px);
+            border: 0px none;
+            background-color: #222222;
+            padding: 8px;
+        }
 
-            .content {
-                background-color: #222222;
-            }
-        </style>
-    </head>
+        textarea.emscripten {
+            position: fixed;
+            resize: none;
+            width: calc(100% - 16px);
+            height: 20%;
+            border: 0px none;
+            background-color: #222222;
+            color: #ffffff;
+            bottom: 8px;
+            left: 8px;
+        }
 
-    <body>
-        <div class="content" width=100% height=100%>
-            <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
-            <textarea class="emscripten" id="output" disabled=true></textarea>
-        </div>
+        body {
+            background-color: black;
+            margin: 0px;
+        }
 
-        <script type='text/javascript'>
-            var Module = {
-                preRun: [],
-                postRun: [],
-                print: (function () {
-                    var element = document.getElementById('output');
-                    var lines = [];
-                    if (element) element.value = '';
+        .content {
+            background-color: #222222;
+            padding: 0px;
+            margin: 0px;
+        }
 
-                    return function (text) {
-                        if (arguments.length > 1) {
-                            text = Array.prototype.slice.call(arguments).join(' ');
-                        }
+        button.debug {
+            position: fixed;
+            width: 80;
+            height: 25;
+            bottom: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
 
-                        console.log(text);
+<body>
+    <div class="content" width=100% height=100%>
+        <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+        <textarea class="emscripten" id="output" disabled=true></textarea>
+        <button class="debug" onclick="onClickConsole()">console</button>
+    </div>
 
-                        if (element) {
-                            lines.push(text);
-                            if (lines.length > 128)
-                            {
-                                lines = lines.slice(lines.length - 128, lines.length);
-                            }
-                            element.value = lines.join('\n') + "\n";
-                            element.scrollTop = element.scrollHeight;
-                        }
-                    };
-                })(),
-                printErr: function (text) {
+    <script type='text/javascript'>
+        var Module = {
+            preRun: [],
+            postRun: [],
+            print: (function () {
+                var element = document.getElementById('output');
+                var lines = [];
+                if (element) element.value = '';
+
+                return function (text) {
                     if (arguments.length > 1) {
                         text = Array.prototype.slice.call(arguments).join(' ');
                     }
 
-                    console.error(text);
-                },
-                canvas: (function () {
-                    return document.getElementById('canvas');
-                })()
-            };
-        </script>
-        <script async type="text/javascript" src="yapre.js"></script>
-    </body>
+                    console.log(text);
+
+                    if (element) {
+                        lines.push(text);
+                        if (lines.length > 128) {
+                            lines = lines.slice(lines.length - 128, lines.length);
+                        }
+                        element.value = lines.join('\n') + "\n";
+                        element.scrollTop = element.scrollHeight;
+                    }
+                };
+            })(),
+            printErr: function (text) {
+                if (arguments.length > 1) {
+                    text = Array.prototype.slice.call(arguments).join(' ');
+                }
+
+                console.error(text);
+            },
+            canvas: (function () {
+                return document.getElementById('canvas');
+            })()
+        };
+        var ot = document.getElementById('output');
+        ot.hidden = true;
+        function onClickConsole() {
+            ot.hidden = !ot.hidden;
+        };
+    </script>
+    <script async type="text/javascript" src="yapre.js"></script>
+</body>
+
 </html>
