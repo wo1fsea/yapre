@@ -34,6 +34,7 @@ GLuint renderedTexture;
 
 unsigned int screen_VBO = 0;
 unsigned int VBO = 0;
+unsigned int VAO = 0;
 unsigned int draw_count = 0;
 
 using DrawData =
@@ -94,10 +95,7 @@ bool Init() {
   fragmentShaderFile.close();
   vertexCode = vShaderStream.str();
   fragmentCode = fShaderStream.str();
-  std::cout << vertexCode << fragmentCode << std::endl;
-  std::cout << "vertexCode << fragmentCode" << std::endl;
   shader = new Shader();
-  shader->Compile(vertexCode.c_str(), fragmentCode.c_str());
 
   std::string vertexCode1;
   std::string fragmentCode1;
@@ -113,8 +111,10 @@ bool Init() {
   shader_screen = new Shader();
   shader_screen->Compile(vertexCode1.c_str(), fragmentCode1.c_str());
 
-  std::cout << vertexCode1 << fragmentCode1 << std::endl;
+  glGenVertexArrays(1, &VAO);
 
+  glBindVertexArray(VAO);
+    
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -127,10 +127,14 @@ bool Init() {
   // ==========
 
   // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+  std::cout << "x" << std::endl;
   glGenFramebuffers(1, &FramebufferName);
+  std::cout << "x" << std::endl;
   glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+  std::cout << "x" << std::endl;
   // The texture we're going to render to
   glGenTextures(1, &renderedTexture);
+  std::cout << "x" << std::endl;
 
   // "Bind" the newly created texture : all future texture functions will modify this texture
   glBindTexture(GL_TEXTURE_2D, renderedTexture);
@@ -143,12 +147,15 @@ bool Init() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
+  std::cout << "x" << std::endl;
+
   // The depth buffer
   GLuint depthrenderbuffer;
   glGenRenderbuffers(1, &depthrenderbuffer);
   glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+  std::cout << "x" << std::endl;
 
   // Set "renderedTexture" as our colour attachement #0
   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
@@ -162,8 +169,9 @@ bool Init() {
   // Always check that our framebuffer is ok
   if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return false; 
+  std::cout << "x" << std::endl;
   // ==========
-
+    glBindVertexArray(0);
   lua::GStateModule("yapre")
       .Define<void (*)(const std::string &, int, int, int, int, int, float,
                        float, float, float)>("DrawSprite", DrawSprite)
@@ -259,6 +267,7 @@ void DrawSprite(Texture *image_data, int x, int y, int z, int width, int height,
 }
 
 void DrawAll() {
+  glBindVertexArray(VAO);
   glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
   glViewport(0, 0, 320, 240);
   glClearColor(.0f, .0f, .0f, 0.f);
@@ -266,6 +275,7 @@ void DrawAll() {
   draw_count = 0;
 
   shader->Use();
+   
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
@@ -288,6 +298,7 @@ void DrawAll() {
 
   glDisableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
   draw_list.clear();
 }
 
@@ -312,8 +323,10 @@ void RefreshViewport() {
 }
 
 void Update(int delta_ms) {
+    
   DrawAll();
-  
+   
+  glBindVertexArray(VAO);
   RefreshViewport();
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
@@ -332,7 +345,7 @@ void Update(int delta_ms) {
   glDrawArrays(GL_TRIANGLES, 0, 6);
   glDisableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+  glBindVertexArray(0);
   window::SwapWinodw();
 }
 

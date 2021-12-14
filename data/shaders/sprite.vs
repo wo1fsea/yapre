@@ -1,5 +1,6 @@
-attribute vec4 vertex; 
-varying vec2 TexCoords;
+#version 150 
+in vec4 vertex; 
+out vec2 TexCoords;
 
 uniform mat4 model;
 uniform mat4 projection;
