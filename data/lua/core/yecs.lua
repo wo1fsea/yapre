@@ -88,13 +88,11 @@ function World:AddEntity(entity)
 end
 
 function World:RemoveEntity(entity)
-    local entity_key = nil
-    if getmetatable(entity) == "EntityMeta" then
-        entity_key = entity.key
-    else
-        entity_key = entity
-        entity = self.entities[entity_key]
-    end
+    self:RemoveEntityByKey(entity.key)
+end
+
+function World:RemoveEntityByKey(entity_key)
+    local entity = self.entities[entity_key]
 
     if entity and entity.world == self then
         entity.world = nil
@@ -200,21 +198,36 @@ end
 
 -- behavior
 local Behavior = {
-    behaviors = {}
+    key = "",
+    __metatable = "BehaviorMeta",
+    __tostring = function(self)
+        return string.format("<yecs-behavior: %s>", self.key)
+    end
 }
 
-function Behavior:Register(key, behavior)
-    if type(behavior) ~= 'table' then
+local behavior_templates = {}
+
+function Behavior:Register(key, behavior_funcs)
+    if type(behavior_funcs) ~= 'table' then
         return
     end
-    self.behaviors[key] = behavior
+    behavior_templates[key] = behavior_funcs
 end
 
-function Behavior:Get(key)
-    if not key then
-        return {}
-    end
-    return self.behaviors[key] or {}
+function Behavior:New(key, super_behavior)
+    local behavior_funcs = behavior_templates[key] or {}
+
+    local behavior = setmetatable({
+        key = key,
+        behavior_funcs = behavior_funcs,
+        super_behavior = super_behavior
+    }, self)
+
+    return behavior
+end
+
+Behavior.__index = function(self, k)
+    return self.behavior_funcs[k] or self.super_behavior[k]
 end
 
 -- entity
@@ -225,6 +238,7 @@ local Entity = {
         return string.format("<yecs-entity: %s>", self.key)
     end
 }
+
 Entity.__index = function(self, k)
     return Entity[k] or self._behavior[k] or self.components[k]
 end
@@ -242,21 +256,31 @@ Entity.__newindex = function(self, k, v)
     end
 end
 
+function Entity:_BehaviorOnInit()
+    local function _call_super(behavior)
+        if behavior then
+            _call_super(behavior.super_behavior)
+            if behavior.OnInit then
+                behavior.OnInit(self)
+            end
+        end
+    end
+    _call_super(self._behavior)
+end
+
 function Entity:New(components, behavior_keys)
     components = components or {}
     local component_data = {}
-    local _behavior = {}
+    local behavior = {}
     for _, bk in ipairs(behavior_keys) do
-        for k, v in pairs(Behavior:Get(bk)) do
-            _behavior[k] = v
-        end
+        behavior = Behavior:New(bk, behavior)
     end
 
     local entity = setmetatable({
         key = uuid.new(),
         components = component_data,
         behavior_keys = copy.copy(behavior_keys),
-        _behavior = _behavior
+        _behavior = behavior
     }, self)
 
     for k, v in pairs(components) do
@@ -284,9 +308,7 @@ function Entity:AddComponent(component)
 end
 
 function Entity:AddBehavior(behavior_key)
-    for k, v in pairs(Behavior:Get(behavior_key)) do
-        self._behavior[k] = v
-    end
+    self._behavior = Behavior:New(behavior_key, self._behavior)
     table.insert(self.behavior_keys, behavior_key)
 end
 
@@ -447,9 +469,8 @@ function EntityFactory:Make(entity_type, ex_behavior_keys)
         entity:Init()
     end
 
-    if entity.OnInit then
-        entity:OnInit()
-    end
+    -- behaviors OnInit
+    entity:_BehaviorOnInit()
 
     return entity
 end
