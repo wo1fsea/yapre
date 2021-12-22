@@ -312,7 +312,7 @@ yecs.Component:Register("animation", {
             }
         end,
         RemoveState = function(self, key)
-            animations[key] = nil
+            self.animations[key] = nil
         end,
         Play = function(self, key)
             local a = self.animations[key]
