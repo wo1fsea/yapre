@@ -65,6 +65,14 @@ yecs.Component:Register("input", {
             self:OnTouchEnded(x, y)
             self:OnClicked(x, y)
         end,
+        _OnKeyPressed = function(self, keycode)
+            debug_log.log(string.format("_OnKeyPressed: %s", keycode))
+            self:OnKeyPressed(keycode)
+        end,
+        _OnKeyReleased = function (self, keycode)
+            debug_log.log(string.format("_OnKeyReleased: %s", keycode))
+            self:OnKeyReleased(keycode)
+        end,
 
         OnClicked = function(self, x, y)
             debug_log.log("OnClicked")
@@ -77,6 +85,12 @@ yecs.Component:Register("input", {
         end,
         OnTouchEnded = function(self, x, y)
             debug_log.log("OnTouchEnded")
+        end,
+        OnKeyPressed = function (self, keycode)
+            debug_log.log(string.format("OnKeyPressed: %s", keycode))
+        end,
+        OnKeyReleased = function (self, keycode)
+            debug_log.log(string.format("OnKeyReleased: %s", keycode))
         end
     }
 })

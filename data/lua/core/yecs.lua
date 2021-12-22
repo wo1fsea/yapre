@@ -190,6 +190,12 @@ function World:GetEntity(condition)
     return nil
 end
 
+function World:GetEntitiesWithComponent(component_key)
+    return self:GetEntities(function(entity)
+        return entity.components[component_key]
+    end)
+end
+
 function World:GetEntitiesByTags(tags)
     return self:GetEntities(function(entity)
         if entity.tags == nil then
@@ -266,7 +272,7 @@ Entity.__newindex = function(self, k, v)
     if k == "world" then
         rawset(self, k, v)
     elseif self.components[k] == nil then
-        print("can not add property to entity")
+        debug_log.log("can not add property to entity")
         -- rawset(self, k, v)
     elseif type(v) == "table" then
         local component = self.components[k]
@@ -451,7 +457,7 @@ function System:New(key)
 end
 
 function System:Update(delta_ms)
-    print(self, "Update", delta_ms)
+    debug_log.log(self, "Update", delta_ms)
 end
 
 function System:Init()
