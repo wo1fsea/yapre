@@ -1,6 +1,7 @@
 local yecs = {}
 local copy = require("utils.copy")
 local uuid = require("utils.uuid")
+local debug_log = require("utils.debug_log")
 local deep_copy = copy.deep_copy
 
 -- world

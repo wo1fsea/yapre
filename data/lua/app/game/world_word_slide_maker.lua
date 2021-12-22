@@ -18,7 +18,6 @@ function world_word_slide:Make()
     words:SetText(self.words)
 
     local rs = words:GetRenderSize()
-    print(rs.width, rs.height, self.words)
     words.position = {
         x = yapre.render_width / 2 - rs.width / 2,
         y = yapre.render_height / 2 + rs.height,
