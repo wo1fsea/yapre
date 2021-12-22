@@ -231,6 +231,11 @@ void RefreshViewport() {
 }
 
 void Update(int delta_ms) {
+  auto [w, h] = window::GetDrawableSize();
+  lua::GStateModule("yapre")
+      .Define("drawable_width", w)
+      .Define("drawable_height", h);
+
   RefreshViewport();
   glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
   glClearColor(clean_color.r, clean_color.g, clean_color.b, clean_color.a);

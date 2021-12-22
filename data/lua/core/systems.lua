@@ -3,20 +3,21 @@ local yapre = yapre
 local systems = {}
 local yecs = require("core.yecs")
 local emscripten_keycode_mapping = require("core.data.emscripten_keycode_mapping")
+local debug_log = require("utils.debug_log")
 
 -- dummy system
 local dummy_system = {}
 dummy_system.update_order = 0
 function dummy_system:Init()
-    print("dummy Init")
+    debug_log.log("dummy Init")
 end
 
 function dummy_system:Deinit()
-    print("dummy Deinit")
+    debug_log.log("dummy Deinit")
 end
 
 function dummy_system:Update(delta_ms)
-    print("dummy Update ", delta_ms)
+    debug_log.log("dummy Update ", delta_ms)
 end
 yecs.System:Register("dummy", dummy_system)
 
@@ -26,13 +27,12 @@ sprite_system.update_order = 2048
 sprite_system.update_when_paused = true
 function sprite_system:Update(delta_ms)
     local tree_system = self.world.systems["tree"]
-    local sprite_entities = self.world:GetEntities(function(entity)
-        return entity.sprite
-    end)
+    local sprite_entities = self.world:GetEntitiesWithComponent("sprite")
+
     for _, entity in pairs(sprite_entities) do
         local position = entity.position
         if tree_system then
-            position = tree_system:GetPosition(entity)
+            position = tree_system:GetGlobalPosition(entity)
         end
         position = position or {
             x = 0,
@@ -59,9 +59,7 @@ local input_system = {
 }
 
 function input_system:Update(delta_ms)
-    local input_entities = self.world:GetEntities(function(entity)
-        return entity.input
-    end)
+    local input_entities = self.world:GetEntitiesWithComponent("input")
     local tree_system = self.world.systems["tree"]
 
     for _, mouse_event in ipairs(self._mouse_events) do
@@ -80,7 +78,7 @@ function input_system:Update(delta_ms)
 
                 local position = nil
                 if tree_system then
-                    position = tree_system:GetPosition(entity)
+                    position = tree_system:GetGlobalPosition(entity)
                 end
 
                 position = position or entity.position
@@ -115,6 +113,18 @@ function input_system:Update(delta_ms)
         ::continue0::
     end
 
+    for _, key_event in ipairs(self._key_events) do
+        if key_event.state == 1 then
+            for _, entity in pairs(input_entities) do
+                entity.input:_OnKeyPressed(key_event.keycode)
+            end
+        else
+            for _, entity in pairs(input_entities) do
+                entity.input:_OnKeyReleased(key_event.keycode)
+            end
+        end
+    end
+
     self._key_events = {}
     self._mouse_events = {}
 end
@@ -124,7 +134,7 @@ function input_system:Init()
         if yapre.platform == "emscripten" then
             keycode = emscripten_keycode_mapping:GetKeyCode(keycode)
         end
-        print(string.format("%s-[OnKey] %i:%i:%i:%i", self.world, timestamp, state, multi, keycode))
+        debug_log.log(string.format("%s-[OnKey] %i:%i:%i:%i", self.world, timestamp, state, multi, keycode))
         table.insert(self._key_events, {
             timestamp = timestamp,
             state = state,
@@ -137,7 +147,7 @@ function input_system:Init()
     end
 
     local function OnMouse(timestamp, state, button, x, y)
-        print(string.format("%s-:[OnMouse] %i:%i:%i:(%i,%i)", self.world, timestamp, state, button, x, y))
+        debug_log.log(string.format("%s-:[OnMouse] %i:%i:%i:(%i,%i)", self.world, timestamp, state, button, x, y))
         table.insert(self._mouse_events, {
             timestamp = timestamp,
             state = state,
@@ -183,9 +193,8 @@ end
 function tree_system:Update(delta_ms)
     self.global_position = {}
     local world = self.world
-    local tree_entities = self.world:GetEntities(function(entity)
-        return entity.tree
-    end)
+    local tree_entities = self.world:GetEntitiesWithComponent("tree")
+
     for _, entity in pairs(tree_entities) do
         local parent = entity.tree.parent
         if parent == nil then
@@ -208,7 +217,7 @@ end
 function tree_system:Deinit()
 end
 
-function tree_system:GetPosition(entity)
+function tree_system:GetGlobalPosition(entity)
     local position = self.global_position[entity.key]
     if position then
         return position
@@ -230,9 +239,8 @@ end
 
 function tick_system:Update(delta_ms)
     local world = self.world
-    local tick_entities = self.world:GetEntities(function(entity)
-        return entity.tick
-    end)
+    local tick_entities = self.world:GetEntitiesWithComponent("tick")
+
     local g_tick_callbacks = {}
     local g_timer_callbacks = {}
     for _, entity in pairs(tick_entities) do

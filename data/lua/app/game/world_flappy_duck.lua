@@ -357,7 +357,7 @@ end
 
 function world_flappy_duck:Make()
     local world = yecs.World:New("world_flappy_duck")
-    world:AddSystems({"sprite", "input", "tree", "tick"})
+    world:AddSystemsByKeys({"sprite", "input", "tree", "tick"})
 
     local button = yecs.EntityFactory:Make("button", {"world_flappy_duck_button_behavior"})
     world:AddEntity(button)

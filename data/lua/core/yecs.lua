@@ -1,6 +1,7 @@
 local yecs = {}
 local copy = require("utils.copy")
 local uuid = require("utils.uuid")
+local debug_log = require("utils.debug_log")
 local deep_copy = copy.deep_copy
 
 -- world
@@ -83,18 +84,20 @@ function World:Resume()
 end
 
 function World:AddEntity(entity)
+    if getmetatable(entity) ~= "EntityMeta" then
+        return
+    end
+
     self.entities[entity.key] = entity
     entity.world = self
 end
 
 function World:RemoveEntity(entity)
-    local entity_key = nil
-    if getmetatable(entity) == "EntityMeta" then
-        entity_key = entity.key
-    else
-        entity_key = entity
-        entity = self.entities[entity_key]
-    end
+    self:RemoveEntityByKey(entity.key)
+end
+
+function World:RemoveEntityByKey(entity_key)
+    local entity = self.entities[entity_key]
 
     if entity and entity.world == self then
         entity.world = nil
@@ -104,7 +107,7 @@ end
 
 function World:AddSystem(system)
     if getmetatable(system) ~= "SystemMeta" then
-        system = yecs.System:New(system)
+        return
     end
 
     if system == nil or self.systems[system.key] ~= nil then
@@ -121,23 +124,38 @@ function World:AddSystem(system)
     system:Init()
 end
 
+function World:AddSystemByKey(system_key)
+    local system = yecs.System:New(system_key)
+    self:AddSystem(system)
+end
+
 function World:AddSystems(systems)
     for _, system in pairs(systems) do
         self:AddSystem(system)
     end
 end
 
+function World:AddSystemsByKeys(system_keys)
+    for _, system_key in pairs(system_keys) do
+        self:AddSystemByKey(system_key)
+    end
+end
+
 function World:RemoveSystem(system)
     if getmetatable(system) ~= "SystemMeta" then
-        system = self.systems[system]
+        return
     end
+    self:RemoveSystemByKey(system.key)
+end
 
+function World:RemoveSystemByKey(system_key)
+    local system = self.systems[system_key]
     if system == nil or system.world ~= self then
         return
     end
 
     system.world = nil
-    self.systems[system.key] = nil
+    self.systems[system_key] = nil
     system:Deinit()
     collectgarbage()
 
@@ -172,6 +190,12 @@ function World:GetEntity(condition)
     return nil
 end
 
+function World:GetEntitiesWithComponent(component_key)
+    return self:GetEntities(function(entity)
+        return entity.components[component_key]
+    end)
+end
+
 function World:GetEntitiesByTags(tags)
     return self:GetEntities(function(entity)
         if entity.tags == nil then
@@ -199,22 +223,37 @@ function World:GetEntityByTags(tags)
 end
 
 -- behavior
+local behavior_templates = {}
+
 local Behavior = {
-    behaviors = {}
+    key = "",
+    __metatable = "BehaviorMeta",
+    __tostring = function(self)
+        return string.format("<yecs-behavior: %s>", self.key)
+    end
 }
 
-function Behavior:Register(key, behavior)
-    if type(behavior) ~= 'table' then
-        return
-    end
-    self.behaviors[key] = behavior
+Behavior.__index = function(self, k)
+    return self.behavior_funcs[k] or self.super_behavior[k]
 end
 
-function Behavior:Get(key)
-    if not key then
-        return {}
+function Behavior:Register(key, behavior_funcs)
+    if type(behavior_funcs) ~= 'table' then
+        return
     end
-    return self.behaviors[key] or {}
+    behavior_templates[key] = behavior_funcs
+end
+
+function Behavior:New(key, super_behavior)
+    local behavior_funcs = behavior_templates[key] or {}
+
+    local behavior = setmetatable({
+        key = key,
+        behavior_funcs = behavior_funcs,
+        super_behavior = super_behavior
+    }, self)
+
+    return behavior
 end
 
 -- entity
@@ -225,6 +264,7 @@ local Entity = {
         return string.format("<yecs-entity: %s>", self.key)
     end
 }
+
 Entity.__index = function(self, k)
     return Entity[k] or self._behavior[k] or self.components[k]
 end
@@ -232,7 +272,7 @@ Entity.__newindex = function(self, k, v)
     if k == "world" then
         rawset(self, k, v)
     elseif self.components[k] == nil then
-        print("can not add property to entity")
+        debug_log.log("can not add property to entity")
         -- rawset(self, k, v)
     elseif type(v) == "table" then
         local component = self.components[k]
@@ -242,31 +282,41 @@ Entity.__newindex = function(self, k, v)
     end
 end
 
-function Entity:New(components, behavior_keys)
-    components = components or {}
-    local component_data = {}
-    local _behavior = {}
-    for _, bk in ipairs(behavior_keys) do
-        for k, v in pairs(Behavior:Get(bk)) do
-            _behavior[k] = v
+function Entity:_BehaviorOnInit()
+    local function _call_super(behavior)
+        if behavior then
+            _call_super(behavior.super_behavior)
+            if behavior.OnInit then
+                behavior.OnInit(self)
+            end
         end
+    end
+    _call_super(self._behavior)
+end
+
+function Entity:New(component_keys, behavior_keys)
+    component_keys = component_keys or {}
+    behavior_keys = behavior_keys or {}
+
+    local component_data = {}
+    local behavior = {}
+    for _, bk in ipairs(behavior_keys) do
+        behavior = Behavior:New(bk, behavior)
     end
 
     local entity = setmetatable({
         key = uuid.new(),
         components = component_data,
         behavior_keys = copy.copy(behavior_keys),
-        _behavior = _behavior
+        _behavior = behavior
     }, self)
 
-    for k, v in pairs(components) do
-        if getmetatable(v) ~= "ComponentMeta" then
-            v = yecs.Component:New(v)
-        end
+    for _, component_key in pairs(component_keys) do
+        local component = yecs.Component:New(component_key)
 
-        if v ~= nil then
-            v.entity = entity
-            component_data[v.key] = v
+        if component ~= nil then
+            component.entity = entity
+            component_data[component.key] = component
         end
     end
 
@@ -284,9 +334,7 @@ function Entity:AddComponent(component)
 end
 
 function Entity:AddBehavior(behavior_key)
-    for k, v in pairs(Behavior:Get(behavior_key)) do
-        self._behavior[k] = v
-    end
+    self._behavior = Behavior:New(behavior_key, self._behavior)
     table.insert(self.behavior_keys, behavior_key)
 end
 
@@ -409,7 +457,7 @@ function System:New(key)
 end
 
 function System:Update(delta_ms)
-    print(self, "Update", delta_ms)
+    debug_log.log(self, "Update", delta_ms)
 end
 
 function System:Init()
@@ -429,10 +477,10 @@ function EntityFactory:Make(entity_type, ex_behavior_keys)
         return nil
     end
 
-    local components = data.components
+    local component_keys = data.component_keys
     local behavior_keys = data.behavior_keys
 
-    local entity = yecs.Entity:New(components, behavior_keys)
+    local entity = yecs.Entity:New(component_keys, behavior_keys)
     if not entity then
         return nil
     end
@@ -447,16 +495,15 @@ function EntityFactory:Make(entity_type, ex_behavior_keys)
         entity:Init()
     end
 
-    if entity.OnInit then
-        entity:OnInit()
-    end
+    -- behaviors OnInit
+    entity:_BehaviorOnInit()
 
     return entity
 end
 
-function EntityFactory:Register(entity_type, components, behavior_keys)
+function EntityFactory:Register(entity_type, component_keys, behavior_keys)
     self.entity_models[entity_type] = {
-        components = components,
+        component_keys = component_keys,
         behavior_keys = behavior_keys
     }
 end

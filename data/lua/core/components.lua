@@ -2,6 +2,7 @@ local components = {}
 local yecs = require("core.yecs")
 local palette_data = require("core.data.palette_data")
 local copy = require("utils.copy")
+local debug_log = require("utils.debug_log")
 
 local deep_copy = copy.deep_copy
 
@@ -52,30 +53,44 @@ yecs.Component:Register("input", {
     transparent = false,
     _operations = {
         _OnTouchBegan = function(self, x, y)
-            print("_OnTouchBegan")
+            debug_log.log("_OnTouchBegan")
             return self:OnTouchBegan(x, y)
         end,
         _OnTouchMoved = function(self, x, y)
-            print("_OnTouchMoved")
+            debug_log.log("_OnTouchMoved")
             self:OnTouchMoved(x, y)
         end,
         _OnTouchEnded = function(self, x, y)
-            print("_OnTouchEnded")
+            debug_log.log("_OnTouchEnded")
             self:OnTouchEnded(x, y)
             self:OnClicked(x, y)
         end,
+        _OnKeyPressed = function(self, keycode)
+            debug_log.log(string.format("_OnKeyPressed: %s", keycode))
+            self:OnKeyPressed(keycode)
+        end,
+        _OnKeyReleased = function (self, keycode)
+            debug_log.log(string.format("_OnKeyReleased: %s", keycode))
+            self:OnKeyReleased(keycode)
+        end,
 
         OnClicked = function(self, x, y)
-            print("OnClicked")
+            debug_log.log("OnClicked")
         end,
         OnTouchBegan = function(self, x, y)
-            print("OnTouchBegan")
+            debug_log.log("OnTouchBegan")
         end,
         OnTouchMoved = function(self, x, y)
-            print("OnTouchMoved")
+            debug_log.log("OnTouchMoved")
         end,
         OnTouchEnded = function(self, x, y)
-            print("OnTouchEnded")
+            debug_log.log("OnTouchEnded")
+        end,
+        OnKeyPressed = function (self, keycode)
+            debug_log.log(string.format("OnKeyPressed: %s", keycode))
+        end,
+        OnKeyReleased = function (self, keycode)
+            debug_log.log(string.format("OnKeyReleased: %s", keycode))
         end
     }
 })
@@ -312,7 +327,7 @@ yecs.Component:Register("animation", {
             }
         end,
         RemoveState = function(self, key)
-            animations[key] = nil
+            self.animations[key] = nil
         end,
         Play = function(self, key)
             local a = self.animations[key]

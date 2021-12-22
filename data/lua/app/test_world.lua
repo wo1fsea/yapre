@@ -53,7 +53,7 @@ yecs.Behavior:Register("image_behavior", {
 
 function test_world:Make()
     local world = yecs.World:New("test_world")
-    world:AddSystems({"sprite", "input", "tree", "tick"})
+    world:AddSystemsByKeys({"sprite", "input", "tree", "tick"})
 
     local button1 = yecs.EntityFactory:Make("button", {"button1_behavior"})
     local button2 = yecs.EntityFactory:Make("button", {"button2_behavior"})

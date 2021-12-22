@@ -1,6 +1,7 @@
 local serialization = {}
 local yecs = require("core.yecs")
 local copy = require("utils.copy")
+local debug_log = require("utils.debug_log")
 
 function serialization:DumpWorld(world)
     local world_data = {}
@@ -27,7 +28,7 @@ end
 
 function serialization:LoadWorld(world_data)
     local world = yecs.World:New(world_data.key)
-    world:AddSystems(world_data.systems)
+    world:AddSystemsByKeys(world_data.systems)
 
     world.paused = world_data.paused
     world.update_delta = world_data.update_delta
@@ -59,9 +60,9 @@ function serialization:MakeEntities(entities_data)
         if entity.Init then
             entity:Init()
         end
-        if entity.OnInit then
-            entity:OnInit()
-        end
+
+        -- behaviors OnInit
+        entity:_BehaviorOnInit()
 
         entity.key = entity_key
         entities[entity_key] = entity
@@ -73,7 +74,7 @@ end
 function serialization:DumpData(obj, seen)
     if type(obj) ~= "table" then
         if type(obj) == "function" then
-            print("unable to dump function")
+            debug_log.log("unable to dump function")
             return nil
         end
         return obj

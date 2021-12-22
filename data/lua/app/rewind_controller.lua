@@ -63,7 +63,7 @@ end
 
 function rewind_controller:Make(game_worlds)
     local world = yecs.World:New("rewind_controller")
-    world:AddSystems({"sprite", "input", "tree", "tick"})
+    world:AddSystemsByKeys({"sprite", "input", "tree", "tick"})
     world.systems["input"].OnKey = function(input_system, timestamp, state, multi, keycode)
         self:OnKey(timestamp, state, multi, keycode)
     end

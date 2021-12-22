@@ -55,7 +55,7 @@ emscripten_keycode_mapping.keycode_mapping = {
 }
 
 function emscripten_keycode_mapping:GetKeyCode(key_code)
-    n_key_code = self.keycode_mapping[key_code] or key_code
+    local n_key_code = self.keycode_mapping[key_code] or key_code
     return n_key_code
 end
 

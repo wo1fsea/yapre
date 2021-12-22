@@ -8,7 +8,7 @@ local yecs = require("core.yecs")
 -- button
 local button_behavior = {}
 yecs.Behavior:Register("button", button_behavior)
-function button_behavior:Init()
+function button_behavior:OnInit()
     self.sprite:AddSprite("button", "./image/ui/button16/1.png", {
         size = {
             width = 32,
@@ -95,7 +95,7 @@ yecs.EntityFactory:Register("label", {"position", "sprite", "tree", "size", "tex
 -- image
 local image_behavior = {}
 yecs.Behavior:Register("image", image_behavior)
-function image_behavior:Init()
+function image_behavior:OnInit()
     local default_image_size = {
         width = 32,
         height = 32
@@ -207,7 +207,7 @@ yecs.EntityFactory:Register("image", {"position", "sprite", "size", "tick", "ani
 -- progress
 local progress_behavior = {}
 yecs.Behavior:Register("progress", progress_behavior)
-function progress_behavior:Init()
+function progress_behavior:OnInit()
     local default_size = {
         width = 64,
         height = 4
@@ -271,7 +271,7 @@ yecs.EntityFactory:Register("progress", {"position", "sprite", "tree", "size", "
 -- panel
 local panel_behavior = {}
 yecs.Behavior:Register("panel", panel_behavior)
-function panel_behavior:Init()
+function panel_behavior:OnInit()
     local panel_size = {
         width = 64,
         height = 64
@@ -304,7 +304,7 @@ yecs.EntityFactory:Register("panel", {"position", "sprite", "tree", "size"}, {"p
 -- palette
 local palette_behavior = {}
 yecs.Behavior:Register("palette", palette_behavior)
-function palette_behavior:Init()
+function palette_behavior:OnInit()
     local palette_size = 4
     local offset_x = 0
     for i, color in ipairs(palette_data.colors) do
@@ -329,7 +329,7 @@ yecs.EntityFactory:Register("palette", {"position", "sprite", "tree", "size"}, {
 -- progress_selector
 local progress_selector_behavior = {}
 yecs.Behavior:Register("progress_selector", progress_selector_behavior)
-function progress_selector_behavior:Init()
+function progress_selector_behavior:OnInit()
     local block_width = 2
     local block_interval = 1
     local block_height = 2
