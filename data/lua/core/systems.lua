@@ -2,21 +2,22 @@ local yapre = yapre
 
 local systems = {}
 local yecs = require("core.yecs")
+local debug_log = require("core.debug_log")
 local emscripten_keycode_mapping = require("core.data.emscripten_keycode_mapping")
 
 -- dummy system
 local dummy_system = {}
 dummy_system.update_order = 0
 function dummy_system:Init()
-    print("dummy Init")
+    debug_log.log("dummy Init")
 end
 
 function dummy_system:Deinit()
-    print("dummy Deinit")
+    debug_log.log("dummy Deinit")
 end
 
 function dummy_system:Update(delta_ms)
-    print("dummy Update ", delta_ms)
+    debug_log.log("dummy Update ", delta_ms)
 end
 yecs.System:Register("dummy", dummy_system)
 
@@ -124,7 +125,7 @@ function input_system:Init()
         if yapre.platform == "emscripten" then
             keycode = emscripten_keycode_mapping:GetKeyCode(keycode)
         end
-        print(string.format("%s-[OnKey] %i:%i:%i:%i", self.world, timestamp, state, multi, keycode))
+        debug_log.log(string.format("%s-[OnKey] %i:%i:%i:%i", self.world, timestamp, state, multi, keycode))
         table.insert(self._key_events, {
             timestamp = timestamp,
             state = state,
@@ -137,7 +138,7 @@ function input_system:Init()
     end
 
     local function OnMouse(timestamp, state, button, x, y)
-        print(string.format("%s-:[OnMouse] %i:%i:%i:(%i,%i)", self.world, timestamp, state, button, x, y))
+        debug_log.log(string.format("%s-:[OnMouse] %i:%i:%i:(%i,%i)", self.world, timestamp, state, button, x, y))
         table.insert(self._mouse_events, {
             timestamp = timestamp,
             state = state,

@@ -1,6 +1,7 @@
 local serialization = {}
 local yecs = require("core.yecs")
 local copy = require("utils.copy")
+local debug_log = require("utils.debug_log")
 
 function serialization:DumpWorld(world)
     local world_data = {}
@@ -73,7 +74,7 @@ end
 function serialization:DumpData(obj, seen)
     if type(obj) ~= "table" then
         if type(obj) == "function" then
-            print("unable to dump function")
+            debug_log.log("unable to dump function")
             return nil
         end
         return obj
