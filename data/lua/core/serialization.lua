@@ -27,7 +27,7 @@ end
 
 function serialization:LoadWorld(world_data)
     local world = yecs.World:New(world_data.key)
-    world:AddSystems(world_data.systems)
+    world:AddSystemsByKeys(world_data.systems)
 
     world.paused = world_data.paused
     world.update_delta = world_data.update_delta

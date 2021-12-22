@@ -88,7 +88,7 @@ yecs.Behavior:Register("world_mario_music_stop_btn_behavior", {
 
 function world_mario_music:Make()
     local world = yecs.World:New("world_mario_music")
-    world:AddSystems({"sprite", "input", "tree", "tick"})
+    world:AddSystemsByKeys({"sprite", "input", "tree", "tick"})
 
     local play_btn = yecs.EntityFactory:Make("button", {"world_mario_music_play_btn_behavior"})
     local stop_btn = yecs.EntityFactory:Make("button", {"world_mario_music_stop_btn_behavior"})

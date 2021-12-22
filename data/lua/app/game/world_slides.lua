@@ -24,7 +24,7 @@ yecs.Behavior:Register("world_slides_prev_btn_behavior", {
 
 function world_slides:Make()
     local world = yecs.World:New("world_slides")
-    world:AddSystems({"sprite", "input", "tree", "tick"})
+    world:AddSystemsByKeys({"sprite", "input", "tree", "tick"})
 
     local next_btn = yecs.EntityFactory:Make("button", {"world_slides_next_btn_behavior"})
     local prev_btn = yecs.EntityFactory:Make("button", {"world_slides_prev_btn_behavior"})

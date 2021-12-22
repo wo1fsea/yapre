@@ -83,6 +83,10 @@ function World:Resume()
 end
 
 function World:AddEntity(entity)
+    if getmetatable(entity) ~= "EntityMeta" then
+        return
+    end
+
     self.entities[entity.key] = entity
     entity.world = self
 end
@@ -102,7 +106,7 @@ end
 
 function World:AddSystem(system)
     if getmetatable(system) ~= "SystemMeta" then
-        system = yecs.System:New(system)
+        return
     end
 
     if system == nil or self.systems[system.key] ~= nil then
@@ -119,23 +123,38 @@ function World:AddSystem(system)
     system:Init()
 end
 
+function World:AddSystemByKey(system_key)
+    local system = yecs.System:New(system_key)
+    self:AddSystem(system)
+end
+
 function World:AddSystems(systems)
     for _, system in pairs(systems) do
         self:AddSystem(system)
     end
 end
 
+function World:AddSystemsByKeys(system_keys)
+    for _, system_key in pairs(system_keys) do
+        self:AddSystemByKey(system_key)
+    end
+end
+
 function World:RemoveSystem(system)
     if getmetatable(system) ~= "SystemMeta" then
-        system = self.systems[system]
+        return
     end
+    self:RemoveSystemByKey(system.key)
+end
 
+function World:RemoveSystemByKey(system_key)
+    local system = self.systems[system_key]
     if system == nil or system.world ~= self then
         return
     end
 
     system.world = nil
-    self.systems[system.key] = nil
+    self.systems[system_key] = nil
     system:Deinit()
     collectgarbage()
 
@@ -197,6 +216,8 @@ function World:GetEntityByTags(tags)
 end
 
 -- behavior
+local behavior_templates = {}
+
 local Behavior = {
     key = "",
     __metatable = "BehaviorMeta",
@@ -205,7 +226,9 @@ local Behavior = {
     end
 }
 
-local behavior_templates = {}
+Behavior.__index = function(self, k)
+    return self.behavior_funcs[k] or self.super_behavior[k]
+end
 
 function Behavior:Register(key, behavior_funcs)
     if type(behavior_funcs) ~= 'table' then
@@ -224,10 +247,6 @@ function Behavior:New(key, super_behavior)
     }, self)
 
     return behavior
-end
-
-Behavior.__index = function(self, k)
-    return self.behavior_funcs[k] or self.super_behavior[k]
 end
 
 -- entity
@@ -268,8 +287,10 @@ function Entity:_BehaviorOnInit()
     _call_super(self._behavior)
 end
 
-function Entity:New(components, behavior_keys)
-    components = components or {}
+function Entity:New(component_keys, behavior_keys)
+    component_keys = component_keys or {}
+    behavior_keys = behavior_keys or {}
+
     local component_data = {}
     local behavior = {}
     for _, bk in ipairs(behavior_keys) do
@@ -283,14 +304,12 @@ function Entity:New(components, behavior_keys)
         _behavior = behavior
     }, self)
 
-    for k, v in pairs(components) do
-        if getmetatable(v) ~= "ComponentMeta" then
-            v = yecs.Component:New(v)
-        end
+    for _, component_key in pairs(component_keys) do
+        local component = yecs.Component:New(component_key)
 
-        if v ~= nil then
-            v.entity = entity
-            component_data[v.key] = v
+        if component ~= nil then
+            component.entity = entity
+            component_data[component.key] = component
         end
     end
 
@@ -451,10 +470,10 @@ function EntityFactory:Make(entity_type, ex_behavior_keys)
         return nil
     end
 
-    local components = data.components
+    local component_keys = data.component_keys
     local behavior_keys = data.behavior_keys
 
-    local entity = yecs.Entity:New(components, behavior_keys)
+    local entity = yecs.Entity:New(component_keys, behavior_keys)
     if not entity then
         return nil
     end
@@ -475,9 +494,9 @@ function EntityFactory:Make(entity_type, ex_behavior_keys)
     return entity
 end
 
-function EntityFactory:Register(entity_type, components, behavior_keys)
+function EntityFactory:Register(entity_type, component_keys, behavior_keys)
     self.entity_models[entity_type] = {
-        components = components,
+        component_keys = component_keys,
         behavior_keys = behavior_keys
     }
 end

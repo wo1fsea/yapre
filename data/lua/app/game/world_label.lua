@@ -21,7 +21,7 @@ yecs.Behavior:Register("world_label_time_label_behavior", {
 
 function world_label:Make()
     local world = yecs.World:New("world_label")
-    world:AddSystems({"sprite", "input", "tree", "tick"})
+    world:AddSystemsByKeys({"sprite", "input", "tree", "tick"})
 
     local time_label = yecs.EntityFactory:Make("label", {"world_label_time_label_behavior"})
     local world_label_a = yecs.EntityFactory:Make("label")

@@ -7,7 +7,7 @@ local yecs = core.yecs
 
 function splash_screen:Show(callback)
     local world = yecs.World:New("splash_world")
-    world:AddSystems({"sprite", "tick"})
+    world:AddSystemsByKeys({"sprite", "tick"})
 
     local image = yecs.EntityFactory:Make("image")
 
