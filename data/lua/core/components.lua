@@ -86,10 +86,10 @@ yecs.Component:Register("input", {
         OnTouchEnded = function(self, x, y)
             debug_log.log("OnTouchEnded")
         end,
-        OnKeyPressed = function (self, keycode)
+        OnKeyPressed = function(self, keycode)
             debug_log.log(string.format("OnKeyPressed: %s", keycode))
         end,
-        OnKeyReleased = function (self, keycode)
+        OnKeyReleased = function(self, keycode)
             debug_log.log(string.format("OnKeyReleased: %s", keycode))
         end
     }
