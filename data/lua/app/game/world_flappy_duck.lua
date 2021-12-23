@@ -233,7 +233,6 @@ yecs.Behavior:Register("world_flappy_duck_button_behavior", {
         self.input.OnKeyPressed = function(self, keycode)
             if keycode == string.byte(" ") then
                 self.entity:OnClicked(0, 0)
-                self.entity:
             end
         end
     end
