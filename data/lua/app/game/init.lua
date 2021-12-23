@@ -6,6 +6,7 @@ local world_slides = require("app.game.world_slides")
 local world_label = require("app.game.world_label")
 local world_image = require("app.game.world_image")
 local world_flappy_duck = require("app.game.world_flappy_duck")
+local world_dungeon = require("app.game.world_dungeon")
 
 game.worlds = setmetatable({}, {
     __mode = "v"
@@ -17,7 +18,7 @@ function game:Init()
     self.worlds = {}
     self.rewind_controller = rewind_controller:Make(self.worlds)
 
-    self.worlds_to_show = {world_label, world_mario_music, world_image, world_flappy_duck}
+    self.worlds_to_show = {world_dungeon, world_label, world_mario_music, world_image, world_flappy_duck}
 
     self.worlds["world_slides"] = world_slides:Make()
     self.worlds[self.cur_world_idx] = self.worlds_to_show[self.cur_world_idx]:Make()
