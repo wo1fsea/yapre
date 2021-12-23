@@ -1,6 +1,8 @@
-local yapre = yapre
-
 package.path = package.path .. ";./lua/?.lua;./lua/?/init.lua"
+
+local yapre = yapre
+local debug_log = require("utils.debug_log")
+
 
 yapre.dbg = require("utils.debugger")
 yapre.dbg.read = yapre.DebugRead
@@ -92,7 +94,7 @@ local function OnKey(timestamp, state, multi, keycode)
         keycode = emscripten_keycode_mapping:GetKeyCode(keycode)
     end
     --]]
-    print(string.format("[OnKey] %i:%i:%i:%i", timestamp, state, multi, keycode))
+    debug_log.log(string.format("[OnKey] %i:%i:%i:%i", timestamp, state, multi, keycode))
     if state == 1 then
         keypressed(keycode)
         -- self:OnKey(timestamp, state, multi, keycode)
