@@ -151,9 +151,10 @@ template <typename... Targs> struct StateVar<std::tuple<Targs...>> {
                                int index) {
     TupleType t;
     int top_of_stack = lua_gettop(l);
-    if (top_of_stack != 0) {
+    index = index < 0? top_of_stack + index + 1: index;
+    if (index <= top_of_stack) {
       for (lua_Integer i = 1; i <= sizeof...(Targs); ++i) {
-        lua_geti(l, top_of_stack, i);
+        lua_geti(l, index, i);
       }
       t = std::make_tuple(
           StateVar<Targs>::Get(l, (int)(-sizeof...(Targs) + Is))...);
@@ -178,8 +179,9 @@ template <typename T> struct StateVar<std::vector<T>> {
   static inline VectorType Get(lua_State *l, int index) {
     VectorType v;
     int top_of_stack = lua_gettop(l);
-    if (top_of_stack != 0) {
-      for (lua_Integer i = 1; lua_geti(l, top_of_stack, i) != LUA_TNIL; ++i) {
+    index = index < 0? top_of_stack + index + 1: index;
+    if (index <= top_of_stack) {
+      for (lua_Integer i = 1; lua_geti(l, index, i) != LUA_TNIL; ++i) {
         T item = StateVar<T>::Get(l, -1);
         v.emplace_back(item);
         lua_settop(l, top_of_stack);
@@ -201,12 +203,12 @@ template <typename T> struct StateVar<std::unordered_map<std::string, T>> {
     }
   }
   static inline MapType Get(lua_State *l, int index) {
-    int top_of_stack = lua_gettop(l);
     MapType m;
-
-    if (top_of_stack != 0) {
+    int top_of_stack = lua_gettop(l);
+    index = index < 0? top_of_stack + index + 1: index;
+    if (index <= top_of_stack) {
       lua_pushnil(l);
-      while (lua_next(l, top_of_stack) != 0) {
+      while (lua_next(l, index) != 0) {
         auto v = StateVar<T>::Get(l, -1);
         std::string k = StateVar<std::string>::Get(l, -2);
         m.emplace(k, v);
