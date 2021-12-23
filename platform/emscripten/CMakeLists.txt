@@ -11,6 +11,6 @@ function(platform_setup_target)
         TARGET ${PROJECT_NAME}
         POST_BUILD
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        COMMAND cp ./platform/emscripten/index.html ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
+        COMMAND cp ./platform/emscripten/index.html ./platform/emscripten/favicon.ico ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
         )
 endfunction()
