@@ -222,7 +222,6 @@ yecs.Behavior:Register("world_flappy_duck_button_behavior", {
             return
         end
         duck:Fly()
-
     end,
     OnInit = function(self)
         self:AddComponent("tags")
@@ -231,6 +230,12 @@ yecs.Behavior:Register("world_flappy_duck_button_behavior", {
         self.position.y = yapre.render_height - 64 - 32
         self.position.x = yapre.render_width - 64 - 32
         self.position.z = 128
+        self.input.OnKeyPressed = function(self, keycode)
+            if keycode == string.byte(" ") then
+                self.entity:OnClicked(0, 0)
+                self.entity:
+            end
+        end
     end
 })
 
