@@ -123,7 +123,7 @@ local function drawScreen()
     end
     --]]
 
-    yapre.DrawSpriteWithImageData(imageData, 0, 0, 0, width, height, 0, 1, 1, 1)
+    yapre.DrawSpriteWithImageData(imageData, {0, 0, 0}, {width, height}, 0, {1, 1, 1})
 end
 
 local function update()

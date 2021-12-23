@@ -91,10 +91,10 @@ bool Init() {
   glDisableVertexAttribArray(0);
 
   lua::GStateModule("yapre")
-      .Define<void (*)(const std::string &, int, int, int, int, int, float,
-                       float, float, float)>("DrawSprite", DrawSprite)
-      .Define<void (*)(Texture *, int, int, int, int, int, float, float, float,
-                       float)>("DrawSpriteWithImageData", DrawSprite)
+      .Define<void (*)(const std::string &, std::tuple<int, int, int>,
+                std::tuple<int, int>, float, std::tuple<float, float, float>)>("DrawSprite", DrawSprite)
+      .Define<void (*)(Texture *, std::tuple<int, int, int>,
+                std::tuple<int, int>, float, std::tuple<float, float, float>)>("DrawSpriteWithImageData", DrawSprite)
       .Define("SetClearColor", SetClearColor)
       .Define("SetRenderSize", SetRenderSize);
 
@@ -141,6 +141,15 @@ void DrawSprite(const std::string &texture_filename, int x, int y, int z,
              rotate, glm::vec3(R, G, B));
 }
 
+void DrawSprite(const std::string &texture_filename, std::tuple<int, int, int> position,
+                std::tuple<int, int> size, float rotate, std::tuple<float, float, float> color)
+                {
+                  auto [x, y, z] = position;
+                  auto [width, height] = size;
+                  auto [R, G, B] = color;
+                  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height), rotate, glm::vec3(R, G, B));
+                }
+
 void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
                 float rotate, glm::vec3 color) {
 
@@ -183,6 +192,16 @@ void DrawSprite(Texture *image_data, int x, int y, int z, int width, int height,
   DrawSprite(image_data, glm::vec3(x, y, z), glm::vec2(width, height), rotate,
              glm::vec3(R, G, B));
 }
+
+void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
+                std::tuple<int, int> size, float rotate, std::tuple<float, float, float> color)
+                {
+                  auto [x, y, z] = position;
+                  auto [width, height] = size;
+                  auto [R, G, B] = color;
+                    DrawSprite(image_data, glm::vec3(x, y, z), glm::vec2(width, height), rotate,
+             glm::vec3(R, G, B));
+                }
 
 void DrawAll() {
   draw_count = 0;
