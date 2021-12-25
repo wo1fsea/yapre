@@ -25,7 +25,12 @@ function rewind_controller:OnKey(timestamp, state, multi, keycode)
         end
 
         if keycode == "s" then
-            self:Save()
+            self:SaveToFile()
+            return
+        end
+
+        if keycode == "l" then
+            self:LoadFromFile()
             return
         end
 
@@ -166,13 +171,34 @@ function rewind_controller:AddTimer()
     end)
 end
 
-function rewind_controller:Save()
+function rewind_controller:SaveToFile()
     if not self.paused then
         return
     end
     local data = self.dump_data[self.dump_data_cur_idx - 1]
-    data = serialization:DumpWorld(self.world)
     table.save(data, "./dump.lua")
+end
+
+function rewind_controller:LoadFromFile()
+    if not self.paused then
+        return
+    end
+    local data = table.load("./dump.lua")
+    if not data then
+        return
+    end
+
+    local game_worlds = self.game_worlds
+    for game_world_key, game_world in pairs(game_worlds) do
+        game_world:Destroy()
+    end
+
+    for game_world_key, game_world_data in pairs(data) do
+        local game_world = serialization:LoadWorld(game_world_data)
+        game_world:Pause()
+        game_worlds[game_world_key] = game_world
+    end 
+    self:PauseOrResume()
 end
 
 return rewind_controller
