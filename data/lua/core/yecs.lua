@@ -245,7 +245,8 @@ function Behavior:Register(key, behavior_funcs)
 end
 
 function Behavior:New(key, super_behavior)
-    local behavior_funcs = behavior_templates[key] or {}
+    local behavior_funcs = behavior_templates[key]
+    assert(behavior_funcs, "cannot find behavior with key: " .. key)
 
     local behavior = setmetatable({
         key = key,
@@ -324,18 +325,28 @@ function Entity:New(component_keys, behavior_keys)
 end
 
 function Entity:AddComponent(component)
-    if getmetatable(component) ~= "ComponentMeta" then
-        component = yecs.Component:New(component)
-    end
+    local component = yecs.Component:New(component)
 
     if component and self.components[component.key] == nil then
         self.components[component.key] = component
     end
 end
 
+function Entity:AddComponents(components)
+    for _, component in pairs(components) do
+        self:AddComponent(component)
+    end
+end
+
 function Entity:AddBehavior(behavior_key)
     self._behavior = Behavior:New(behavior_key, self._behavior)
     table.insert(self.behavior_keys, behavior_key)
+end
+
+function Entity:AddBehaviors(behavior_keys)
+    for _, behavior_key in pairs(behavior_keys) do
+        self:AddBehavior(behavior_key)
+    end
 end
 
 function Entity:Serialize()
@@ -399,9 +410,7 @@ end
 
 function Component:New(key)
     local component_data = component_templates[key]
-    if component_data == nil then
-        return nil
-    end
+    assert(component_data, "cannot find component with key: " .. key)
 
     local component = setmetatable(deep_copy(component_data), self)
     return component
