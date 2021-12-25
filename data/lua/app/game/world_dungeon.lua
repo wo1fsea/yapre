@@ -12,7 +12,7 @@ yecs.Behavior:Register("world_dungeon_joystick_behavior", {
             x = x,
             y = y
         }
-    end
+    end,
 })
 
 function world_dungeon:Make()
@@ -20,17 +20,16 @@ function world_dungeon:Make()
     world:AddSystemsByKeys({"sprite", "input", "tree", "tick"})
 
     local dot = yecs.EntityFactory:Make("image")
-    dot:AddComponent("tags")
-    dot:AddComponent("data")
-    dot:AddComponent("tick")
+    dot:AddComponents{"tags", "data", "tick"}
+
     dot.tags["dot"] = true
     dot.data["speed"] = {
         x = 0,
         y = 0
     }
 
-    dot.tick:AddTick("tick", function (delta_ms)
-        dot.position.x = dot.position.x + delta_ms * dot.data.speed.x / 10 
+    dot.tick:AddTick("tick", function(delta_ms)
+        dot.position.x = dot.position.x + delta_ms * dot.data.speed.x / 10
         dot.position.y = dot.position.y + delta_ms * dot.data.speed.y / 10
     end)
 
