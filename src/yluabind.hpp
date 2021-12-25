@@ -94,7 +94,7 @@ template <typename T>
 struct StateVar<T, std::enable_if_t<std::is_integral<T>::value>> {
   static inline void Put(lua_State *l, T value) { lua_pushinteger(l, value); }
   static inline T Get(lua_State *l, int index) {
-    return (T)luaL_checkinteger(l, index);
+    return (T)luaL_checknumber(l, index);
   }
 };
 

@@ -87,7 +87,8 @@ function button_behavior:BindKey(key)
     self.data.button_bind_key = key
 end
 
-yecs.EntityFactory:Register("button", {"position", "sprite", "tree", "size", "input", "tick", "animation", "data"}, {"button"})
+yecs.EntityFactory:Register("button", {"position", "sprite", "tree", "size", "input", "tick", "animation", "data"},
+    {"button"})
 
 -- label
 local label_behavior = {}
@@ -410,7 +411,7 @@ yecs.EntityFactory:Register("progress_selector", {"position", "sprite", "tree", 
 local joystick_behavior = {}
 yecs.Behavior:Register("joystick", joystick_behavior)
 function joystick_behavior:OnInit()
-    self.sprite:AddSprite("joystick_head", "./image/ui/joystick32/1.png", {
+    self.sprite:AddSprite("joystick_head", "./image/ui/joystick32/4.png", {
         size = {
             width = 64,
             height = 64
@@ -422,7 +423,7 @@ function joystick_behavior:OnInit()
         }
     })
 
-    self.sprite:AddSprite("joystick_background", "./image/ui/joystick32/2.png", {
+    self.sprite:AddSprite("joystick_background", "./image/ui/joystick32/1.png", {
         size = {
             width = 64,
             height = 64
@@ -442,6 +443,14 @@ function joystick_behavior:OnInit()
         local cy = self.entity.position.y + self.entity.size.height / 2
         self.entity:SetJoystickHeadOffset(x - cx, y - cy)
 
+        local on_joystick_func = self.entity.OnJoystick
+        if on_joystick_func then
+            local size = self.entity.size
+            local w = size.width
+            local h = size.height
+            on_joystick_func(self.entity, 2 * (x - cx) / w, 2 * (y - cy) / h)
+        end
+
         return true
     end
     function self.input:OnTouchMoved(x, y)
@@ -449,10 +458,22 @@ function joystick_behavior:OnInit()
         local cy = self.entity.position.y + self.entity.size.height / 2
         self.entity:SetJoystickHeadOffset(x - cx, y - cy)
 
+        local on_joystick_func = self.entity.OnJoystick
+        if on_joystick_func then
+            local size = self.entity.size
+            local w = size.width
+            local h = size.height
+            on_joystick_func(self.entity, 2. * (x - cx) / w, 2. * (y - cy) / h)
+        end
+
         return true
     end
     function self.input:OnTouchEnded(x, y)
         self.entity:SetJoystickHeadOffset(0, 0)
+        local on_joystick_func = self.entity.OnJoystick
+        if on_joystick_func then
+            on_joystick_func(self.entity, 0, 0)
+        end
     end
 
     return self
