@@ -92,6 +92,12 @@ function World:AddEntity(entity)
     entity.world = self
 end
 
+function World:AddEntities(entities)
+    for _, entitie in pairs(entities) do
+        self:AddEntity(entitie)
+    end
+end
+
 function World:RemoveEntity(entity)
     self:RemoveEntityByKey(entity.key)
 end

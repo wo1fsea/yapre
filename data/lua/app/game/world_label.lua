@@ -73,11 +73,7 @@ function world_label:Make()
     }
     world_label_d:SetFontSize(4)
 
-    world:AddEntity(time_label)
-    world:AddEntity(world_label_a)
-    world:AddEntity(world_label_b)
-    world:AddEntity(world_label_c)
-    world:AddEntity(world_label_d)
+    world:AddEntities{time_label, world_label_a, world_label_b, world_label_c, world_label_d}
 
     return world
 end

@@ -5,6 +5,9 @@ local core = require("core")
 local yecs = core.yecs
 
 yecs.Behavior:Register("world_slides_next_btn_behavior", {
+    OnInit = function (self)
+        self:BindKey("x")
+    end,
     OnClicked = function(self, x, y)
         local game = require("app.game")
         if game.NextWorld then
@@ -14,6 +17,9 @@ yecs.Behavior:Register("world_slides_next_btn_behavior", {
 })
 
 yecs.Behavior:Register("world_slides_prev_btn_behavior", {
+    OnInit = function (self)
+        self:BindKey("z")
+    end,
     OnClicked = function(self, x, y)
         local game = require("app.game")
         if game.PrevWorld then
