@@ -93,7 +93,7 @@ template <> struct StateVar<bool> {
 template <typename T>
 struct StateVar<T, std::enable_if_t<std::is_integral<T>::value>> {
   static inline void Put(lua_State *l, T value) { lua_pushinteger(l, value); }
-  static inline int Get(lua_State *l, int index) {
+  static inline T Get(lua_State *l, int index) {
     return (T)luaL_checknumber(l, index);
   }
 };
@@ -102,7 +102,7 @@ template <typename T> struct StateVar<T, std::enable_if_t<std::is_floating_point
   static inline T Put(lua_State *l, T value) {
     lua_pushnumber(l, value);
   }
-  static inline float Get(lua_State *l, int index) {
+  static inline T Get(lua_State *l, int index) {
     return (T)luaL_checknumber(l, index);
   }
 };
