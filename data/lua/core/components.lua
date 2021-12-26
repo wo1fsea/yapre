@@ -2,7 +2,6 @@ local components = {}
 local yecs = require("core.yecs")
 local palette_data = require("core.data.palette_data")
 local copy = require("utils.copy")
-local debug_log = require("utils.debug_log")
 
 local deep_copy = copy.deep_copy
 
@@ -53,44 +52,44 @@ yecs.Component:Register("input", {
     transparent = false,
     _operations = {
         _OnTouchBegan = function(self, x, y)
-            debug_log.log("_OnTouchBegan")
+            yapre.log.info("_OnTouchBegan")
             return self:OnTouchBegan(x, y)
         end,
         _OnTouchMoved = function(self, x, y)
-            debug_log.log("_OnTouchMoved")
+            yapre.log.info("_OnTouchMoved")
             self:OnTouchMoved(x, y)
         end,
         _OnTouchEnded = function(self, x, y)
-            debug_log.log("_OnTouchEnded")
+            yapre.log.info("_OnTouchEnded")
             self:OnTouchEnded(x, y)
             self:OnClicked(x, y)
         end,
         _OnKeyPressed = function(self, keycode)
-            debug_log.log(string.format("_OnKeyPressed: %s", keycode))
+            yapre.log.info(string.format("_OnKeyPressed: %s", keycode))
             self:OnKeyPressed(keycode)
         end,
         _OnKeyReleased = function (self, keycode)
-            debug_log.log(string.format("_OnKeyReleased: %s", keycode))
+            yapre.log.info(string.format("_OnKeyReleased: %s", keycode))
             self:OnKeyReleased(keycode)
         end,
 
         OnClicked = function(self, x, y)
-            debug_log.log("OnClicked")
+            yapre.log.info("OnClicked")
         end,
         OnTouchBegan = function(self, x, y)
-            debug_log.log("OnTouchBegan")
+            yapre.log.info("OnTouchBegan")
         end,
         OnTouchMoved = function(self, x, y)
-            debug_log.log("OnTouchMoved")
+            yapre.log.info("OnTouchMoved")
         end,
         OnTouchEnded = function(self, x, y)
-            debug_log.log("OnTouchEnded")
+            yapre.log.info("OnTouchEnded")
         end,
         OnKeyPressed = function(self, keycode)
-            debug_log.log(string.format("OnKeyPressed: %s", keycode))
+            yapre.log.info(string.format("OnKeyPressed: %s", keycode))
         end,
         OnKeyReleased = function(self, keycode)
-            debug_log.log(string.format("OnKeyReleased: %s", keycode))
+            yapre.log.info(string.format("OnKeyReleased: %s", keycode))
         end
     }
 })

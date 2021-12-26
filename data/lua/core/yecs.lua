@@ -1,7 +1,6 @@
 local yecs = {}
 local copy = require("utils.copy")
 local uuid = require("utils.uuid")
-local debug_log = require("utils.debug_log")
 local deep_copy = copy.deep_copy
 
 -- world
@@ -279,7 +278,7 @@ Entity.__newindex = function(self, k, v)
     if k == "world" then
         rawset(self, k, v)
     elseif self.components[k] == nil then
-        debug_log.log("can not add property to entity")
+        yapre.log.info("can not add property to entity")
         -- rawset(self, k, v)
     elseif type(v) == "table" then
         local component = self.components[k]
@@ -472,7 +471,7 @@ function System:New(key)
 end
 
 function System:Update(delta_ms)
-    debug_log.log(self, "Update", delta_ms)
+    yapre.log.info(self, "Update", delta_ms)
 end
 
 function System:Init()

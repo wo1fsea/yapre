@@ -2,6 +2,7 @@ local yapre = yapre
 
 package.path = package.path .. ";./lua/?.lua;./lua/?/init.lua"
 
+yapre.log = require("utils.log")
 yapre.dbg = require("utils.debugger")
 yapre.dbg.read = yapre.DebugRead
 yapre.dbg.write = yapre.DebugWrite
