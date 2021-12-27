@@ -1,3 +1,4 @@
+local yapre = yapre
 local yecs = {}
 local copy = require("utils.copy")
 local uuid = require("utils.uuid")
@@ -317,14 +318,7 @@ function Entity:New(component_keys, behavior_keys)
         _behavior = behavior
     }, self)
 
-    for _, component_key in pairs(component_keys) do
-        local component = yecs.Component:New(component_key)
-
-        if component ~= nil then
-            component.entity = entity
-            component_data[component.key] = component
-        end
-    end
+    entity:AddComponents(component_keys)
 
     return entity
 end
@@ -334,6 +328,7 @@ function Entity:AddComponent(component)
 
     if component and self.components[component.key] == nil then
         self.components[component.key] = component
+        component.entity = self
     end
 end
 
