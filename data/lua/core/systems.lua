@@ -226,6 +226,23 @@ end
 
 yecs.System:Register("tree", tree_system)
 
+-- layout_system
+local layout_system = {}
+layout_system.update_order = tree_system.update_order - 1
+
+function layout_system:Update(delta_ms)
+    local layout_entities = self.world:GetEntitiesWithComponent("layout")
+    
+end
+
+function layout_system:Init()
+end
+
+function layout_system:Deinit()
+end
+
+yecs.System:Register("layout", layout_system)
+
 -- tick system
 local tick_system = {}
 tick_system.update_order = 0

@@ -145,6 +145,36 @@ yecs.Component:Register("tree", {
     }
 })
 
+yecs.Component:Register("layout", {
+
+    _operations = {
+        GetLeft = function(self)
+            
+        end,
+        GetRight = function (self)
+            
+        end,
+        GetTop = function(self)
+            
+        end,
+        GetBottom = function(self)
+            
+        end,
+        SetLeft = function(self, point, offset)
+            
+        end,
+        SetRight = function(self, point, offset)
+            
+        end,
+        SetTop = function(self, point, offset)
+            
+        end,
+        SetBottom = function(self, point, offset)
+            
+        end,
+    }
+})
+
 local font_data = require("core.data.font_data")
 yecs.Component:Register("text", {
     text = "",
