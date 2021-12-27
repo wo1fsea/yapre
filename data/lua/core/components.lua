@@ -69,7 +69,7 @@ yecs.Component:Register("input", {
             yapre.log.info(string.format("_OnKeyPressed: %s", keycode))
             self:OnKeyPressed(keycode)
         end,
-        _OnKeyReleased = function (self, keycode)
+        _OnKeyReleased = function(self, keycode)
             yapre.log.info(string.format("_OnKeyReleased: %s", keycode))
             self:OnKeyReleased(keycode)
         end,
@@ -147,32 +147,163 @@ yecs.Component:Register("tree", {
 })
 
 yecs.Component:Register("layout", {
-
+    constraints = {},
     _operations = {
-        GetLeft = function(self)
-            
+        Left = function(self, is_parent)
+            local position = self.entity.position
+            if is_parent or not position then
+                position = {
+                    x = 0,
+                    y = 0,
+                    z = 0
+                }
+            end
+            return position.x
         end,
-        GetRight = function (self)
-            
+        Right = function(self, is_parent)
+            local position = self.entity.position
+            if is_parent or not position then
+                position = {
+                    x = 0,
+                    y = 0,
+                    z = 0
+                }
+            end
+            local size = self.entity.size or {
+                width = 0,
+                height = 0
+            }
+            return position.x + size.width
+        end,
+        Top = function(self, is_parent)
+            local position = self.entity.position
+            if is_parent or not position then
+                position = {
+                    x = 0,
+                    y = 0,
+                    z = 0
+                }
+            end
+            return position.y
+        end,
+        bottom = function(self, is_parent)
+            local position = self.entity.position
+            if is_parent or not position then
+                position = {
+                    x = 0,
+                    y = 0,
+                    z = 0
+                }
+            end
+            local size = self.entity.size or {
+                width = 0,
+                height = 0
+            }
+            return position.y + size.height
+        end,
+        GetLeft = function(self)
+            return {self.entity, "Left"}
+        end,
+        GetRight = function(self)
+            return {self.entity, "Right"}
         end,
         GetTop = function(self)
-            
+            return {self.entity, "Top"}
         end,
         GetBottom = function(self)
-            
+            return {self.entity, "Bottom"}
         end,
-        SetLeft = function(self, point, offset)
-            
+        _unpack = function(self, constraint)
+            local t_entity, point = table.unpack(constraint)
+            assert(self.entity.world == t_entity.world and t_entity.tree and self.entity.tree and
+                       (self.entity.tree.parent == t_entity or self.entity.tree.parent == t_entity.tree.parent))
+            return t_entity, point
         end,
-        SetRight = function(self, point, offset)
-            
+        SetLeft = function(self, constraint, offset)
+            local t_entity, point = self:_unpack(constraint)
+            local v_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset end"
+            v_string = string.format(v_string, point)
+            self.constraints["h"] = {v_string, {
+                t_entity_key = t_entity.key,
+                offset = offset
+            }}
         end,
-        SetTop = function(self, point, offset)
-            
+        SetRight = function(self, constraint, offset)
+            local t_entity, point = self:_unpack(constraint)
+            local v_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset-e.size.width end"
+            v_string = string.format(v_string, point)
+            self.constraints["h"] = {v_string, {
+                t_entity_key = t_entity.key,
+                offset = offset
+            }}
         end,
-        SetBottom = function(self, point, offset)
-            
+        SetTop = function(self, constraint, offset)
+            local t_entity, point = self:_unpack(constraint)
+            local v_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset end"
+            v_string = string.format(v_string, point)
+            self.constraints["v"] = {v_string, {
+                t_entity_key = t_entity.key,
+                offset = offset
+            }}
         end,
+        SetBottom = function(self, constraint, offset)
+            local t_entity, point = self:_unpack(constraint)
+            local v_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset-e.size.height end"
+            v_string = string.format(v_string, point)
+            self.constraints["h"] = {v_string, {
+                t_entity_key = t_entity.key,
+                offset = offset
+            }}
+        end,
+        DoLayout = function(self)
+            if not self.constraints then
+                return
+            end
+            for k, c in pairs(self.constraints) do
+                local v_string, env = table.unpack(c)
+                local t_entity = self.entity.world.entities[env["t_entity_key"]]
+                local entity = self.entity
+                env = copy.deep_copy(env)
+                env["t_entity"] = t_entity
+                env["size"] = self.entity.size or {
+                    width = 0,
+                    height = 0
+                }
+                local valid = false
+                if t_entity and self.entity.world == t_entity.world then
+                    if self.entity.tree.parent == t_entity then
+                        env["is_parent"] = true
+                        valid = true
+                    elseif self.entity.tree.parent == t_entity.tree.parent then
+                        env["is_parent"] = false
+                        valid = true
+                    end
+                end
+                if not valid then
+                    self.constraints[k] = nil
+                else
+                    local func, err = load(v_string)
+                    local v = 0
+
+                    if func then
+                        local ok, val = pcall(func)
+                        if ok then
+                            v = val(env)
+                        else
+                            print("Execution error:", val)
+                        end
+                    else
+                        print("Compilation error:", err)
+                    end
+
+                    if k == "h" then
+                        self.entity.position.x = v
+                    elseif k == "v" then
+                        self.entity.position.y = v
+                    end
+                end
+            end
+        end
     }
 })
 

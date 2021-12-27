@@ -174,6 +174,10 @@ tree_system.update_order = sprite_system.update_order - 1
 tree_system.global_position = {}
 
 function tree_system:_UpdateTreeNodePos(node, parent_pos)
+    if node.layout then
+        node.layout:DoLayout()
+    end
+
     local pos = node.position
     local node_pos = {
         x = pos.x + parent_pos.x,
@@ -224,23 +228,6 @@ function tree_system:GetGlobalPosition(entity)
 end
 
 yecs.System:Register("tree", tree_system)
-
--- layout_system
-local layout_system = {}
-layout_system.update_order = tree_system.update_order - 1
-
-function layout_system:Update(delta_ms)
-    local layout_entities = self.world:GetEntitiesWithComponent("layout")
-    
-end
-
-function layout_system:Init()
-end
-
-function layout_system:Deinit()
-end
-
-yecs.System:Register("layout", layout_system)
 
 -- tick system
 local tick_system = {}
