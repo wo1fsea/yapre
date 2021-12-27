@@ -1,6 +1,5 @@
 local yapre = yapre
 
-local systems = {}
 local yecs = require("core.yecs")
 local emscripten_keycode_mapping = require("core.data.emscripten_keycode_mapping")
 
@@ -309,4 +308,4 @@ end
 
 yecs.System:Register("tick", tick_system)
 
-return systems
+return nil

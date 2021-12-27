@@ -1,4 +1,5 @@
-local components = {}
+local yapre = yapre
+
 local yecs = require("core.yecs")
 local palette_data = require("core.data.palette_data")
 local copy = require("utils.copy")
@@ -394,4 +395,4 @@ yecs.Component:Register("animation", {
     }
 })
 
-return components
+return nil
