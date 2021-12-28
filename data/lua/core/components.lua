@@ -3,6 +3,7 @@ local yapre = yapre
 local yecs = require("core.yecs")
 local palette_data = require("core.data.palette_data")
 local copy = require("utils.copy")
+local eval = require("utils.eval")
 
 local deep_copy = copy.deep_copy
 
@@ -282,19 +283,8 @@ yecs.Component:Register("layout", {
                 if not valid then
                     self.constraints[k] = nil
                 else
-                    local func, err = load(v_string)
-                    local v = 0
-
-                    if func then
-                        local ok, val = pcall(func)
-                        if ok then
-                            v = val(env)
-                        else
-                            print("Execution error:", val)
-                        end
-                    else
-                        print("Compilation error:", err)
-                    end
+                    local func = eval.eval(v_string)
+                    local v = func(env)
 
                     if k == "h" then
                         self.entity.position.x = v
