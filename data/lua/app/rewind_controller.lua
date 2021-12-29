@@ -79,16 +79,15 @@ function rewind_controller:Make(game_worlds)
     control_panel.position.z = 1024
 
     local progress_selector = yecs.EntityFactory:Make("progress_selector")
-    world:AddEntity(progress_selector)
     control_panel.tree:AddChild(progress_selector)
 
     local label = yecs.EntityFactory:Make("label")
-    world:AddEntity(label)
-    label.text.size = 2
+    control_panel.tree:AddChild(label)
+    
     label:SetText("PAUSED!")
+    label:SetFontSize(2)
     label.position.x = 10
     label.position.y = 10
-    control_panel.tree:AddChild(label)
 
     self.game_worlds = game_worlds
     self.progress_selector = progress_selector

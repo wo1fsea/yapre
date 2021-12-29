@@ -174,6 +174,13 @@ tree_system.update_order = sprite_system.update_order - 1
 tree_system.global_position = {}
 
 function tree_system:_UpdateTreeNodePos(node, parent_pos)
+    if node.world ~= self.world then
+        if node.world then
+            node.world:RemoveEntity(node)
+        end
+        self.world:AddEntity(node)
+    end
+
     if node.layout then
         node.layout:DoLayout()
     end

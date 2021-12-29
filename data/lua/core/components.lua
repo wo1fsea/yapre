@@ -103,6 +103,7 @@ yecs.Component:Register("tree", {
         AddChild = function(self, c)
             local c_tree = c.tree
             yapre.log.assert(c_tree, "child has not tree component")
+
             local c_parent = c_tree.parent
             if c_parent then
                 c_parent.tree:RemoveChild(c)
@@ -114,6 +115,7 @@ yecs.Component:Register("tree", {
         RemoveChild = function(self, c)
             local c_tree = c.tree
             yapre.log.assert(c_tree, "child has not tree component")
+            
             if c_tree.parent ~= self.entity then
                 return
             end
