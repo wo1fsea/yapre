@@ -7,7 +7,7 @@ local world_dungeon = {}
 
 yecs.Behavior:Register("world_dungeon_joystick_behavior", {
     OnJoystick = function(self, x, y)
-        local dot = self.world:GetEntityByTags({"dot"})
+        local dot = self.world:GetEntityByTags{"dot"}
         dot.data["speed"] = {
             x = x,
             y = y

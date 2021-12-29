@@ -101,22 +101,19 @@ yecs.Component:Register("tree", {
     children = {},
     _operations = {
         AddChild = function(self, c)
-            if c.tree == nil then
-                return
-            end
-            local c_parent = c.tree.parent
+            local c_tree = c.tree
+            yapre.log.assert(c_tree, "child has not tree component")
+            local c_parent = c_tree.parent
             if c_parent then
                 c_parent.tree:RemoveChild(c)
             end
 
-            c.tree.parent = self.entity
+            c_tree.parent = self.entity
             self.children[c.key] = c
         end,
         RemoveChild = function(self, c)
             local c_tree = c.tree
-            if c_tree == nil then
-                return
-            end
+            yapre.log.assert(c_tree, "child has not tree component")
             if c_tree.parent ~= self.entity then
                 return
             end
@@ -147,59 +144,46 @@ yecs.Component:Register("tree", {
     }
 })
 
+local _nil_pos = {
+    x = 0,
+    y = 0,
+    z = 0,
+}
+local _nil_size = {
+    width = 0,
+    height = 0,
+}
 yecs.Component:Register("layout", {
     constraints = {},
     _operations = {
         Left = function(self, is_parent)
             local position = self.entity.position
             if is_parent or not position then
-                position = {
-                    x = 0,
-                    y = 0,
-                    z = 0
-                }
+                position = _nil_pos
             end
             return position.x
         end,
         Right = function(self, is_parent)
             local position = self.entity.position
             if is_parent or not position then
-                position = {
-                    x = 0,
-                    y = 0,
-                    z = 0
-                }
+                position = _nil_pos
             end
-            local size = self.entity.size or {
-                width = 0,
-                height = 0
-            }
+            local size = self.entity.size or _nil_size
             return position.x + size.width
         end,
         Top = function(self, is_parent)
             local position = self.entity.position
             if is_parent or not position then
-                position = {
-                    x = 0,
-                    y = 0,
-                    z = 0
-                }
+                position = _nil_pos
             end
             return position.y
         end,
         bottom = function(self, is_parent)
             local position = self.entity.position
             if is_parent or not position then
-                position = {
-                    x = 0,
-                    y = 0,
-                    z = 0
-                }
+                position = _nil_pos
             end
-            local size = self.entity.size or {
-                width = 0,
-                height = 0
-            }
+            local size = self.entity.size or _nil_size
             return position.y + size.height
         end,
         GetLeft = function(self)
@@ -214,47 +198,35 @@ yecs.Component:Register("layout", {
         GetBottom = function(self)
             return {self.entity, "Bottom"}
         end,
-        _unpack = function(self, constraint)
+        _Unpack = function(self, constraint)
             local t_entity, point = table.unpack(constraint)
-            assert(self.entity.world == t_entity.world and t_entity.tree and self.entity.tree and
+            yapre.log.assert(self.entity.world == t_entity.world and t_entity.tree and self.entity.tree and
                        (self.entity.tree.parent == t_entity or self.entity.tree.parent == t_entity.tree.parent))
             return t_entity, point
         end,
-        SetLeft = function(self, constraint, offset)
-            local t_entity, point = self:_unpack(constraint)
-            local v_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset end"
-            v_string = string.format(v_string, point)
-            self.constraints["h"] = {v_string, {
+        _SetConstraints = function(self, constraint, offset, c_key, c_string)
+            local t_entity, point = self:_Unpack(constraint)
+            c_string = string.format(c_string, point)
+            self.constraints[c_key] = {c_string, {
                 t_entity_key = t_entity.key,
                 offset = offset
             }}
+        end,
+        SetLeft = function(self, constraint, offset)
+            local c_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset end"
+            self:_SetConstraints(constraint, offset, "h", c_string)
         end,
         SetRight = function(self, constraint, offset)
-            local t_entity, point = self:_unpack(constraint)
-            local v_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset-e.size.width end"
-            v_string = string.format(v_string, point)
-            self.constraints["h"] = {v_string, {
-                t_entity_key = t_entity.key,
-                offset = offset
-            }}
+            local c_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset-e.size.width end"
+            self:_SetConstraints(constraint, offset, "h", c_string)
         end,
         SetTop = function(self, constraint, offset)
-            local t_entity, point = self:_unpack(constraint)
-            local v_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset end"
-            v_string = string.format(v_string, point)
-            self.constraints["v"] = {v_string, {
-                t_entity_key = t_entity.key,
-                offset = offset
-            }}
+            local c_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset end"
+            self:_SetConstraints(constraint, offset, "v", c_string)
         end,
         SetBottom = function(self, constraint, offset)
-            local t_entity, point = self:_unpack(constraint)
-            local v_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset-e.size.height end"
-            v_string = string.format(v_string, point)
-            self.constraints["h"] = {v_string, {
-                t_entity_key = t_entity.key,
-                offset = offset
-            }}
+            local c_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset-e.size.height end"
+            self:_SetConstraints(constraint, offset, "v", c_string)
         end,
         DoLayout = function(self)
             if not self.constraints then

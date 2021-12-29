@@ -8,20 +8,14 @@ function eval.eval(v_string)
     local err = nil
 
     if not func then
-    	func, err = load(v_string)
+        func, err = load(v_string)
     end
 
-    if func then
-	cache[v_string] = func
-        local result, val = pcall(func)
-        if result then
-            return val
-        else
-            yapre.log.error("eval execution error:", val)
-        end
-    else
-        yapre.log.error("eval compilation error:", err)
-    end
+    yapre.log.assert(func, "eval compilation error: ", err)
+    cache[v_string] = func
+    local result, val = pcall(func)
+    yapre.log.assert(result, "eval execution error: ", val)
+    return val
 end
 
 return eval

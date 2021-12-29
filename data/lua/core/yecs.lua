@@ -252,7 +252,7 @@ end
 
 function Behavior:New(key, super_behavior)
     local behavior_funcs = behavior_templates[key]
-    assert(behavior_funcs, "cannot find behavior with key: " .. key)
+    yapre.log.assert(behavior_funcs, "cannot find behavior with key: " .. key)
 
     local behavior = setmetatable({
         key = key,
@@ -410,7 +410,7 @@ end
 
 function Component:New(key)
     local component_data = component_templates[key]
-    assert(component_data, "cannot find component with key: " .. key)
+    yapre.log.assert(component_data, "cannot find component with key: " .. key)
 
     local component = setmetatable(deep_copy(component_data), self)
     return component
