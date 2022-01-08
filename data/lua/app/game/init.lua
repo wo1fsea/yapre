@@ -33,6 +33,7 @@ function game:NextWorld()
     end
 
     self.worlds[self.cur_world_idx]:Destroy()
+    self.worlds[self.cur_world_idx] = nil
     self.cur_world_idx = self.cur_world_idx + 1
 
     self.worlds[self.cur_world_idx] = self.worlds_to_show[self.cur_world_idx]:Make()
@@ -44,6 +45,7 @@ function game:PrevWorld()
     end
 
     self.worlds[self.cur_world_idx]:Destroy()
+    self.worlds[self.cur_world_idx] = nil
     self.cur_world_idx = self.cur_world_idx - 1
 
     self.worlds[self.cur_world_idx] = self.worlds_to_show[self.cur_world_idx]:Make()
@@ -55,6 +57,17 @@ end
 
 function game:Load()
 
+end
+
+function game:Update(delta_ms)
+    for idx = 1, #self.worlds_to_show, 1 do
+        if self.worlds[idx] then
+            if self.cur_world_idx ~= idx then
+                print("FF", idx, self.cur_world_idx)
+            end
+            self.cur_world_idx = idx
+        end
+    end
 end
 
 return game

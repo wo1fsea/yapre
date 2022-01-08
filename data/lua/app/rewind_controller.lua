@@ -123,6 +123,7 @@ function rewind_controller:Load(idx)
     local game_worlds = self.game_worlds
     for game_world_key, game_world in pairs(game_worlds) do
         game_world:Destroy()
+        game_worlds[game_world_key] = nil
     end
 
     for game_world_key, game_world_data in pairs(data) do
@@ -190,13 +191,14 @@ function rewind_controller:LoadFromFile()
     local game_worlds = self.game_worlds
     for game_world_key, game_world in pairs(game_worlds) do
         game_world:Destroy()
+        game_worlds[game_world_key] = nil
     end
 
     for game_world_key, game_world_data in pairs(data) do
         local game_world = serialization:LoadWorld(game_world_data)
         game_world:Pause()
         game_worlds[game_world_key] = game_world
-    end 
+    end
     self:PauseOrResume()
 end
 

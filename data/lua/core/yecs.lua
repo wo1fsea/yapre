@@ -15,17 +15,22 @@ local World = {
 }
 World.__index = World
 
-function World:New(key)
+function World:New(key, root_entity)
     local world = yecs.worlds[key]
     if world then
         return world
     end
 
+    root_entity = root_entity or yecs.Entity:New({"position", "size"})
+
     world = setmetatable({
         paused = false,
         update_delta = 0,
         key = key,
-        entities = {},
+        root_entity_key = root_entity.key,
+        entities = {
+            [root_entity.key] = root_entity
+        },
         systems = {},
         system_update_queue = setmetatable({}, {
             __mode = 'v'
@@ -83,9 +88,18 @@ function World:Resume()
     self.paused = false
 end
 
+function World:GetRoot()
+    return self.entities[self.root_entity_key]
+end
+
 function World:AddEntity(entity)
     if getmetatable(entity) ~= "EntityMeta" then
         return
+    end
+
+    local root = self:GetRoot()
+    if root ~= entity and (entity.tree.parent == nil or entity.tree.parent.world ~= self) then
+        root.tree:AddChild(entity)
     end
 
     self.entities[entity.key] = entity
@@ -107,6 +121,10 @@ function World:RemoveEntityByKey(entity_key)
 
     if entity and entity.world == self then
         entity.world = nil
+        local t = entity.tree
+        if t then
+            t:removeFromParent()
+        end
         self.entities[entity_key] = nil
     end
 end
@@ -264,6 +282,7 @@ function Behavior:New(key, super_behavior)
 end
 
 -- entity
+local entity_basic_components = {"tree"}
 local Entity = {
     key = "",
     __metatable = "EntityMeta",
@@ -304,6 +323,10 @@ end
 function Entity:New(component_keys, behavior_keys)
     component_keys = component_keys or {}
     behavior_keys = behavior_keys or {}
+
+    for _, bc in pairs(entity_basic_components) do
+        table.insert(component_keys, bc)
+    end
 
     local component_data = {}
     local behavior = {}
