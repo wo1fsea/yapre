@@ -21,7 +21,7 @@ function World:New(key, root_entity)
         return world
     end
 
-    root_entity = root_entity or yecs.Entity:New({"position", "size"})
+    root_entity = root_entity or yecs.Entity:New({"position", "size", "layout"})
 
     world = setmetatable({
         paused = false,
@@ -36,6 +36,8 @@ function World:New(key, root_entity)
             __mode = 'v'
         })
     }, self)
+    
+    root_entity.world = world
 
     yecs.worlds[key] = world
     return world

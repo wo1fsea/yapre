@@ -50,7 +50,7 @@ function world_dungeon:Make()
 
     world:AddEntity(joystick)
     world:AddEntity(dot)
-    joystick.layout:SetRight(dot.layout:GetLeft(), -10)
+    joystick.layout:SetRight(world:GetRoot().layout:GetRight(), -10)
     joystick.layout:SetTop(dot.layout:GetTop(), -10)
     return world
 end

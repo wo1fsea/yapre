@@ -202,6 +202,11 @@ function tree_system:Update(delta_ms)
     self.global_position = {}
     local world = self.world
     local tree_entities = self.world:GetEntitiesWithComponent("tree")
+    
+    -- update root size
+    local root = world:GetRoot()
+    root.size.width = yapre.render_width
+    root.size.height = yapre.render_width
 
     for _, entity in pairs(tree_entities) do
         local parent = entity.tree.parent
