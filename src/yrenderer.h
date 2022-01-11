@@ -9,7 +9,7 @@ namespace renderer {
 bool Init();
 void Deinit();
 void Update(int delta_ms);
-std::tuple<int, int> GetRenderSize();
+std::tuple<int, int> GetPreferRenderSize();
 void SetRenderSize(int width, int height);
 std::tuple<int, int> ConvertToViewport(int x, int y);
 void DrawSprite(const std::string &texture_filename,
@@ -18,15 +18,17 @@ void DrawSprite(const std::string &texture_filename,
                 glm::vec3 color = glm::vec3(1.0f));
 void DrawSprite(const std::string &texture_filename, int x, int y, int z,
                 int width, int height, float rotate, float R, float G, float B);
-void DrawSprite(const std::string &texture_filename, std::tuple<int, int, int> position,
-                std::tuple<int, int> size, float rotate, std::tuple<float, float, float> color);
+void DrawSprite(const std::string &texture_filename,
+                std::tuple<int, int, int> position, std::tuple<int, int> size,
+                float rotate, std::tuple<float, float, float> color);
 void DrawSprite(Texture *texture, glm::vec3 position = glm::vec3(0.0f),
                 glm::vec2 size = glm::vec2(-1.0f), float rotate = 0.0f,
                 glm::vec3 color = glm::vec3(1.0f));
 void DrawSprite(Texture *texture, int x, int y, int z, int width, int height,
                 float rotate, float R, float G, float B);
 void DrawSprite(Texture *texture, std::tuple<int, int, int> position,
-                std::tuple<int, int> size, float rotate, std::tuple<float, float, float> color);
+                std::tuple<int, int> size, float rotate,
+                std::tuple<float, float, float> color);
 void SetClearColor(float R, float G, float B, float A);
 void ResetWindowSize();
 } // namespace renderer

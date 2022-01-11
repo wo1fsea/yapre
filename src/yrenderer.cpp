@@ -23,12 +23,14 @@
 #include <vector>
 
 namespace yapre {
+
 namespace renderer {
 
 const float kMaxZ = 1024 * 1024;
 
 int render_width = 320;
 int render_height = 240;
+bool keep_aspect = true;
 
 unsigned int VBO = 0;
 unsigned int draw_count = 0;
@@ -91,10 +93,13 @@ bool Init() {
   glDisableVertexAttribArray(0);
 
   lua::GStateModule("yapre")
-      .Define<void (*)(const std::string &, std::tuple<int, int, int>,
-                std::tuple<int, int>, float, std::tuple<float, float, float>)>("DrawSprite", DrawSprite)
+      .Define<void (*)(
+          const std::string &, std::tuple<int, int, int>, std::tuple<int, int>,
+          float, std::tuple<float, float, float>)>("DrawSprite", DrawSprite)
       .Define<void (*)(Texture *, std::tuple<int, int, int>,
-                std::tuple<int, int>, float, std::tuple<float, float, float>)>("DrawSpriteWithImageData", DrawSprite)
+                       std::tuple<int, int>, float,
+                       std::tuple<float, float, float>)>(
+          "DrawSpriteWithImageData", DrawSprite)
       .Define("SetClearColor", SetClearColor)
       .Define("SetRenderSize", SetRenderSize);
 
@@ -107,18 +112,36 @@ bool Init() {
 
 void Deinit() { delete shader; }
 
-std::tuple<int, int> GetRenderSize() {
+std::tuple<int, int> GetPreferRenderSize() {
   return std::make_tuple(render_width, render_height);
+}
+
+std::tuple<int, int> GetRealRenderSize() {
+  auto [w, h] = window::GetDrawableSize();
+  int dw = render_width;
+  int dh = render_height;
+
+  if (!keep_aspect) {
+    if (1.0 * dw / dh > 1.0 * w / h) {
+      dh = (int)(1.0 * dw * h / w + 0.5);
+    } else {
+      dw = (int)(1.0 * dh * w / h + 0.5);
+    }
+  }
+  return std::make_tuple(dw, dh);
+}
+
+void _UpdateRenderSize(int width, int height) {
+  lua::GStateModule("yapre")
+      .Define("render_width", width)
+      .Define("render_height", height);
 }
 
 void SetRenderSize(int width, int height) {
   render_width = width;
   render_height = height;
   window::ResetWindowSize();
-
-  lua::GStateModule("yapre")
-      .Define("render_width", width)
-      .Define("render_height", height);
+  _UpdateRenderSize(width, height);
 }
 
 void DrawSprite(const std::string &texture_filename, glm::vec3 position,
@@ -141,14 +164,15 @@ void DrawSprite(const std::string &texture_filename, int x, int y, int z,
              rotate, glm::vec3(R, G, B));
 }
 
-void DrawSprite(const std::string &texture_filename, std::tuple<int, int, int> position,
-                std::tuple<int, int> size, float rotate, std::tuple<float, float, float> color)
-                {
-                  auto [x, y, z] = position;
-                  auto [width, height] = size;
-                  auto [R, G, B] = color;
-                  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height), rotate, glm::vec3(R, G, B));
-                }
+void DrawSprite(const std::string &texture_filename,
+                std::tuple<int, int, int> position, std::tuple<int, int> size,
+                float rotate, std::tuple<float, float, float> color) {
+  auto [x, y, z] = position;
+  auto [width, height] = size;
+  auto [R, G, B] = color;
+  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height),
+             rotate, glm::vec3(R, G, B));
+}
 
 void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
                 float rotate, glm::vec3 color) {
@@ -176,7 +200,7 @@ void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
                                       real_size * size.y / texture->Height(),
                                       1.0f)); // last scale
 
-  auto [w, h] = GetRenderSize();
+  auto [w, h] = GetRealRenderSize();
   glm::mat4 projection =
       glm::ortho(0.0f, 1.f * w, 1.f * h, 0.0f, -kMaxZ, kMaxZ);
   unsigned int draw_id = position.z * 1024 * 1024 + draw_count;
@@ -194,14 +218,14 @@ void DrawSprite(Texture *image_data, int x, int y, int z, int width, int height,
 }
 
 void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
-                std::tuple<int, int> size, float rotate, std::tuple<float, float, float> color)
-                {
-                  auto [x, y, z] = position;
-                  auto [width, height] = size;
-                  auto [R, G, B] = color;
-                    DrawSprite(image_data, glm::vec3(x, y, z), glm::vec2(width, height), rotate,
+                std::tuple<int, int> size, float rotate,
+                std::tuple<float, float, float> color) {
+  auto [x, y, z] = position;
+  auto [width, height] = size;
+  auto [R, G, B] = color;
+  DrawSprite(image_data, glm::vec3(x, y, z), glm::vec2(width, height), rotate,
              glm::vec3(R, G, B));
-                }
+}
 
 void DrawAll() {
   draw_count = 0;
@@ -231,9 +255,10 @@ void DrawAll() {
 
 void RefreshViewport() {
   auto [w, h] = window::GetDrawableSize();
-  auto [dw, dh] = GetRenderSize();
+  auto [dw, dh] = GetRealRenderSize();
   int rx = 0;
   int ry = 0;
+
   if (1.0 * dw / dh > 1.0 * w / h) {
     int rh = w * dh / dw;
     ry = (h - rh) / 2;
@@ -243,6 +268,9 @@ void RefreshViewport() {
     rx = (w - rw) / 2;
     w = rw;
   }
+
+  _UpdateRenderSize(dw, dh);
+
   viewport_x = rx;
   viewport_y = ry;
   viewport_w = w;
@@ -265,7 +293,7 @@ void Update(int delta_ms) {
 }
 
 std::tuple<int, int> ConvertToViewport(int x, int y) {
-  auto [rw, rh] = GetRenderSize();
+  auto [rw, rh] = GetRealRenderSize();
   return std::make_tuple((x - viewport_x) * rw / viewport_w,
                          (y - viewport_y) * rh / viewport_h);
 }
