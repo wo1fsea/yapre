@@ -7,6 +7,8 @@ yapre.dbg = require("utils.debugger")
 yapre.dbg.read = yapre.DebugRead
 yapre.dbg.write = yapre.DebugWrite
 
+yapre.SetKeepAspect(true)
+
 require("utils.strict")
 require("utils.table_save")
 

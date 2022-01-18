@@ -30,6 +30,7 @@ void DrawSprite(Texture *texture, std::tuple<int, int, int> position,
                 std::tuple<int, int> size, float rotate,
                 std::tuple<float, float, float> color);
 void SetClearColor(float R, float G, float B, float A);
+void SetKeepAspect(bool keey_aspect_);
 void ResetWindowSize();
 } // namespace renderer
 }; // namespace yapre
