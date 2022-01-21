@@ -1,13 +1,13 @@
 local yapre = yapre
 
-package.path = package.path .. ";./lua/?.lua;./lua/?/init.lua;./lua/libs/?.lua;./lua/libs/?/init.lua;./lua/utils/?.lua;./lua/utils/?/init.lua"
+require("lua.utils.package_path")
 
 yapre.log = require("log")
 yapre.dbg = require("debugger")
 yapre.dbg.read = yapre.DebugRead
 yapre.dbg.write = yapre.DebugWrite
 
-yapre.SetKeepAspect(true)
+yapre.SetKeepAspect(false)
 
 require("strict")
 require("table_save")

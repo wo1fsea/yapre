@@ -180,7 +180,7 @@ yecs.Component:Register("layout", {
             end
             return position.y
         end,
-        bottom = function(self, is_parent)
+        Bottom = function(self, is_parent)
             local position = self.entity.position
             if is_parent or not position then
                 position = _nil_pos
@@ -240,10 +240,7 @@ yecs.Component:Register("layout", {
                 local entity = self.entity
                 env = copy.deep_copy(env)
                 env["t_entity"] = t_entity
-                env["size"] = self.entity.size or {
-                    width = 0,
-                    height = 0
-                }
+                env["size"] = self.entity.size or _nil_pos 
                 local valid = false
                 if t_entity and self.entity.world == t_entity.world then
                     if self.entity.tree.parent == t_entity then
