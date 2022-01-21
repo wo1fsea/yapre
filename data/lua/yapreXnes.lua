@@ -1,4 +1,4 @@
-package.path = package.path .. ";./lua/?.lua;./lua/?/init.lua"
+require("lua.utils.package_path")
 
 local yapre = yapre
 
