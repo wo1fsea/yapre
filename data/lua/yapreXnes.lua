@@ -2,13 +2,13 @@ package.path = package.path .. ";./lua/?.lua;./lua/?/init.lua"
 
 local yapre = yapre
 
-yapre.log = require("utils.log")
-yapre.dbg = require("utils.debugger")
+yapre.log = require("log")
+yapre.dbg = require("debugger")
 yapre.dbg.read = yapre.DebugRead
 yapre.dbg.write = yapre.DebugWrite
 
-require("utils.strict")
-require("utils.table_save")
+require("strict")
+require("table_save")
 
 local palette_data = require("core.data.palette_data")
 yapre.palette = palette_data

@@ -1,6 +1,6 @@
 local serialization = {}
 local yecs = require("core.yecs")
-local copy = require("utils.copy")
+local copy = require("copy")
 
 function serialization:DumpWorld(world)
     local world_data = {}

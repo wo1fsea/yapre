@@ -1,16 +1,16 @@
 local yapre = yapre
 
-package.path = package.path .. ";./lua/?.lua;./lua/?/init.lua"
+package.path = package.path .. ";./lua/?.lua;./lua/?/init.lua;./lua/libs/?.lua;./lua/libs/?/init.lua;./lua/utils/?.lua;./lua/utils/?/init.lua"
 
-yapre.log = require("utils.log")
-yapre.dbg = require("utils.debugger")
+yapre.log = require("log")
+yapre.dbg = require("debugger")
 yapre.dbg.read = yapre.DebugRead
 yapre.dbg.write = yapre.DebugWrite
 
 yapre.SetKeepAspect(true)
 
-require("utils.strict")
-require("utils.table_save")
+require("strict")
+require("table_save")
 
 local palette_data = require("core.data.palette_data")
 yapre.palette = palette_data
@@ -21,7 +21,7 @@ yapre.SetClearColor(background_color.r, background_color.g, background_color.b, 
 local app = require("app")
 yapre.app = app
 
-function Init(str)
+function Init()
     return app:Init()
 end
 

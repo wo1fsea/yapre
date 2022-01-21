@@ -2,8 +2,8 @@ local yapre = yapre
 
 local yecs = require("core.yecs")
 local palette_data = require("core.data.palette_data")
-local copy = require("utils.copy")
-local eval = require("utils.eval")
+local copy = require("copy")
+local eval = require("eval")
 
 local deep_copy = copy.deep_copy
 

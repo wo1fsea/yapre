@@ -1,7 +1,7 @@
 local yapre = yapre
 local yecs = {}
-local copy = require("utils.copy")
-local uuid = require("utils.uuid")
+local copy = require("copy")
+local uuid = require("uuid")
 local deep_copy = copy.deep_copy
 
 -- world

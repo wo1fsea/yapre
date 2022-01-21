@@ -7,7 +7,7 @@ local world_word_slide = {
 }
 
 local core = require("core")
-local copy = require("utils.copy")
+local copy = require("copy")
 local yecs = core.yecs
 
 function world_word_slide:Make()
