@@ -18,6 +18,7 @@ function game:Init()
     self.worlds = {}
     self.rewind_controller = rewind_controller:Make(self.worlds)
 
+    -- self.worlds_to_show = {world_dungeon, world_label, world_mario_music, world_image, world_flappy_duck}
     self.worlds_to_show = {world_dungeon, world_label, world_mario_music, world_image, world_flappy_duck}
 
     self.worlds["world_slides"] = world_slides:Make()
@@ -62,9 +63,6 @@ end
 function game:Update(delta_ms)
     for idx = 1, #self.worlds_to_show, 1 do
         if self.worlds[idx] then
-            if self.cur_world_idx ~= idx then
-                print("FF", idx, self.cur_world_idx)
-            end
             self.cur_world_idx = idx
         end
     end

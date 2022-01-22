@@ -10,6 +10,7 @@ local game_inited = false
 
 function app:Init()
     yapre.SetRenderSize(320, 240)
+    yapre.SetKeepAspect(true)
     splash_screen:Show(function()
         game:Init()
         game_inited = true
