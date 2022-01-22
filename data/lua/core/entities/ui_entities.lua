@@ -87,7 +87,7 @@ function button_behavior:BindKey(key)
     self.data.button_bind_key = key
 end
 
-yecs.EntityFactory:Register("button", {"position", "sprite", "tree", "size", "input", "tick", "animation", "data"},
+yecs.EntityFactory:Register("button", {"position", "sprite", "tree", "size", "input", "tick", "animation", "data", "layout"},
     {"button"})
 
 -- label
@@ -106,7 +106,7 @@ function label_behavior:GetRenderSize()
     return self.text:GetRenderSize()
 end
 
-yecs.EntityFactory:Register("label", {"position", "sprite", "tree", "size", "text"}, {"label"})
+yecs.EntityFactory:Register("label", {"position", "sprite", "tree", "size", "text", "layout"}, {"label"})
 
 -- image
 local image_behavior = {}
@@ -218,7 +218,7 @@ function image_behavior:StopAnimation(key)
     self.animation:Stop(key)
 end
 
-yecs.EntityFactory:Register("image", {"position", "sprite", "size", "tick", "animation"}, {"image"})
+yecs.EntityFactory:Register("image", {"position", "sprite", "size", "tick", "animation", "layout"}, {"image"})
 
 -- progress
 local progress_behavior = {}
@@ -282,7 +282,7 @@ function progress_behavior:GetPercent()
     return self.data.percent
 end
 
-yecs.EntityFactory:Register("progress", {"position", "sprite", "tree", "size", "data"}, {"progress"})
+yecs.EntityFactory:Register("progress", {"position", "sprite", "tree", "size", "data", "layout"}, {"progress"})
 
 -- panel
 local panel_behavior = {}
@@ -315,7 +315,7 @@ function panel_behavior:SetSize(width, height)
     sprite_size.height = height
 end
 
-yecs.EntityFactory:Register("panel", {"position", "sprite", "tree", "size"}, {"panel"})
+yecs.EntityFactory:Register("panel", {"position", "sprite", "tree", "size", "layout"}, {"panel"})
 
 -- palette
 local palette_behavior = {}
@@ -340,7 +340,7 @@ function palette_behavior:OnInit()
     end
 end
 
-yecs.EntityFactory:Register("palette", {"position", "sprite", "tree", "size"}, {"palette"})
+yecs.EntityFactory:Register("palette", {"position", "sprite", "tree", "size", "layout"}, {"palette"})
 
 -- progress_selector
 local progress_selector_behavior = {}
@@ -404,7 +404,7 @@ function progress_selector_behavior:GetMax()
     return self.data.block_num
 end
 
-yecs.EntityFactory:Register("progress_selector", {"position", "sprite", "tree", "size", "data"}, {"progress_selector"})
+yecs.EntityFactory:Register("progress_selector", {"position", "sprite", "tree", "size", "data", "layout"}, {"progress_selector"})
 
 -- ui
 -- joystick
@@ -511,6 +511,6 @@ function joystick_behavior:SetJoystickSize(width, height)
     }
 end
 
-yecs.EntityFactory:Register("joystick", {"position", "sprite", "tree", "size", "input"}, {"joystick"})
+yecs.EntityFactory:Register("joystick", {"position", "sprite", "tree", "size", "input", "layout"}, {"joystick"})
 
 return entities

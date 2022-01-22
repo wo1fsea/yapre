@@ -109,13 +109,22 @@ yecs.Component:Register("tree", {
                 c_parent.tree:RemoveChild(c)
             end
 
+            if c.world ~= self.entity.world then
+                if c.world then
+                    c.world:RemoveEntity(c)
+                end
+            end
+
             c_tree.parent = self.entity
             self.children[c.key] = c
+            if c.world ~= self.entity.world then
+                self.entity.world:AddEntity(c)
+            end
         end,
         RemoveChild = function(self, c)
             local c_tree = c.tree
             yapre.log.assert(c_tree, "child has not tree component")
-            
+
             if c_tree.parent ~= self.entity then
                 return
             end
@@ -149,15 +158,31 @@ yecs.Component:Register("tree", {
 local _nil_pos = {
     x = 0,
     y = 0,
-    z = 0,
+    z = 0
 }
 local _nil_size = {
     width = 0,
-    height = 0,
+    height = 0
 }
 yecs.Component:Register("layout", {
     constraints = {},
     _operations = {
+        CenterX = function(self, is_parent)
+            local position = self.entity.position
+            if is_parent or not position then
+                position = _nil_pos
+            end
+            local size = self.entity.size or _nil_size
+            return position.x + size.width / 2
+        end,
+        CenterY = function(self, is_parent)
+            local position = self.entity.position
+            if is_parent or not position then
+                position = _nil_pos
+            end
+            local size = self.entity.size or _nil_size
+            return position.y + size.height / 2
+        end,
         Left = function(self, is_parent)
             local position = self.entity.position
             if is_parent or not position then
@@ -188,6 +213,12 @@ yecs.Component:Register("layout", {
             local size = self.entity.size or _nil_size
             return position.y + size.height
         end,
+        GetCenterX = function(self)
+            return {self.entity, "CenterX"}
+        end,
+        GetCenterY = function(self)
+            return {self.entity, "CenterY"}
+        end,
         GetLeft = function(self)
             return {self.entity, "Left"}
         end,
@@ -203,7 +234,7 @@ yecs.Component:Register("layout", {
         _Unpack = function(self, constraint)
             local t_entity, point = table.unpack(constraint)
             yapre.log.assert(self.entity.world == t_entity.world and t_entity.tree and self.entity.tree and
-                       (self.entity.tree.parent == t_entity or self.entity.tree.parent == t_entity.tree.parent))
+                                 (self.entity.tree.parent == t_entity or self.entity.tree.parent == t_entity.tree.parent))
             return t_entity, point
         end,
         _SetConstraints = function(self, constraint, offset, c_key, c_string)
@@ -213,6 +244,14 @@ yecs.Component:Register("layout", {
                 t_entity_key = t_entity.key,
                 offset = offset
             }}
+        end,
+        SetCenterX = function(self, constraint, offset)
+            local c_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset-e.size.width/2 end"
+            self:_SetConstraints(constraint, offset, "h", c_string)
+        end,
+        SetCenterY = function(self, constraint, offset)
+            local c_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset-e.size.height/2 end"
+            self:_SetConstraints(constraint, offset, "v", c_string)
         end,
         SetLeft = function(self, constraint, offset)
             local c_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset end"
@@ -240,7 +279,7 @@ yecs.Component:Register("layout", {
                 local entity = self.entity
                 env = copy.deep_copy(env)
                 env["t_entity"] = t_entity
-                env["size"] = self.entity.size or _nil_pos 
+                env["size"] = self.entity.size or _nil_pos
                 local valid = false
                 if t_entity and self.entity.world == t_entity.world then
                     if self.entity.tree.parent == t_entity then

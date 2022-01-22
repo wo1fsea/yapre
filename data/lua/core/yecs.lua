@@ -98,14 +98,14 @@ function World:AddEntity(entity)
     if getmetatable(entity) ~= "EntityMeta" then
         return
     end
+    
+    self.entities[entity.key] = entity
+    entity.world = self
 
     local root = self:GetRoot()
     if root ~= entity and (entity.tree.parent == nil or entity.tree.parent.world ~= self) then
         root.tree:AddChild(entity)
     end
-
-    self.entities[entity.key] = entity
-    entity.world = self
 end
 
 function World:AddEntities(entities)
