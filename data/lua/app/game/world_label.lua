@@ -4,6 +4,9 @@ local world_label = {}
 local core = require("core")
 local yecs = core.yecs
 
+local panel_width = 320
+local panel_height = 240
+
 yecs.Behavior:Register("world_label_time_label_behavior", {
     OnInit = function(self)
         self:AddComponent("tick")
@@ -21,7 +24,14 @@ yecs.Behavior:Register("world_label_time_label_behavior", {
 
 function world_label:Make()
     local world = yecs.World:New("world_label")
-    world:AddSystemsByKeys({"sprite", "input", "tree", "tick"})
+    world:AddSystemsByKeys({"sprite", "input", "tree", "tick", "layout"})
+    
+    local canvas = yecs.EntityFactory:Make("panel")
+    world:AddEntity(canvas)
+    canvas:SetSize(panel_width, panel_height)
+
+    canvas.layout:SetCenterX(world:GetRoot().layout:GetCenterX(), 0)
+    canvas.layout:SetCenterY(world:GetRoot().layout:GetCenterY(), 0)
 
     local time_label = yecs.EntityFactory:Make("label", {"world_label_time_label_behavior"})
     local world_label_a = yecs.EntityFactory:Make("label")
@@ -32,7 +42,7 @@ function world_label:Make()
     time_label:SetFontSize(2)
     time_label.position = {
         x = 8,
-        y = yapre.render_height - 16 - 4,
+        y = panel_height - 16 - 4,
         z = 1
     }
 
@@ -50,14 +60,14 @@ function world_label:Make()
         z = 1
     }
 
-    world_label_b:SetMaxSize(yapre.render_width - 48 - 8, -1)
+    world_label_b:SetMaxSize(panel_width - 48 - 8, -1)
     world_label_b.position = {
         x = 48,
         y = 8,
         z = 1
     }
 
-    world_label_c:SetMaxSize(yapre.render_width - 48 - 8, -1)
+    world_label_c:SetMaxSize(panel_width - 48 - 8, -1)
     world_label_c.position = {
         x = 48,
         y = 9 * 4 + 8 + 8,
@@ -65,19 +75,19 @@ function world_label:Make()
     }
     world_label_c:SetFontSize(2)
 
-    world_label_d:SetMaxSize(yapre.render_width - 48 - 8, -1)
+    world_label_d:SetMaxSize(panel_width - 48 - 8, -1)
     world_label_d.position = {
         x = 48,
-        y = yapre.render_height - 56,
+        y = panel_height - 56,
         z = 1
     }
     world_label_d:SetFontSize(4)
 
-    world:AddEntity(time_label)
-    world:AddEntity(world_label_a)
-    world:AddEntity(world_label_b)
-    world:AddEntity(world_label_c)
-    world:AddEntity(world_label_d)
+    canvas.tree:AddChild(time_label)
+    canvas.tree:AddChild(world_label_a)
+    canvas.tree:AddChild(world_label_b)
+    canvas.tree:AddChild(world_label_c)
+    canvas.tree:AddChild(world_label_d)
 
     return world
 end

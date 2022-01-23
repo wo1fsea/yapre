@@ -4,6 +4,9 @@ local world_mario_music = {}
 local core = require("core")
 local yecs = core.yecs
 
+local panel_width = 320
+local panel_height = 240
+
 world_mario_music.data = {{0, 659, 125}, {125, 659, 125}, {375, 659, 125}, {667, 523, 125}, {792, 659, 125},
                           {1042, 784, 125}, {1542, 392, 125}, {2042, 523, 125}, {2417, 392, 125}, {2792, 330, 125},
                           {3167, 440, 125}, {3417, 494, 125}, {3667, 466, 125}, {3834, 440, 125}, {4084, 392, 125},
@@ -88,7 +91,14 @@ yecs.Behavior:Register("world_mario_music_stop_btn_behavior", {
 
 function world_mario_music:Make()
     local world = yecs.World:New("world_mario_music")
-    world:AddSystemsByKeys({"sprite", "input", "tree", "tick"})
+    world:AddSystemsByKeys({"sprite", "input", "tree", "tick", "layout"})
+    
+    local canvas = yecs.EntityFactory:Make("panel")
+    world:AddEntity(canvas)
+    canvas:SetSize(panel_width, panel_height)
+
+    canvas.layout:SetCenterX(world:GetRoot().layout:GetCenterX(), 0)
+    canvas.layout:SetCenterY(world:GetRoot().layout:GetCenterY(), 0)
 
     local play_btn = yecs.EntityFactory:Make("button", {"world_mario_music_play_btn_behavior"})
     local stop_btn = yecs.EntityFactory:Make("button", {"world_mario_music_stop_btn_behavior"})
@@ -97,24 +107,24 @@ function world_mario_music:Make()
     image:SetTexture("./image/mario.png")
 
     play_btn.position = {
-        x = yapre.render_width / 2 - 32,
-        y = yapre.render_height / 2,
+        x = panel_width / 2 - 32,
+        y = panel_height / 2,
         z = 1
     }
     stop_btn.position = {
-        x = yapre.render_width / 2,
-        y = yapre.render_height / 2,
+        x = panel_width / 2,
+        y = panel_height / 2,
         z = 1
     }
     image.position = {
-        x = yapre.render_width / 2 - 16,
-        y = yapre.render_height / 2 - 32 - 8,
+        x = panel_width / 2 - 16,
+        y = panel_height / 2 - 32 - 8,
         z = 1
     }
 
-    world:AddEntity(play_btn)
-    world:AddEntity(stop_btn)
-    world:AddEntity(image)
+    canvas.tree:AddChild(play_btn)
+    canvas.tree:AddChild(stop_btn)
+    canvas.tree:AddChild(image)
 
     return world
 end

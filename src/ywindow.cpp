@@ -20,7 +20,7 @@ SDL_Window *mainWindow = nullptr;
 SDL_GLContext mainContext;
 
 std::tuple<int, int> GetDrawableSize() {
-  auto [w, h] = renderer::GetRenderSize();
+  auto [w, h] = renderer::GetPreferRenderSize();
 
 #ifdef __EMSCRIPTEN__
   EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context =
@@ -43,10 +43,10 @@ void SetupSdlGl() {
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
   /*
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-  */
+SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+*/
 
   // Also request a depth buffer
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -64,7 +64,7 @@ bool Init() {
   atexit(SDL_Quit);
 
   SetupSdlGl();
-  auto [w, h] = renderer::GetRenderSize();
+  auto [w, h] = renderer::GetPreferRenderSize();
 
   if (kFullScreen) {
     mainWindow = SDL_CreateWindow(kWindowCaption, SDL_WINDOWPOS_UNDEFINED,
@@ -105,9 +105,9 @@ void SwapWinodw() {
 }
 
 void ResetWindowSize() {
-#if defined(YPARE_WINDOWS) || defined(YPARE_MAC) ||defined(YPARE_LINUX) 
+#if defined(YPARE_WINDOWS) || defined(YPARE_MAC) || defined(YPARE_LINUX)
   if (mainWindow) {
-    auto [w, h] = renderer::GetRenderSize();
+    auto [w, h] = renderer::GetPreferRenderSize();
     SDL_SetWindowSize(mainWindow, w, h);
   }
 #endif

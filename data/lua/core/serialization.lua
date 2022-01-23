@@ -1,7 +1,6 @@
 local serialization = {}
 local yecs = require("core.yecs")
-local copy = require("utils.copy")
-local debug_log = require("utils.debug_log")
+local copy = require("copy")
 
 function serialization:DumpWorld(world)
     local world_data = {}
@@ -9,6 +8,7 @@ function serialization:DumpWorld(world)
     world_data.paused = world.paused
     world_data.update_delta = world.update_delta
     world_data.key = world.key
+    world_data.root_entity_key = world.root_entity_key
 
     local systems = {}
     for system_key, _ in pairs(world.systems) do
@@ -27,14 +27,15 @@ function serialization:DumpWorld(world)
 end
 
 function serialization:LoadWorld(world_data)
-    local world = yecs.World:New(world_data.key)
+    local entities_data = world_data.entities
+    local entities = self:MakeEntities(entities_data)
+
+    local world = yecs.World:New(world_data.key, entities[world_data.root_entity_key])
+    print(entities[world_data.root_entity_key])
     world:AddSystemsByKeys(world_data.systems)
 
     world.paused = world_data.paused
     world.update_delta = world_data.update_delta
-
-    local entities_data = world_data.entities
-    local entities = self:MakeEntities(entities_data)
 
     for _, entity in pairs(entities) do
         world:AddEntity(entity)
@@ -74,7 +75,7 @@ end
 function serialization:DumpData(obj, seen)
     if type(obj) ~= "table" then
         if type(obj) == "function" then
-            debug_log.log("unable to dump function")
+            yapre.log.info("unable to dump function")
             return nil
         end
         return obj

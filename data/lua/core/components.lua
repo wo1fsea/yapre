@@ -1,8 +1,9 @@
-local components = {}
+local yapre = yapre
+
 local yecs = require("core.yecs")
 local palette_data = require("core.data.palette_data")
-local copy = require("utils.copy")
-local debug_log = require("utils.debug_log")
+local copy = require("copy")
+local eval = require("eval")
 
 local deep_copy = copy.deep_copy
 
@@ -53,44 +54,44 @@ yecs.Component:Register("input", {
     transparent = false,
     _operations = {
         _OnTouchBegan = function(self, x, y)
-            debug_log.log("_OnTouchBegan")
+            yapre.log.info("_OnTouchBegan")
             return self:OnTouchBegan(x, y)
         end,
         _OnTouchMoved = function(self, x, y)
-            debug_log.log("_OnTouchMoved")
+            yapre.log.info("_OnTouchMoved")
             self:OnTouchMoved(x, y)
         end,
         _OnTouchEnded = function(self, x, y)
-            debug_log.log("_OnTouchEnded")
+            yapre.log.info("_OnTouchEnded")
             self:OnTouchEnded(x, y)
             self:OnClicked(x, y)
         end,
         _OnKeyPressed = function(self, keycode)
-            debug_log.log(string.format("_OnKeyPressed: %s", keycode))
+            yapre.log.info(string.format("_OnKeyPressed: %s", keycode))
             self:OnKeyPressed(keycode)
         end,
-        _OnKeyReleased = function (self, keycode)
-            debug_log.log(string.format("_OnKeyReleased: %s", keycode))
+        _OnKeyReleased = function(self, keycode)
+            yapre.log.info(string.format("_OnKeyReleased: %s", keycode))
             self:OnKeyReleased(keycode)
         end,
 
         OnClicked = function(self, x, y)
-            debug_log.log("OnClicked")
+            yapre.log.info("OnClicked")
         end,
         OnTouchBegan = function(self, x, y)
-            debug_log.log("OnTouchBegan")
+            yapre.log.info("OnTouchBegan")
         end,
         OnTouchMoved = function(self, x, y)
-            debug_log.log("OnTouchMoved")
+            yapre.log.info("OnTouchMoved")
         end,
         OnTouchEnded = function(self, x, y)
-            debug_log.log("OnTouchEnded")
+            yapre.log.info("OnTouchEnded")
         end,
         OnKeyPressed = function(self, keycode)
-            debug_log.log(string.format("OnKeyPressed: %s", keycode))
+            yapre.log.info(string.format("OnKeyPressed: %s", keycode))
         end,
         OnKeyReleased = function(self, keycode)
-            debug_log.log(string.format("OnKeyReleased: %s", keycode))
+            yapre.log.info(string.format("OnKeyReleased: %s", keycode))
         end
     }
 })
@@ -100,22 +101,30 @@ yecs.Component:Register("tree", {
     children = {},
     _operations = {
         AddChild = function(self, c)
-            if c.tree == nil then
-                return
-            end
-            local c_parent = c.tree.parent
+            local c_tree = c.tree
+            yapre.log.assert(c_tree, "child has not tree component")
+
+            local c_parent = c_tree.parent
             if c_parent then
                 c_parent.tree:RemoveChild(c)
             end
 
-            c.tree.parent = self.entity
+            if c.world ~= self.entity.world then
+                if c.world then
+                    c.world:RemoveEntity(c)
+                end
+            end
+
+            c_tree.parent = self.entity
             self.children[c.key] = c
+            if c.world ~= self.entity.world then
+                self.entity.world:AddEntity(c)
+            end
         end,
         RemoveChild = function(self, c)
             local c_tree = c.tree
-            if c_tree == nil then
-                return
-            end
+            yapre.log.assert(c_tree, "child has not tree component")
+
             if c_tree.parent ~= self.entity then
                 return
             end
@@ -141,6 +150,158 @@ yecs.Component:Register("tree", {
 
             for _, c_key in ipairs(data.children) do
                 self.children[c_key] = world_entities[c_key]
+            end
+        end
+    }
+})
+
+local _nil_pos = {
+    x = 0,
+    y = 0,
+    z = 0
+}
+local _nil_size = {
+    width = 0,
+    height = 0
+}
+yecs.Component:Register("layout", {
+    constraints = {},
+    _operations = {
+        CenterX = function(self, is_parent)
+            local position = self.entity.position
+            if is_parent or not position then
+                position = _nil_pos
+            end
+            local size = self.entity.size or _nil_size
+            return position.x + size.width / 2
+        end,
+        CenterY = function(self, is_parent)
+            local position = self.entity.position
+            if is_parent or not position then
+                position = _nil_pos
+            end
+            local size = self.entity.size or _nil_size
+            return position.y + size.height / 2
+        end,
+        Left = function(self, is_parent)
+            local position = self.entity.position
+            if is_parent or not position then
+                position = _nil_pos
+            end
+            return position.x
+        end,
+        Right = function(self, is_parent)
+            local position = self.entity.position
+            if is_parent or not position then
+                position = _nil_pos
+            end
+            local size = self.entity.size or _nil_size
+            return position.x + size.width
+        end,
+        Top = function(self, is_parent)
+            local position = self.entity.position
+            if is_parent or not position then
+                position = _nil_pos
+            end
+            return position.y
+        end,
+        Bottom = function(self, is_parent)
+            local position = self.entity.position
+            if is_parent or not position then
+                position = _nil_pos
+            end
+            local size = self.entity.size or _nil_size
+            return position.y + size.height
+        end,
+        GetCenterX = function(self)
+            return {self.entity, "CenterX"}
+        end,
+        GetCenterY = function(self)
+            return {self.entity, "CenterY"}
+        end,
+        GetLeft = function(self)
+            return {self.entity, "Left"}
+        end,
+        GetRight = function(self)
+            return {self.entity, "Right"}
+        end,
+        GetTop = function(self)
+            return {self.entity, "Top"}
+        end,
+        GetBottom = function(self)
+            return {self.entity, "Bottom"}
+        end,
+        _Unpack = function(self, constraint)
+            local t_entity, point = table.unpack(constraint)
+            yapre.log.assert(self.entity.world == t_entity.world and t_entity.tree and self.entity.tree and
+                                 (self.entity.tree.parent == t_entity or self.entity.tree.parent == t_entity.tree.parent))
+            return t_entity, point
+        end,
+        _SetConstraints = function(self, constraint, offset, c_key, c_string)
+            local t_entity, point = self:_Unpack(constraint)
+            c_string = string.format(c_string, point)
+            self.constraints[c_key] = {c_string, {
+                t_entity_key = t_entity.key,
+                offset = offset
+            }}
+        end,
+        SetCenterX = function(self, constraint, offset)
+            local c_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset-e.size.width/2 end"
+            self:_SetConstraints(constraint, offset, "h", c_string)
+        end,
+        SetCenterY = function(self, constraint, offset)
+            local c_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset-e.size.height/2 end"
+            self:_SetConstraints(constraint, offset, "v", c_string)
+        end,
+        SetLeft = function(self, constraint, offset)
+            local c_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset end"
+            self:_SetConstraints(constraint, offset, "h", c_string)
+        end,
+        SetRight = function(self, constraint, offset)
+            local c_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset-e.size.width end"
+            self:_SetConstraints(constraint, offset, "h", c_string)
+        end,
+        SetTop = function(self, constraint, offset)
+            local c_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset end"
+            self:_SetConstraints(constraint, offset, "v", c_string)
+        end,
+        SetBottom = function(self, constraint, offset)
+            local c_string = "return function(e) return e.t_entity.layout:%s(e.is_parent)+e.offset-e.size.height end"
+            self:_SetConstraints(constraint, offset, "v", c_string)
+        end,
+        DoLayout = function(self)
+            if not self.constraints then
+                return
+            end
+            for k, c in pairs(self.constraints) do
+                local v_string, env = table.unpack(c)
+                local t_entity = self.entity.world.entities[env["t_entity_key"]]
+                local entity = self.entity
+                env = copy.deep_copy(env)
+                env["t_entity"] = t_entity
+                env["size"] = self.entity.size or _nil_pos
+                local valid = false
+                if t_entity and self.entity.world == t_entity.world then
+                    if self.entity.tree.parent == t_entity then
+                        env["is_parent"] = true
+                        valid = true
+                    elseif self.entity.tree.parent == t_entity.tree.parent then
+                        env["is_parent"] = false
+                        valid = true
+                    end
+                end
+                if not valid then
+                    self.constraints[k] = nil
+                else
+                    local func = eval.eval(v_string)
+                    local v = func(env)
+
+                    if k == "h" then
+                        self.entity.position.x = v
+                    elseif k == "v" then
+                        self.entity.position.y = v
+                    end
+                end
             end
         end
     }
@@ -365,4 +526,4 @@ yecs.Component:Register("animation", {
     }
 })
 
-return components
+return nil

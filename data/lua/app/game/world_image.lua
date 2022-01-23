@@ -3,6 +3,9 @@ local world_image = {}
 local core = require("core")
 local yecs = core.yecs
 
+local panel_width = 320
+local panel_height = 240
+
 yecs.Behavior:Register("world_image_button1_behavior", {
     OnClicked = function(self, x, y)
         self.world:GetEntityByTags({"image2"}):PlayAnimation("die")
@@ -36,7 +39,13 @@ yecs.Behavior:Register("world_image_image2_behavior", {
 
 function world_image:Make()
     local world = yecs.World:New("world_image")
-    world:AddSystemsByKeys({"sprite", "input", "tree", "tick"})
+    world:AddSystemsByKeys({"sprite", "input", "tree", "tick", "layout"})
+    
+    local canvas = yecs.EntityFactory:Make("panel")
+    world:AddEntity(canvas)
+    canvas:SetSize(panel_width, panel_height)
+    canvas.layout:SetCenterX(world:GetRoot().layout:GetCenterX(), 0)
+    canvas.layout:SetCenterY(world:GetRoot().layout:GetCenterY(), 0)
 
     local image1 = yecs.EntityFactory:Make("image")
     image1.position = {
@@ -77,10 +86,10 @@ function world_image:Make()
     button1:SetState("normal")
     button2:SetState("disabled")
 
-    world:AddEntity(button1)
-    world:AddEntity(button2)
-    world:AddEntity(image1)
-    world:AddEntity(image2)
+    canvas.tree:AddChild(button1)
+    canvas.tree:AddChild(button2)
+    canvas.tree:AddChild(image1)
+    canvas.tree:AddChild(image2)
 
     return world
 end

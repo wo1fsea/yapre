@@ -7,7 +7,7 @@ local world_dungeon = {}
 
 yecs.Behavior:Register("world_dungeon_joystick_behavior", {
     OnJoystick = function(self, x, y)
-        local dot = self.world:GetEntityByTags({"dot"})
+        local dot = self.world:GetEntityByTags{"dot"}
         dot.data["speed"] = {
             x = x,
             y = y
@@ -20,7 +20,7 @@ function world_dungeon:Make()
     world:AddSystemsByKeys({"sprite", "input", "tree", "tick"})
 
     local dot = yecs.EntityFactory:Make("image")
-    dot:AddComponents{"tags", "data", "tick"}
+    dot:AddComponents{"tags", "data", "tick", "layout", "tree"}
 
     dot.tags["dot"] = true
     dot.data["speed"] = {
@@ -41,7 +41,7 @@ function world_dungeon:Make()
     }
 
     local joystick = yecs.EntityFactory:Make("joystick", {"world_dungeon_joystick_behavior"})
-
+    joystick:AddComponents{"layout"}
     joystick.position = {
         x = yapre.render_width / 2 - 32,
         y = yapre.render_height - 64,
@@ -50,7 +50,8 @@ function world_dungeon:Make()
 
     world:AddEntity(joystick)
     world:AddEntity(dot)
-
+    joystick.layout:SetRight(world:GetRoot().layout:GetRight(), -10)
+    joystick.layout:SetTop(dot.layout:GetTop(), -10)
     return world
 end
 

@@ -114,7 +114,6 @@ void UnbindKeyboardInputCallback(const std::string &key) {
 
 void BindMouseInputCallback(const std::string &key,
                             const MouseCallBackFunc &callback) {
-
   MouseCallBackFuncMap[key] = callback;
 }
 void UnbindMouseInputCallback(const std::string &key) {
@@ -123,7 +122,6 @@ void UnbindMouseInputCallback(const std::string &key) {
 
 void BindTouchInputCallback(const std::string &key,
                             const TouchCallBackFunc &callback) {
-
   TouchCallBackFuncMap[key] = callback;
 }
 void UnbindTouchInputCallback(const std::string &key) {

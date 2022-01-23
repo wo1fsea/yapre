@@ -42,10 +42,6 @@ public:
     data_ptr = std::shared_ptr<unsigned char[]>(
         new unsigned char[real_size * real_size * channel]);
 
-    /* no need to resize
-    stbir_resize_uint8(file_data, n_width, n_height, 0, data_ptr.get(),
-                       real_size, real_size, 0, channel);
-                       */
     for (int x = 0; x < real_size; ++x) {
       for (int y = 0; y < real_size; ++y) {
         int r_idx = (x + real_size * y) * channel;
@@ -115,6 +111,6 @@ public:
   inline int RealSize() { return real_size; }
   inline unsigned int TextureID() { return texture_id; }
   inline unsigned char *Data() { return data_ptr.get(); }
-  inline void clear_changed() { changed = false; };
+  inline void ClearChanged() { changed = false; };
 };
 } // namespace yapre

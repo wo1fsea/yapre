@@ -1,7 +1,7 @@
+local yapre = yapre
 local yecs = {}
-local copy = require("utils.copy")
-local uuid = require("utils.uuid")
-local debug_log = require("utils.debug_log")
+local copy = require("copy")
+local uuid = require("uuid")
 local deep_copy = copy.deep_copy
 
 -- world
@@ -15,22 +15,29 @@ local World = {
 }
 World.__index = World
 
-function World:New(key)
+function World:New(key, root_entity)
     local world = yecs.worlds[key]
     if world then
         return world
     end
 
+    root_entity = root_entity or yecs.Entity:New({"position", "size", "layout"})
+
     world = setmetatable({
         paused = false,
         update_delta = 0,
         key = key,
-        entities = {},
+        root_entity_key = root_entity.key,
+        entities = {
+            [root_entity.key] = root_entity
+        },
         systems = {},
         system_update_queue = setmetatable({}, {
             __mode = 'v'
         })
     }, self)
+    
+    root_entity.world = world
 
     yecs.worlds[key] = world
     return world
@@ -83,13 +90,28 @@ function World:Resume()
     self.paused = false
 end
 
+function World:GetRoot()
+    return self.entities[self.root_entity_key]
+end
+
 function World:AddEntity(entity)
     if getmetatable(entity) ~= "EntityMeta" then
         return
     end
-
+    
     self.entities[entity.key] = entity
     entity.world = self
+
+    local root = self:GetRoot()
+    if root ~= entity and (entity.tree.parent == nil or entity.tree.parent.world ~= self) then
+        root.tree:AddChild(entity)
+    end
+end
+
+function World:AddEntities(entities)
+    for _, entitie in pairs(entities) do
+        self:AddEntity(entitie)
+    end
 end
 
 function World:RemoveEntity(entity)
@@ -101,6 +123,10 @@ function World:RemoveEntityByKey(entity_key)
 
     if entity and entity.world == self then
         entity.world = nil
+        local t = entity.tree
+        if t then
+            t:removeFromParent()
+        end
         self.entities[entity_key] = nil
     end
 end
@@ -246,7 +272,7 @@ end
 
 function Behavior:New(key, super_behavior)
     local behavior_funcs = behavior_templates[key]
-    assert(behavior_funcs, "cannot find behavior with key: " .. key)
+    yapre.log.assert(behavior_funcs, "cannot find behavior with key: " .. key)
 
     local behavior = setmetatable({
         key = key,
@@ -258,6 +284,7 @@ function Behavior:New(key, super_behavior)
 end
 
 -- entity
+local entity_basic_components = {"tree"}
 local Entity = {
     key = "",
     __metatable = "EntityMeta",
@@ -273,7 +300,7 @@ Entity.__newindex = function(self, k, v)
     if k == "world" then
         rawset(self, k, v)
     elseif self.components[k] == nil then
-        debug_log.log("can not add property to entity")
+        yapre.log.info("can not add property to entity")
         -- rawset(self, k, v)
     elseif type(v) == "table" then
         local component = self.components[k]
@@ -299,6 +326,10 @@ function Entity:New(component_keys, behavior_keys)
     component_keys = component_keys or {}
     behavior_keys = behavior_keys or {}
 
+    for _, bc in pairs(entity_basic_components) do
+        table.insert(component_keys, bc)
+    end
+
     local component_data = {}
     local behavior = {}
     for _, bk in ipairs(behavior_keys) do
@@ -312,14 +343,7 @@ function Entity:New(component_keys, behavior_keys)
         _behavior = behavior
     }, self)
 
-    for _, component_key in pairs(component_keys) do
-        local component = yecs.Component:New(component_key)
-
-        if component ~= nil then
-            component.entity = entity
-            component_data[component.key] = component
-        end
-    end
+    entity:AddComponents(component_keys)
 
     return entity
 end
@@ -329,6 +353,7 @@ function Entity:AddComponent(component)
 
     if component and self.components[component.key] == nil then
         self.components[component.key] = component
+        component.entity = self
     end
 end
 
@@ -410,7 +435,7 @@ end
 
 function Component:New(key)
     local component_data = component_templates[key]
-    assert(component_data, "cannot find component with key: " .. key)
+    yapre.log.assert(component_data, "cannot find component with key: " .. key)
 
     local component = setmetatable(deep_copy(component_data), self)
     return component
@@ -466,7 +491,7 @@ function System:New(key)
 end
 
 function System:Update(delta_ms)
-    debug_log.log(self, "Update", delta_ms)
+    yapre.log.info(self, "Update", delta_ms)
 end
 
 function System:Init()

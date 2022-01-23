@@ -3,6 +3,9 @@ local world_flappy_duck = {}
 local core = require("core")
 local yecs = core.yecs
 
+local panel_width = 320
+local panel_height = 240
+
 yecs.Behavior:Register("world_flappy_duck_duck_behavior", {
     OnInit = function(self)
         self.tags["duck"] = true
@@ -20,7 +23,7 @@ yecs.Behavior:Register("world_flappy_duck_duck_behavior", {
         self:SetBorderEnabled(false)
 
         self:Born()
-        self.data.y = yapre.render_height * 2
+        self.data.y = panel_height * 2
         self.position.y = self.data.y
         self.position.z = 128
         self:Die()
@@ -37,11 +40,11 @@ yecs.Behavior:Register("world_flappy_duck_duck_behavior", {
                 end
             end
 
-            if self.position.y > yapre.render_height or self.position.y < -self.size.height then
+            if self.position.y > panel_height or self.position.y < -self.size.height then
                 self:Die()
             end
 
-            if self.position.y > yapre.render_height * 2 and self.data.up_speed < 0 then
+            if self.position.y > panel_height * 2 and self.data.up_speed < 0 then
                 return
             end
 
@@ -76,7 +79,7 @@ yecs.Behavior:Register("world_flappy_duck_duck_behavior", {
 
         self.data.up_speed = 100
         self.data.d_up_speed = 150
-        self.data.y = yapre.render_height / 2
+        self.data.y = panel_height / 2
         self.data.g = 500
 
         self.position.x = 32
@@ -135,7 +138,7 @@ yecs.Behavior:Register("world_flappy_duck_cactus_behavior", {
 
             if self.data.x < -self.size.width then
                 local cs = self.world:GetEntitiesByTags({"cactus"})
-                local p_x = yapre.render_width
+                local p_x = panel_width
                 for _, c in pairs(cs) do
                     if c.data.x + 80 > p_x then
                         p_x = c.data.x + 80
@@ -174,7 +177,7 @@ yecs.Behavior:Register("world_flappy_duck_label_behavior", {
 
         self.tick:AddTick("label_tick", function(delta_ms)
             local duck = self.world:GetEntityByTags({"duck"})
-            if duck.data.dead and duck.position.y < yapre.render_height * 2 then
+            if duck.data.dead and duck.position.y < panel_height * 2 then
                 self:SetText("YOU DIED!\nTAP THE BUTTON \nTO START!")
             elseif not duck.data.dead then
                 self:SetText("")
@@ -191,7 +194,7 @@ yecs.Behavior:Register("world_flappy_duck_duck_head_behavior", {
 
         self.position = {
             x = 16,
-            y = yapre.render_height - 128,
+            y = panel_height - 128,
             z = 64
         }
         self:SetTextureSize(128, 128)
@@ -200,7 +203,7 @@ yecs.Behavior:Register("world_flappy_duck_duck_head_behavior", {
 
         self.tick:AddTick("label_tick", function(delta_ms)
             local duck = self.world:GetEntityByTags({"duck"})
-            if duck.data.dead and duck.position.y < yapre.render_height * 2 then
+            if duck.data.dead and duck.position.y < panel_height * 2 then
                 self.position.x = 16
             elseif not duck.data.dead then
                 self.position.x = -1024
@@ -216,7 +219,7 @@ yecs.Behavior:Register("world_flappy_duck_button_behavior", {
     OnClicked = function(self, x, y)
         local duck = self.world:GetEntityByTags({"duck"})
         if duck.data.dead then
-            if duck.position.y > yapre.render_height then
+            if duck.position.y > panel_height then
                 duck:Born()
             end
             return
@@ -227,8 +230,8 @@ yecs.Behavior:Register("world_flappy_duck_button_behavior", {
         self:AddComponent("tags")
         self.tags["button"] = true
         self:SetButtonSize(64, 64)
-        self.position.y = yapre.render_height - 64 - 32
-        self.position.x = yapre.render_width - 64 - 32
+        self.position.y = panel_height - 64 - 32
+        self.position.x = panel_width - 64 - 32
         self.position.z = 128
         self:BindKey(" ")
     end
@@ -266,7 +269,7 @@ yecs.Behavior:Register("world_flappy_duck_background_behavior", {
             self.data.x = self.data.x - self.data.speed / delta_ms
             if self.data.x < -self.size.width then
                 local bs = self.world:GetEntitiesByTags({self.data.tag})
-                local p_x = 0 -- yapre.render_width
+                local p_x = 0 -- panel_width
                 for _, b in pairs(bs) do
                     if b.data.x + self.data.interval + self.size.width > p_x then
                         p_x = b.data.x + self.data.interval + self.size.width
@@ -276,31 +279,31 @@ yecs.Behavior:Register("world_flappy_duck_background_behavior", {
             end
 
             self.position.x = self.data.x // 1
-            self.position.y = (self.data.y + self.data.y_rate * (duck.data.y - yapre.render_height / 2)) // 1
+            self.position.y = (self.data.y + self.data.y_rate * (duck.data.y - panel_height / 2)) // 1
             self.position.z = self.data.z // 1
 
         end)
     end
 })
 
-function world_flappy_duck:MakeBackground(world)
+function world_flappy_duck:MakeBackground(canvas)
 
     local background = yecs.Entity:New({"sprite", "position"}, {})
     background.sprite:AddSprite("background", "./image/ui/blank2.png", {
         size = {
-            width = yapre.render_width,
-            height = yapre.render_height
+            width = panel_width,
+            height = panel_height
         },
         color = yapre.palette.colors[1]
     })
 
     background.position.z = 1
-    world:AddEntity(background)
+    canvas.tree:AddChild(background)
 
     local idx = 1
     for idx = 1, 3, 1 do
         local background_stars = yecs.EntityFactory:Make("image", {"world_flappy_duck_background_behavior"})
-        world:AddEntity(background_stars)
+        canvas.tree:AddChild(background_stars)
 
         background_stars:SetTexture("./image/flappy_duck/stars.png")
         background_stars.data.tag = "background_stars"
@@ -319,7 +322,7 @@ function world_flappy_duck:MakeBackground(world)
 
     for idx = 1, 4, 1 do
         local background_layer = yecs.EntityFactory:Make("image", {"world_flappy_duck_background_behavior"})
-        world:AddEntity(background_layer)
+        canvas.tree:AddChild(background_layer)
 
         background_layer:SetTexture("./image/flappy_duck/skybg1.png")
         background_layer.data.tag = "background_layer1"
@@ -338,7 +341,7 @@ function world_flappy_duck:MakeBackground(world)
 
     for idx = 1, 4, 1 do
         local background_layer = yecs.EntityFactory:Make("image", {"world_flappy_duck_background_behavior"})
-        world:AddEntity(background_layer)
+        canvas.tree:AddChild(background_layer)
 
         background_layer:SetTexture("./image/flappy_duck/skybg2.png")
         background_layer.data.tag = "background_layer2"
@@ -357,27 +360,31 @@ end
 
 function world_flappy_duck:Make()
     local world = yecs.World:New("world_flappy_duck")
-    world:AddSystemsByKeys({"sprite", "input", "tree", "tick"})
+    world:AddSystemsByKeys({"sprite", "input", "tree", "tick", "layout"})
+    local canvas = yecs.EntityFactory:Make("panel")
+    world:AddEntity(canvas)
+    canvas:SetSize(panel_width, panel_height)
+    canvas.layout:SetCenterX(world:GetRoot().layout:GetCenterX(), 0)
+    canvas.layout:SetCenterY(world:GetRoot().layout:GetCenterY(), 0)
 
     local button = yecs.EntityFactory:Make("button", {"world_flappy_duck_button_behavior"})
-    world:AddEntity(button)
+    canvas.tree:AddChild(button)
 
     local label = yecs.EntityFactory:Make("label", {"world_flappy_duck_label_behavior"})
-    world:AddEntity(label)
+    canvas.tree:AddChild(label)
 
     local duck_head = yecs.EntityFactory:Make("image", {"world_flappy_duck_duck_head_behavior"})
-    world:AddEntity(duck_head)
+    canvas.tree:AddChild(duck_head)
 
     local duck = yecs.EntityFactory:Make("flappy_duck")
-    world:AddEntity(duck)
+    canvas.tree:AddChild(duck)
 
-    local idx = 1
-    for idx = 1, 5, 1 do
+    for _ = 1, 5, 1 do
         local cactus = yecs.EntityFactory:Make("cactus")
-        world:AddEntity(cactus)
+        canvas.tree:AddChild(cactus)
     end
 
-    self:MakeBackground(world)
+    self:MakeBackground(canvas)
     return world
 end
 

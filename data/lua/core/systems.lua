@@ -1,23 +1,21 @@
 local yapre = yapre
 
-local systems = {}
 local yecs = require("core.yecs")
 local emscripten_keycode_mapping = require("core.data.emscripten_keycode_mapping")
-local debug_log = require("utils.debug_log")
 
 -- dummy system
 local dummy_system = {}
 dummy_system.update_order = 0
 function dummy_system:Init()
-    debug_log.log("dummy Init")
+    yapre.log.info("dummy Init")
 end
 
 function dummy_system:Deinit()
-    debug_log.log("dummy Deinit")
+    yapre.log.info("dummy Deinit")
 end
 
 function dummy_system:Update(delta_ms)
-    debug_log.log("dummy Update ", delta_ms)
+    yapre.log.info("dummy Update ", delta_ms)
 end
 yecs.System:Register("dummy", dummy_system)
 
@@ -133,7 +131,7 @@ function input_system:Init()
         if yapre.platform == "emscripten" then
             keycode = emscripten_keycode_mapping:GetKeyCode(keycode)
         end
-        debug_log.log(string.format("%s-[OnKey] %i:%i:%i:%i", self.world, timestamp, state, multi, keycode))
+        yapre.log.info(string.format("%s-[OnKey] %i:%i:%i:%i", self.world, timestamp, state, multi, keycode))
         table.insert(self._key_events, {
             timestamp = timestamp,
             state = state,
@@ -146,7 +144,7 @@ function input_system:Init()
     end
 
     local function OnMouse(timestamp, state, button, x, y)
-        debug_log.log(string.format("%s-:[OnMouse] %i:%i:%i:(%i,%i)", self.world, timestamp, state, button, x, y))
+        yapre.log.info(string.format("%s-:[OnMouse] %i:%i:%i:(%i,%i)", self.world, timestamp, state, button, x, y))
         table.insert(self._mouse_events, {
             timestamp = timestamp,
             state = state,
@@ -176,6 +174,17 @@ tree_system.update_order = sprite_system.update_order - 1
 tree_system.global_position = {}
 
 function tree_system:_UpdateTreeNodePos(node, parent_pos)
+    if node.world ~= self.world then
+        if node.world then
+            node.world:RemoveEntity(node)
+        end
+        self.world:AddEntity(node)
+    end
+
+    if node.layout then
+        node.layout:DoLayout()
+    end
+
     local pos = node.position
     local node_pos = {
         x = pos.x + parent_pos.x,
@@ -193,6 +202,11 @@ function tree_system:Update(delta_ms)
     self.global_position = {}
     local world = self.world
     local tree_entities = self.world:GetEntitiesWithComponent("tree")
+    
+    -- update root size
+    local root = world:GetRoot()
+    root.size.width = yapre.render_width
+    root.size.height = yapre.render_height
 
     for _, entity in pairs(tree_entities) do
         local parent = entity.tree.parent
@@ -293,4 +307,4 @@ end
 
 yecs.System:Register("tick", tick_system)
 
-return systems
+return nil
