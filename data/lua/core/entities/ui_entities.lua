@@ -87,8 +87,8 @@ function button_behavior:BindKey(key)
     self.data.button_bind_key = key
 end
 
-yecs.EntityFactory:Register("button", {"position", "sprite", "tree", "size", "input", "tick", "animation", "data", "layout"},
-    {"button"})
+yecs.EntityFactory:Register("button",
+    {"position", "sprite", "tree", "size", "input", "tick", "animation", "data", "layout"}, {"button"})
 
 -- label
 local label_behavior = {}
@@ -321,7 +321,7 @@ yecs.EntityFactory:Register("panel", {"position", "sprite", "tree", "size", "lay
 local palette_behavior = {}
 yecs.Behavior:Register("palette", palette_behavior)
 function palette_behavior:OnInit()
-    local palette_size = 4
+    local palette_size = 8
     local offset_x = 0
     for i, color in ipairs(palette_data.colors) do
         self.sprite:AddSprite("palette" .. i, "./image/ui/blank2.png", {
@@ -338,6 +338,10 @@ function palette_behavior:OnInit()
         })
         offset_x = offset_x + palette_size
     end
+    self.size = {
+        width = offset_x + palette_size,
+        height = palette_size
+    }
 end
 
 yecs.EntityFactory:Register("palette", {"position", "sprite", "tree", "size", "layout"}, {"palette"})
@@ -404,7 +408,8 @@ function progress_selector_behavior:GetMax()
     return self.data.block_num
 end
 
-yecs.EntityFactory:Register("progress_selector", {"position", "sprite", "tree", "size", "data", "layout"}, {"progress_selector"})
+yecs.EntityFactory:Register("progress_selector", {"position", "sprite", "tree", "size", "data", "layout"},
+    {"progress_selector"})
 
 -- ui
 -- joystick

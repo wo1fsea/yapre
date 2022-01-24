@@ -5,7 +5,7 @@ local yecs = core.yecs
 
 function world_palette:Make()
     local world = yecs.World:New("world_palette")
-    world:AddSystems({"sprite", "input", "tree", "tick", "layout"})
+    world:AddSystemsByKeys({"sprite", "input", "tree", "tick", "layout"})
 
     local palette = yecs.EntityFactory:Make("palette")
     world:AddEntity(palette)
