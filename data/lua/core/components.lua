@@ -382,6 +382,9 @@ yecs.Component:Register("text", {
 
             self.render_height = pos_y
             sprite.sprites = new_sprites
+            self.render_height = self.render_height * size
+            self.render_width = self.render_width * size
+
         end,
         SetMaxSize = function(self, w, h)
             self.max_width = w
