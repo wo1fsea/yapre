@@ -1,3 +1,4 @@
+local yapre = yapre
 local serialization = {}
 local yecs = require("core.yecs")
 local copy = require("copy")
