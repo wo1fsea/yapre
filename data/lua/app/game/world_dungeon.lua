@@ -52,6 +52,12 @@ function world_dungeon:Make()
     world:AddEntity(dot)
     joystick.layout:SetRight(world:GetRoot().layout:GetRight(), -10)
     joystick.layout:SetTop(dot.layout:GetTop(), -10)
+    
+    local dpad = yecs.EntityFactory:Make("dpad", {})
+    world:AddEntity(dpad)
+    dpad.layout:SetLeft(world:GetRoot().layout:GetLeft(), 10)
+    dpad.layout:SetBottom(world:GetRoot().layout:GetBottom(), -10)
+
     return world
 end
 

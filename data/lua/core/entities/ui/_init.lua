@@ -1,4 +1,5 @@
 require("core.entities.ui.button")
+require("core.entities.ui.dpad")
 require("core.entities.ui.image")
 require("core.entities.ui.joystick")
 require("core.entities.ui.label")

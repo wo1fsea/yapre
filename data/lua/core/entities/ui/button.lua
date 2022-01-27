@@ -79,6 +79,21 @@ function button_behavior:SetButtonSize(width, height)
     }
 end
 
+function button_behavior:SetButtonResource(data)
+    if data.normal then
+        local img, i, j = table.unpack(data.normal)
+        self.animation:AddState("normal", "button", img, i, j)
+    end
+    if data.pressed then
+        local img, i, j = table.unpack(data.pressed)
+        self.animation:AddState("pressed", "button", img, i, j)
+    end
+    if data.disabled then
+        local img, i, j = table.unpack(data.disabled)
+        self.animation:AddState("disabled", "button", img, i, j)
+    end
+end
+
 function button_behavior:BindKey(key)
     self.data.button_bind_key = key
 end
