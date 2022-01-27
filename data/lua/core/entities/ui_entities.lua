@@ -411,7 +411,7 @@ yecs.EntityFactory:Register("progress_selector", {"position", "sprite", "tree", 
 local joystick_behavior = {}
 yecs.Behavior:Register("joystick", joystick_behavior)
 function joystick_behavior:OnInit()
-    self.sprite:AddSprite("joystick_head", "./image/ui/joystick32/4.png", {
+    self.sprite:AddSprite("joystick_head", "./image/ui/joystick32/2.png", {
         size = {
             width = 64,
             height = 64
