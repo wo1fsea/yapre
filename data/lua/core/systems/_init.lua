@@ -1,0 +1,5 @@
+require("core.systems.dummy")
+require("core.systems.input")
+require("core.systems.sprite")
+require("core.systems.tick")
+require("core.systems.tree")
