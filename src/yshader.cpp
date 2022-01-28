@@ -1,6 +1,8 @@
 #include "yshader.h"
 
+#include <fstream>
 #include <iostream>
+#include <sstream>
 
 namespace yapre {
 
@@ -9,19 +11,39 @@ Shader &Shader::Use() {
   return *this;
 }
 
-void Shader::Compile(const char *vertexSource, const char *fragmentSource,
-                     const char *geometrySource) {
+void Shader::CompileFile(const std::string &vertexFile,
+                         const std::string &fragmentFile) {
+
+  std::ifstream vertexShaderFile(vertexFile);
+  std::ifstream fragmentShaderFile(fragmentFile);
+
+  std::stringstream vShaderStream, fShaderStream;
+
+  vShaderStream << vertexShaderFile.rdbuf();
+  fShaderStream << fragmentShaderFile.rdbuf();
+
+  vertexShaderFile.close();
+  fragmentShaderFile.close();
+
+  this->CompileSource(vShaderStream.str().c_str(), fShaderStream.str().c_str());
+}
+
+void Shader::CompileSource(const char *vertexSource, const char *fragmentSource,
+                           const char *geometrySource) {
   unsigned int sVertex, sFragment, gShader;
+
   // vertex Shader
   sVertex = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(sVertex, 1, &vertexSource, NULL);
   glCompileShader(sVertex);
   checkCompileErrors(sVertex, "VERTEX");
+
   // fragment Shader
   sFragment = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(sFragment, 1, &fragmentSource, NULL);
   glCompileShader(sFragment);
   checkCompileErrors(sFragment, "FRAGMENT");
+
   // if geometry shader source code is given, also compile geometry shader
   if (geometrySource != nullptr) {
     gShader = glCreateShader(GL_GEOMETRY_SHADER);
@@ -29,6 +51,7 @@ void Shader::Compile(const char *vertexSource, const char *fragmentSource,
     glCompileShader(gShader);
     checkCompileErrors(gShader, "GEOMETRY");
   }
+
   // shader program
   this->ID = glCreateProgram();
   glAttachShader(this->ID, sVertex);
