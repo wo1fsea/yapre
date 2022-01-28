@@ -21,6 +21,7 @@ yecs.Component:Register("text", {
             return self.text
         end,
         Format = function(self)
+            --[[
             local sprite = self.entity.sprite
             if sprite == nil then
                 return
@@ -78,6 +79,7 @@ yecs.Component:Register("text", {
 
             self.render_height = pos_y
             sprite.sprites = new_sprites
+            --]]
         end,
         SetMaxSize = function(self, w, h)
             self.max_width = w

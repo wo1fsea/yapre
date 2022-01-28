@@ -45,7 +45,7 @@ enum DrawType : unsigned char {
 };
 
 using DrawData = std::tuple<unsigned int, DrawType, unsigned int, glm::mat4,
-                            glm::mat4, glm::vec3, std::shared_ptr<float *>>;
+                            glm::mat4, glm::vec3>;
 std::unordered_map<std::string, std::shared_ptr<Texture>> texture_map;
 std::vector<DrawData> draw_list;
 glm::fvec4 clean_color = glm::fvec4(0.2, 0.2, 0.2, 1);
@@ -53,7 +53,6 @@ glm::fvec4 clean_color = glm::fvec4(0.2, 0.2, 0.2, 1);
 const float default_vertices[] = {
     // pos      // tex
     0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-
     0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
 
 Shader *shader_sprite = nullptr;
@@ -75,6 +74,7 @@ std::unordered_map<uint32_t, Character> Characters;
 
 FT_Library ft;
 FT_Face face;
+const int kFontSize = 12;
 
 void PrintGlInfo() {
   std::cout << "OpenGL loaded" << std::endl;
@@ -123,7 +123,7 @@ bool Init() {
   }
 
   // set size to load glyphs as
-  FT_Set_Pixel_Sizes(face, 0, 12);
+  FT_Set_Pixel_Sizes(face, 0, kFontSize);
 
   // disable byte-alignment restriction
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -136,6 +136,9 @@ bool Init() {
                        std::tuple<int, int>, float,
                        std::tuple<float, float, float>)>(
           "DrawSpriteWithImageData", DrawSprite)
+      .Define<void (*)(const std::string &, float, std::tuple<int, int, int>,
+                       std::tuple<int, int>, std::tuple<float, float, float>)>(
+          "DrawText", DrawText)
       .Define("SetClearColor", SetClearColor)
       .Define("SetRenderSize", SetRenderSize)
       .Define("SetKeepAspect", SetKeepAspect);
@@ -274,9 +277,9 @@ void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
   unsigned int draw_id = position.z * 1024 * 1024 + draw_count;
   draw_count++;
 
-  draw_list.emplace_back(
-      std::make_tuple(draw_id, DrawType::sprite, texture->TextureID(), model,
-                      projection, color, std::shared_ptr<float *>(nullptr)));
+  draw_list.emplace_back(std::make_tuple(draw_id, DrawType::sprite,
+                                         texture->TextureID(), model,
+                                         projection, color));
   return;
 }
 
@@ -296,63 +299,67 @@ void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
              glm::vec3(R, G, B));
 }
 
-void DrawText(const std::string &text, float x, float y, float scale,
-              glm::vec3 color) {
-  // iterate through all characters
-  std::string::const_iterator c;
+void DrawText(const std::string &text, float scale, glm::vec3 position,
+              glm::vec2 area, glm::vec3 color) {
 
   char *str = (char *)text.c_str();  // utf-8 string
   char *str_i = str;                 // string iterator
   char *end = str + strlen(str) + 1; // end iterator
 
+  glm::vec3 o_pos(position);
+
   do {
     uint32_t code = utf8::next(str_i, end); // get 32 bit code of a utf-8 symbol
     if (code == 0)
       continue;
+
+    glm::vec3 c_pos(position);
     Character ch = GetCharData(code);
 
-    float xpos = x + ch.Bearing.x * scale;
-    float ypos = y + (GetCharData(0x9F8D).Bearing.y - ch.Bearing.y) * scale;
-    float zpos = 1;
+    c_pos.x = c_pos.x + ch.Bearing.x * scale;
+    c_pos.y = c_pos.y + (GetCharData(0x9F8D).Bearing.y - ch.Bearing.y) * scale;
 
     float w = ch.Size.x * scale;
     float h = ch.Size.y * scale;
 
-    // update VBO for each character
-    auto vertices = std::make_shared<float *>(new float[24]{
-        xpos,     ypos + h, 0.0f, 0.0f, xpos,     ypos,     0.0f, 1.0f,
-        xpos + w, ypos,     1.0f, 1.0f, xpos,     ypos + h, 0.0f, 0.0f,
-        xpos + w, ypos,     1.0f, 1.0f, xpos + w, ypos + h, 1.0f, 0.0f});
-
-    x += (ch.Advance >> 6) *
-         scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount
-                // of 1/64th pixels by 64 to get amount of pixels))
-
-    glm::vec3 position(xpos, ypos, zpos);
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, position);
-    model = glm::translate(
-        model, glm::vec3(0.5f * w, 0.5f * h,
-                         0.0f)); // move origin of rotation to center of quad
-    model = glm::rotate(model, glm::radians(0.f),
-                        glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
-    model = glm::translate(model, glm::vec3(-0.5f * w, -0.5f * h,
-                                            0.0f)); // move origin back
-
+    model = glm::translate(model, c_pos);
     model = glm::scale(model, glm::vec3(w, h,
                                         1.0f)); // last scale
 
     auto [rw, rh] = GetRealRenderSize();
     glm::mat4 projection =
         glm::ortho(0.0f, 1.f * rw, 1.f * rh, 0.0f, -kMaxZ, kMaxZ);
-    unsigned int draw_id = position.z * 1024 * 1024 + draw_count;
+    unsigned int draw_id = c_pos.z * 1024 * 1024 + draw_count;
     draw_count++;
 
-    draw_list.emplace_back(
-        std::make_tuple(draw_id, DrawType::text, ch.TextureID, model,
-                        projection, color, std::shared_ptr<float *>(nullptr)));
+    draw_list.emplace_back(std::make_tuple(
+        draw_id, DrawType::text, ch.TextureID, model, projection, color));
+
+    position.x += (ch.Advance >> 6) * scale; 
+    // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount
+    // of 1/64th pixels by 64 to get amount of pixels))
+
+    if (area.x > 0 && position.x > o_pos.x + area.x) {
+      position.x = o_pos.x;
+      position.y += kFontSize * scale;
+    }
+
+    if (area.y > 0 && position.y > o_pos.y + area.y) {
+      break;
+    }
 
   } while (str_i < end);
+}
+
+void DrawText(const std::string &text, float scale,
+              std::tuple<int, int, int> position, std::tuple<int, int> area,
+              std::tuple<float, float, float> color) {
+  auto [x, y, z] = position;
+  auto [width, height] = area;
+  auto [R, G, B] = color;
+  DrawText(text, scale, glm::vec3(x, y, z), glm::vec2(width, height),
+           glm::vec3(R, G, B));
 }
 
 void DrawAll() {
@@ -367,17 +374,14 @@ void DrawAll() {
               return std::get<0>(a) < std::get<0>(b);
             });
 
-  for (auto [draw_id, draw_type, texture_id, model, projection, color,
-             vertices] : draw_list) {
+  for (auto [draw_id, draw_type, texture_id, model, projection, color] :
+       draw_list) {
     if (draw_type == DrawType::sprite) {
       shader_sprite->Use();
       shader_sprite->SetInteger("sprite", 0);
       shader_sprite->SetMatrix4("projection", projection);
       shader_sprite->SetMatrix4("model", model);
       shader_sprite->SetVector3f("spriteColor", color);
-      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(default_vertices),
-                      default_vertices);
-
       glBindTexture(GL_TEXTURE_2D, texture_id);
       glDrawArrays(GL_TRIANGLES, 0, 6);
     } else if (draw_type == DrawType::text) {
@@ -386,9 +390,6 @@ void DrawAll() {
       shader_sprite->SetMatrix4("projection", projection);
       shader_sprite->SetMatrix4("model", model);
       shader_sprite->SetVector3f("spriteColor", color);
-      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(default_vertices),
-                      default_vertices);
-
       glBindTexture(GL_TEXTURE_2D, texture_id);
       glDrawArrays(GL_TRIANGLES, 0, 6);
     }
@@ -423,7 +424,6 @@ void RefreshViewport() {
 }
 
 void Update(int delta_ms) {
-  DrawText("abcdefghijklmn", 0, 0, 1, glm::vec3(1, 1, 1));
   auto [w, h] = window::GetDrawableSize();
   lua::GStateModule("yapre")
       .Define("drawable_width", w)

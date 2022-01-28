@@ -6,6 +6,7 @@ local sprite_system = {}
 sprite_system.update_order = 2048
 sprite_system.update_when_paused = true
 function sprite_system:Update(delta_ms)
+    self:DrawText(delta_ms)
     local tree_system = self.world.systems["tree"]
     local sprite_entities = self.world:GetEntitiesWithComponent("sprite")
 
@@ -29,4 +30,26 @@ function sprite_system:Update(delta_ms)
         end
     end
 end
+
+function sprite_system:DrawText(delta_ms)
+    local tree_system = self.world.systems["tree"]
+    local text_entities = self.world:GetEntitiesWithComponent("text")
+
+    for _, entity in pairs(text_entities) do
+        local position = entity.position
+        if tree_system then
+            position = tree_system:GetGlobalPosition(entity)
+        end
+        position = position or {
+            x = 0,
+            y = 0,
+            z = 0
+        }
+
+        yapre.DrawText(entity.text.text, entity.text.size, {position.x, position.y, position.z},
+                {entity.text.max_width, entity.text.max_height}, {1,1,1})
+    end
+end
+
+
 yecs.System:Register("sprite", sprite_system)
