@@ -37,6 +37,12 @@ add_subdirectory(${LUA_DIR})
 set(CPP_LONENOISE_DIR "external/cpp-linenoise")
 add_subdirectory(${CPP_LONENOISE_DIR})
 
+set(FREETYPE_DIR "external/freetype")
+add_subdirectory(${FREETYPE_DIR})
+
+set(UTFCPP_DIR "external/utfcpp")
+add_subdirectory(${UTFCPP_DIR})
+
 # set(DEBUGGER_LUA "external/debugger_lua")
 # add_subdirectory(${DEBUGGER_LUA})
 
@@ -56,7 +62,9 @@ include_directories(
     ${STB_IMAGE_DIR}/include
     ${LUA_DIR}/src
     ${CPP_LONENOISE_DIR}
-    ${DEBUGGER_LUA}/include
+    ${FREETYPE_DIR}/include
+    ${UTFCPP_DIR}/source
+    # ${DEBUGGER_LUA}/include
     )
 
 file(GLOB PROJECT_INCLUDE 
@@ -108,6 +116,7 @@ if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
         glm_static
         std_image
         lua
+        freetype
         # debugger_lua
         # assimp 
         )
@@ -120,6 +129,7 @@ else()
         glm_static
         std_image
         lua
+        freetype
         # debugger_lua
         # assimp 
         )
