@@ -7,7 +7,8 @@
 #include "stb_image.h"
 #include "stb_image_resize.h"
 
-#include <ft2build.h>
+#include "ft2build.h"
+#include "utf8.h"
 #include FT_FREETYPE_H
 
 #include "yluabind.hpp"
@@ -70,7 +71,10 @@ struct Character {
   unsigned int Advance;   // Horizontal offset to advance to next glyph
 };
 
-std::unordered_map<GLchar, Character> Characters;
+std::unordered_map<uint32_t, Character> Characters;
+
+FT_Library ft;
+FT_Face face;
 
 void PrintGlInfo() {
   std::cout << "OpenGL loaded" << std::endl;
@@ -105,7 +109,6 @@ bool Init() {
 
   // FreeType
   // --------
-  FT_Library ft;
   // All functions return a value different than 0 whenever an error occurred
   if (FT_Init_FreeType(&ft)) {
     std::cout << "ERROR::FREETYPE: Could not init FreeType Library"
@@ -114,7 +117,6 @@ bool Init() {
   }
 
   // load font as face
-  FT_Face face;
   if (FT_New_Face(ft, "./font/zpix.ttf", 0, &face)) {
     std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
     return -1;
@@ -125,34 +127,6 @@ bool Init() {
 
   // disable byte-alignment restriction
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-  // load first 128 characters of ASCII set
-  for (unsigned char c = 0; c < 128; c++) {
-    // Load character glyph
-    if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-      std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-      continue;
-    }
-    // generate texture
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width,
-                 face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE,
-                 face->glyph->bitmap.buffer);
-    // set texture options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    // now store character for later use
-    Character character = {
-        texture,
-        glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-        glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-        static_cast<unsigned int>(face->glyph->advance.x)};
-    Characters.insert(std::pair<char, Character>(c, character));
-  }
 
   lua::GStateModule("yapre")
       .Define<void (*)(
@@ -174,6 +148,37 @@ bool Init() {
 }
 
 void Deinit() { delete shader_sprite; }
+
+Character GetCharData(uint32_t c) {
+  if (Characters.find(c) != Characters.end()) {
+    return Characters[c];
+  }
+
+  // load first 128 characters of ASCII set
+  // Load character glyph
+  if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+    std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+  }
+  // generate texture
+  unsigned int texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width,
+               face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE,
+               face->glyph->bitmap.buffer);
+  // set texture options
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  // now store character for later use
+  Character character = {
+      texture, glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+      glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+      static_cast<unsigned int>(face->glyph->advance.x)};
+  Characters.insert(std::pair<char, Character>(c, character));
+  return character;
+}
 
 std::tuple<int, int> GetPreferRenderSize() {
   return std::make_tuple(render_width, render_height);
@@ -295,11 +300,19 @@ void DrawText(const std::string &text, float x, float y, float scale,
               glm::vec3 color) {
   // iterate through all characters
   std::string::const_iterator c;
-  for (c = text.begin(); c != text.end(); c++) {
-    Character ch = Characters[*c];
+
+  char *str = (char *)text.c_str();  // utf-8 string
+  char *str_i = str;                 // string iterator
+  char *end = str + strlen(str) + 1; // end iterator
+
+  do {
+    uint32_t code = utf8::next(str_i, end); // get 32 bit code of a utf-8 symbol
+    if (code == 0)
+      continue;
+    Character ch = GetCharData(code);
 
     float xpos = x + ch.Bearing.x * scale;
-    float ypos = y + (Characters['H'].Bearing.y - ch.Bearing.y) * scale;
+    float ypos = y + (GetCharData(0x9F8D).Bearing.y - ch.Bearing.y) * scale;
     float zpos = 1;
 
     float w = ch.Size.x * scale;
@@ -314,20 +327,20 @@ void DrawText(const std::string &text, float x, float y, float scale,
     x += (ch.Advance >> 6) *
          scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount
                 // of 1/64th pixels by 64 to get amount of pixels))
-    
+
     glm::vec3 position(xpos, ypos, zpos);
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, position);
-    model = glm::translate(model, glm::vec3(0.5f * w, 0.5f * h,
-            0.0f)); // move origin of rotation to center of quad
+    model = glm::translate(
+        model, glm::vec3(0.5f * w, 0.5f * h,
+                         0.0f)); // move origin of rotation to center of quad
     model = glm::rotate(model, glm::radians(0.f),
-        glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
+                        glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
     model = glm::translate(model, glm::vec3(-0.5f * w, -0.5f * h,
-        0.0f)); // move origin back
+                                            0.0f)); // move origin back
 
-    model = glm::scale(model, glm::vec3(w,
-        h,
-        1.0f)); // last scale
+    model = glm::scale(model, glm::vec3(w, h,
+                                        1.0f)); // last scale
 
     auto [rw, rh] = GetRealRenderSize();
     glm::mat4 projection =
@@ -337,8 +350,9 @@ void DrawText(const std::string &text, float x, float y, float scale,
 
     draw_list.emplace_back(
         std::make_tuple(draw_id, DrawType::text, ch.TextureID, model,
-            projection, color, std::shared_ptr<float*>(nullptr)));
-  }
+                        projection, color, std::shared_ptr<float *>(nullptr)));
+
+  } while (str_i < end);
 }
 
 void DrawAll() {
@@ -373,11 +387,10 @@ void DrawAll() {
       shader_sprite->SetMatrix4("model", model);
       shader_sprite->SetVector3f("spriteColor", color);
       glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(default_vertices),
-          default_vertices);
+                      default_vertices);
 
       glBindTexture(GL_TEXTURE_2D, texture_id);
       glDrawArrays(GL_TRIANGLES, 0, 6);
-      std::cout << "FF" << std::endl;
     }
   }
 
@@ -410,7 +423,7 @@ void RefreshViewport() {
 }
 
 void Update(int delta_ms) {
-  DrawText("äÆabcdefghijklmn", 10, 2, 1, glm::vec3(1, 1, 1));
+  DrawText("abcdefghijklmn", 0, 0, 1, glm::vec3(1, 1, 1));
   auto [w, h] = window::GetDrawableSize();
   lua::GStateModule("yapre")
       .Define("drawable_width", w)

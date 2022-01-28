@@ -40,6 +40,9 @@ add_subdirectory(${CPP_LONENOISE_DIR})
 set(FREETYPE_DIR "external/freetype")
 add_subdirectory(${FREETYPE_DIR})
 
+set(UTFCPP_DIR "external/utfcpp")
+add_subdirectory(${UTFCPP_DIR})
+
 # set(DEBUGGER_LUA "external/debugger_lua")
 # add_subdirectory(${DEBUGGER_LUA})
 
@@ -60,6 +63,7 @@ include_directories(
     ${LUA_DIR}/src
     ${CPP_LONENOISE_DIR}
     ${FREETYPE_DIR}/include
+    ${UTFCPP_DIR}/source
     # ${DEBUGGER_LUA}/include
     )
 
