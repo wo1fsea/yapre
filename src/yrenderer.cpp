@@ -1,16 +1,9 @@
 #include "yrenderer.h"
 
 #include "glad/glad.h"
-#include "glm/fwd.hpp"
 #include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "stb_image.h"
-#include "stb_image_resize.h"
 
-#include "ft2build.h"
-#include "utf8.h"
-#include FT_FREETYPE_H
-
+#include "yfont.h"
 #include "yluabind.hpp"
 #include "yshader.h"
 #include "ytexture.h"
@@ -63,18 +56,6 @@ int viewport_w = render_width;
 int viewport_h = render_height;
 
 /// Holds all state information relevant to a character as loaded using FreeType
-struct Character {
-  unsigned int TextureID; // ID handle of the glyph texture
-  glm::ivec2 Size;        // Size of glyph
-  glm::ivec2 Bearing;     // Offset from baseline to left/top of glyph
-  unsigned int Advance;   // Horizontal offset to advance to next glyph
-};
-
-std::unordered_map<uint32_t, Character> Characters;
-
-FT_Library ft;
-FT_Face face;
-const int kFontSize = 12;
 
 void PrintGlInfo() {
   std::cout << "OpenGL loaded" << std::endl;
@@ -84,6 +65,9 @@ void PrintGlInfo() {
 }
 
 bool Init() {
+  if (!font::Init()) {
+    return false;
+  }
 
   gladLoadGLLoader(SDL_GL_GetProcAddress);
   PrintGlInfo();
@@ -106,24 +90,6 @@ bool Init() {
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glDisableVertexAttribArray(0);
-
-  // FreeType
-  // --------
-  // All functions return a value different than 0 whenever an error occurred
-  if (FT_Init_FreeType(&ft)) {
-    std::cout << "ERROR::FREETYPE: Could not init FreeType Library"
-              << std::endl;
-    return false;
-  }
-
-  // load font as face
-  if (FT_New_Face(ft, "./font/zpix.ttf", 0, &face)) {
-    std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
-    return -1;
-  }
-
-  // set size to load glyphs as
-  FT_Set_Pixel_Sizes(face, 0, kFontSize);
 
   // disable byte-alignment restriction
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -151,37 +117,6 @@ bool Init() {
 }
 
 void Deinit() { delete shader_sprite; }
-
-Character GetCharData(uint32_t c) {
-  if (Characters.find(c) != Characters.end()) {
-    return Characters[c];
-  }
-
-  // load first 128 characters of ASCII set
-  // Load character glyph
-  if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-    std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-  }
-  // generate texture
-  unsigned int texture;
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width,
-               face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE,
-               face->glyph->bitmap.buffer);
-  // set texture options
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  // now store character for later use
-  Character character = {
-      texture, glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-      glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-      static_cast<unsigned int>(face->glyph->advance.x)};
-  Characters.insert(std::pair<char, Character>(c, character));
-  return character;
-}
 
 std::tuple<int, int> GetPreferRenderSize() {
   return std::make_tuple(render_width, render_height);
@@ -314,10 +249,11 @@ void DrawText(const std::string &text, float scale, glm::vec3 position,
       continue;
 
     glm::vec3 c_pos(position);
-    Character ch = GetCharData(code);
+    font::CharData ch = font::GetCharData(code);
 
     c_pos.x = c_pos.x + ch.Bearing.x * scale;
-    c_pos.y = c_pos.y + (GetCharData(0x9F8D).Bearing.y - ch.Bearing.y) * scale;
+    c_pos.y =
+        c_pos.y + (font::GetCharData(0x9F8D).Bearing.y - ch.Bearing.y) * scale;
 
     float w = ch.Size.x * scale;
     float h = ch.Size.y * scale;
@@ -336,13 +272,13 @@ void DrawText(const std::string &text, float scale, glm::vec3 position,
     draw_list.emplace_back(std::make_tuple(
         draw_id, DrawType::text, ch.TextureID, model, projection, color));
 
-    position.x += (ch.Advance >> 6) * scale; 
+    position.x += (ch.Advance >> 6) * scale;
     // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount
     // of 1/64th pixels by 64 to get amount of pixels))
 
     if (area.x > 0 && position.x > o_pos.x + area.x) {
       position.x = o_pos.x;
-      position.y += kFontSize * scale;
+      position.y += font::kFontSize * scale;
     }
 
     if (area.y > 0 && position.y > o_pos.y + area.y) {
