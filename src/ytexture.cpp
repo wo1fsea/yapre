@@ -1,5 +1,8 @@
 #include "ytexture.h"
+
 #include "stb_image.h"
+
+#include <cassert>
 
 namespace yapre {
 
