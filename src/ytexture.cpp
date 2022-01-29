@@ -55,6 +55,10 @@ Texture::Texture(unsigned int width_, unsigned int height_)
   data_ptr = std::shared_ptr<unsigned char[]>(
       new unsigned char[real_size * real_size * channel]);
 
+  for (int i = 0; i < real_size * real_size * channel; i++) {
+    data_ptr[i] = 0;
+  }
+
   glGenTextures(1, &texture_id);
 }
 

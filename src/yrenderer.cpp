@@ -32,13 +32,8 @@ bool keep_aspect = true;
 unsigned int VBO = 0;
 unsigned int draw_count = 0;
 
-enum DrawType : unsigned char {
-  sprite = 0,
-  text,
-};
-
-using DrawData = std::tuple<unsigned int, DrawType, unsigned int, glm::mat4,
-                            glm::mat4, glm::vec3>;
+using DrawData =
+    std::tuple<unsigned int, unsigned int, glm::mat4, glm::mat4, glm::vec3>;
 std::unordered_map<std::string, std::shared_ptr<Texture>> texture_map;
 std::vector<DrawData> draw_list;
 glm::fvec4 clean_color = glm::fvec4(0.2, 0.2, 0.2, 1);
@@ -65,10 +60,6 @@ void PrintGlInfo() {
 }
 
 bool Init() {
-  if (!font::Init()) {
-    return false;
-  }
-
   gladLoadGLLoader(SDL_GL_GetProcAddress);
   PrintGlInfo();
   // glEnable(GL_DEPTH_TEST);
@@ -92,7 +83,7 @@ bool Init() {
   glDisableVertexAttribArray(0);
 
   // disable byte-alignment restriction
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
   lua::GStateModule("yapre")
       .Define<void (*)(
@@ -212,9 +203,8 @@ void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
   unsigned int draw_id = position.z * 1024 * 1024 + draw_count;
   draw_count++;
 
-  draw_list.emplace_back(std::make_tuple(draw_id, DrawType::sprite,
-                                         texture->TextureID(), model,
-                                         projection, color));
+  draw_list.emplace_back(
+      std::make_tuple(draw_id, texture->TextureID(), model, projection, color));
   return;
 }
 
@@ -248,33 +238,47 @@ void DrawText(const std::string &text, float scale, glm::vec3 position,
     if (code == 0)
       continue;
 
+    if (code == '\n') {
+      position.x = o_pos.x;
+      position.y += font::kFontSize * scale;
+      if (area.y > 0 && position.y > o_pos.y + area.y) {
+        break;
+      }
+      continue;
+    }
+
     glm::vec3 c_pos(position);
-    font::CharData ch = font::GetCharData(code);
+    auto char_data = font::GetCharData(code);
+    char_data->texture->UpdateData();
 
-    c_pos.x = c_pos.x + ch.Bearing.x * scale;
+    c_pos.x = c_pos.x + char_data->bearing_x * scale;
     c_pos.y =
-        c_pos.y + (font::GetCharData(0x9F8D).Bearing.y - ch.Bearing.y) * scale;
+        c_pos.y +
+        (font::GetCharData(0x9F8D)->bearing_y - char_data->bearing_y) * scale;
 
-    float w = ch.Size.x * scale;
-    float h = ch.Size.y * scale;
+    float w = char_data->width * scale;
+    float h = char_data->height * scale;
+
+    int real_size = char_data->texture->RealSize();
 
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, c_pos);
-    model = glm::scale(model, glm::vec3(w, h,
-                                        1.0f)); // last scale
+    model = glm::translate(model, c_pos); // move origin back
+
+    model = glm::scale(model,
+                       glm::vec3(real_size * w / char_data->texture->Width(),
+                                 real_size * h / char_data->texture->Height(),
+                                 1.0f)); // last scale
 
     auto [rw, rh] = GetRealRenderSize();
     glm::mat4 projection =
         glm::ortho(0.0f, 1.f * rw, 1.f * rh, 0.0f, -kMaxZ, kMaxZ);
-    unsigned int draw_id = c_pos.z * 1024 * 1024 + draw_count;
+    unsigned int draw_id = position.z * 1024 * 1024 + draw_count;
     draw_count++;
 
     draw_list.emplace_back(std::make_tuple(
-        draw_id, DrawType::text, ch.TextureID, model, projection, color));
+        draw_id, char_data->texture->TextureID(), model, projection, color));
 
-    position.x += (ch.Advance >> 6) * scale;
-    // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount
-    // of 1/64th pixels by 64 to get amount of pixels))
+    position.x += char_data->advance * scale;
 
     if (area.x > 0 && position.x > o_pos.x + area.x) {
       position.x = o_pos.x;
@@ -310,25 +314,14 @@ void DrawAll() {
               return std::get<0>(a) < std::get<0>(b);
             });
 
-  for (auto [draw_id, draw_type, texture_id, model, projection, color] :
-       draw_list) {
-    if (draw_type == DrawType::sprite) {
-      shader_sprite->Use();
-      shader_sprite->SetInteger("sprite", 0);
-      shader_sprite->SetMatrix4("projection", projection);
-      shader_sprite->SetMatrix4("model", model);
-      shader_sprite->SetVector3f("spriteColor", color);
-      glBindTexture(GL_TEXTURE_2D, texture_id);
-      glDrawArrays(GL_TRIANGLES, 0, 6);
-    } else if (draw_type == DrawType::text) {
-      shader_text->Use();
-      shader_sprite->SetInteger("sprite", 0);
-      shader_sprite->SetMatrix4("projection", projection);
-      shader_sprite->SetMatrix4("model", model);
-      shader_sprite->SetVector3f("spriteColor", color);
-      glBindTexture(GL_TEXTURE_2D, texture_id);
-      glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
+  for (auto [draw_id, texture_id, model, projection, color] : draw_list) {
+    shader_sprite->Use();
+    shader_sprite->SetInteger("sprite", 0);
+    shader_sprite->SetMatrix4("projection", projection);
+    shader_sprite->SetMatrix4("model", model);
+    shader_sprite->SetVector3f("spriteColor", color);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
   }
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
