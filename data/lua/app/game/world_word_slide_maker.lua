@@ -33,6 +33,7 @@ function world_word_slide:Make()
     local rs = words:GetRenderSize()
     words.size.width = rs.width
     words.size.height = rs.height
+    words.position.z = 10
 
     words.layout:SetCenterX(canvas.layout:GetCenterX(), 0)
     words.layout:SetCenterY(canvas.layout:GetCenterY(), 0)
