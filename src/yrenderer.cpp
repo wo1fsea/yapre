@@ -302,12 +302,12 @@ void DrawText(const std::string &text, float scale,
 std::tuple<int, int> CalculateTextRenderSize(const std::string &text,
                                              float scale,
                                              std::tuple<int, int> area) {
+
+  auto [aw, ah] = area;
   int render_width = 0;
   int render_height = 0;
   int pos_x = 0;
   int pos_y = 0;
-
-  auto [aw, ah] = area;
 
   char *str = (char *)text.c_str();  // utf-8 string
   char *str_i = str;                 // string iterator
@@ -339,7 +339,7 @@ std::tuple<int, int> CalculateTextRenderSize(const std::string &text,
       break;
     }
 
-    render_width = pos_x > aw ? pos_x : aw;
+    render_width = pos_x > render_width ? pos_x : render_width;
     render_height = pos_y + font::kFontSize * scale;
   } while (str_i < end);
 
