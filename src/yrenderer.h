@@ -37,6 +37,8 @@ void DrawText(const std::string &text, float scale = 1.0f,
               std::tuple<int, int, int> position = {0, 0, 0},
               std::tuple<int, int> area = {-1, -1},
               std::tuple<float, float, float> color = {1.0f, 1.0f, 1.0f});
+std::tuple<int, int> CalculateTextRenderSize(const std::string &, float,
+                                             std::tuple<int, int>);
 void SetClearColor(float R, float G, float B, float A);
 void SetKeepAspect(bool keey_aspect_);
 void ResetWindowSize();

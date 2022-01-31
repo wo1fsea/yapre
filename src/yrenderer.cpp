@@ -69,9 +69,6 @@ bool Init() {
   shader_sprite = new Shader();
   shader_sprite->CompileFile("./shader/sprite.vs", "./shader/sprite.fs");
 
-  shader_text = new Shader();
-  shader_text->CompileFile("./shader/text.vs", "./shader/text.fs");
-
   glGenBuffers(1, &VBO);
 
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -81,9 +78,6 @@ bool Init() {
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glDisableVertexAttribArray(0);
-
-  // disable byte-alignment restriction
-  // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
   lua::GStateModule("yapre")
       .Define<void (*)(
@@ -96,6 +90,9 @@ bool Init() {
       .Define<void (*)(const std::string &, float, std::tuple<int, int, int>,
                        std::tuple<int, int>, std::tuple<float, float, float>)>(
           "DrawText", DrawText)
+      .Define<std::tuple<int, int> (*)(const std::string &, float,
+                                       std::tuple<int, int>)>(
+          "CalculateTextRenderSize", CalculateTextRenderSize)
       .Define("SetClearColor", SetClearColor)
       .Define("SetRenderSize", SetRenderSize)
       .Define("SetKeepAspect", SetKeepAspect);
@@ -300,6 +297,53 @@ void DrawText(const std::string &text, float scale,
   auto [R, G, B] = color;
   DrawText(text, scale, glm::vec3(x, y, z), glm::vec2(width, height),
            glm::vec3(R, G, B));
+}
+
+std::tuple<int, int> CalculateTextRenderSize(const std::string &text,
+                                             float scale,
+                                             std::tuple<int, int> area) {
+  int render_width = 0;
+  int render_height = 0;
+  int pos_x = 0;
+  int pos_y = 0;
+
+  auto [aw, ah] = area;
+
+  char *str = (char *)text.c_str();  // utf-8 string
+  char *str_i = str;                 // string iterator
+  char *end = str + strlen(str) + 1; // end iterator
+
+  do {
+    uint32_t code = utf8::next(str_i, end); // get 32 bit code of a utf-8 symbol
+    if (code == 0)
+      continue;
+
+    if (code == '\n') {
+      pos_x = 0;
+      pos_y += font::kFontSize * scale;
+      if (ah > 0 && pos_y > ah) {
+        break;
+      }
+      continue;
+    }
+
+    auto char_data = font::GetCharData(code);
+    pos_x += char_data->advance * scale;
+
+    if (aw > 0 && pos_x > aw) {
+      pos_x = 0;
+      pos_y += font::kFontSize * scale;
+    }
+
+    if (ah > 0 && pos_y > ah) {
+      break;
+    }
+
+    render_width = pos_x > aw ? pos_x : aw;
+    render_height = pos_y + font::kFontSize * scale;
+  } while (str_i < end);
+
+  return std::make_tuple(render_width, render_height);
 }
 
 void DrawAll() {
