@@ -18,9 +18,9 @@ function game:Init()
     self.worlds = {}
     self.rewind_controller = rewind_controller:Make(self.worlds)
 
-    self.worlds_to_show = {world_word_slide_maker:Make("FFF", 5),world_dungeon, world_label, world_mario_music, world_image, world_flappy_duck}
+    self.worlds_to_show = {world_dungeon, world_label, world_mario_music, world_image, world_flappy_duck}
     -- self.worlds_to_show = {world_label, world_mario_music, world_image, world_flappy_duck}
-
+    --[[
     self.worlds_to_show = {
         world_word_slide_maker:Make("Game &&\nHomebrew Pixel Game\n", 3),
         world_word_slide_maker:Make("1.IDEA\n", 3),
@@ -50,6 +50,7 @@ function game:Init()
         world_word_slide_maker:Make("many thinks\n", 2),
         -- world_label,
     }
+    --]]
     
     self.worlds["world_slides"] = world_slides:Make()
     self.worlds[self.cur_world_idx] = self.worlds_to_show[self.cur_world_idx]:Make()
