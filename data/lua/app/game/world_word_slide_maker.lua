@@ -25,16 +25,17 @@ function world_word_slide:Make()
     canvas.layout:SetCenterY(world:GetRoot().layout:GetCenterY(), 0)
 
     local words = yecs.EntityFactory:Make("label")
+    canvas.tree:AddChild(words)
+    
+    words:SetFontSize(self.font_size)
     words:SetText(self.words)
 
     local rs = words:GetRenderSize()
-    words.position = {
-        x = panel_width / 2 - rs.width / 2,
-        y = panel_height / 2 + rs.height,
-        z = 1
-    }
+    words.size.width = rs.width
+    words.size.height = rs.height
 
-    canvas.tree:AddChild(words)
+    words.layout:SetCenterX(canvas.layout:GetCenterX(), 0)
+    words.layout:SetCenterY(canvas.layout:GetCenterY(), 0)
 
     return world
 end
