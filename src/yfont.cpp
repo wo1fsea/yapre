@@ -1,4 +1,5 @@
 #include "yfont.h"
+#include "ytexture.h"
 
 #include "ft2build.h"
 #include "glad/glad.h"
@@ -6,6 +7,7 @@
 #include "utf8.h"
 
 #include <iostream>
+#include <memory>
 #include <unordered_map>
 
 #include FT_FREETYPE_H
@@ -14,7 +16,7 @@ namespace font {
 
 FT_Library ft;
 FT_Face face;
-std::unordered_map<uint32_t, CharData> char_data_map;
+std::unordered_map<uint32_t, std::shared_ptr<CharData>> char_data_map;
 
 bool Init() {
   // FreeType
@@ -37,7 +39,13 @@ bool Init() {
   return true;
 }
 
-CharData GetCharData(uint32_t c) {
+std::shared_ptr<CharData> GetCharData(uint32_t c) {
+  static bool inited = false;
+  if (!inited) {
+    Init();
+    inited = true;
+  }
+
   if (char_data_map.find(c) != char_data_map.end()) {
     return char_data_map[c];
   }
@@ -47,26 +55,26 @@ CharData GetCharData(uint32_t c) {
   if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
     std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
   }
-  // generate texture
-  unsigned int texture;
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width,
-               face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE,
-               face->glyph->bitmap.buffer);
-  // set texture options
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  // now store character for later use
-  CharData character = {
-      texture, glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-      glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-      static_cast<unsigned int>(face->glyph->advance.x)};
-      
-  char_data_map.insert(std::pair<uint32_t, CharData>(c, character));
-  return character;
+
+  int w = face->glyph->bitmap.width;
+  int h = face->glyph->bitmap.rows;
+  int l = face->glyph->bitmap_left;
+  int t = face->glyph->bitmap_top;
+  int a = static_cast<unsigned int>(face->glyph->advance.x) >> 6;
+
+  unsigned char *buffer = face->glyph->bitmap.buffer;
+
+  auto char_texture = std::make_shared<Texture>(w, h);
+
+  for (int x = 0; x < w; ++x) {
+    for (int y = 0; y < h; ++y) {
+      char_texture->SetPixel(x, y, 255, 255, 255, buffer[x + w * y]);
+    }
+  }
+
+  char_data_map.emplace(
+      c, std::shared_ptr<CharData>(new CharData{char_texture, w, h, l, t, a}));
+  return char_data_map[c];
 }
 
 }; // namespace font

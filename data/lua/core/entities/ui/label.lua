@@ -16,4 +16,4 @@ function label_behavior:GetRenderSize()
     return self.text:GetRenderSize()
 end
 
-yecs.EntityFactory:Register("label", {"position", "sprite", "tree", "size", "text", "layout"}, {"label"})
+yecs.EntityFactory:Register("label", {"position", "tree", "size", "text", "layout"}, {"label"})
