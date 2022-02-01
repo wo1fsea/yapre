@@ -69,8 +69,11 @@ void Update() {
   auto now = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = now - last_time;
   int delta_ms = elapsed_seconds.count() * 1000;
-  last_time = now;
+  if (delta_ms < kMinUpdateDeltaMs) {
+    return;
+  }
 
+  last_time = now;
   for (void (*fptr)(int) : kUpdateFPtrs) {
     fptr(delta_ms);
   }

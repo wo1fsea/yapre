@@ -10,20 +10,22 @@
 #include "ytimer.h"
 
 namespace yapre {
-constexpr int kMaxSubsysmtemNum = 6;
+constexpr int kSubsysmtemNum = 6;
+constexpr int kMinUpdateDeltaMs = 30;
+
 using InitFPtr = bool (*)(void);
 using DeinitFPtr = void (*)(void);
 using UpdateFPtr = void (*)(int);
 
-constexpr std::array<InitFPtr, kMaxSubsysmtemNum> kInitFPtrs{
+constexpr std::array<InitFPtr, kSubsysmtemNum> kInitFPtrs{
     &repl::Init,     &timer::Init, &audio::Init,
     &renderer::Init, &input::Init, &lua::Init};
 
-constexpr std::array<DeinitFPtr, kMaxSubsysmtemNum> kDeinitFPtrs{
+constexpr std::array<DeinitFPtr, kSubsysmtemNum> kDeinitFPtrs{
     &input::Deinit, &renderer::Deinit, &audio::Deinit,
     &timer::Deinit, &lua::Deinit,      &repl::Deinit};
 
-constexpr std::array<UpdateFPtr, kMaxSubsysmtemNum> kUpdateFPtrs{
+constexpr std::array<UpdateFPtr, kSubsysmtemNum> kUpdateFPtrs{
     &input::Update, &timer::Update,    &lua::Update,
     &audio::Update, &renderer::Update, &repl::Update};
 
