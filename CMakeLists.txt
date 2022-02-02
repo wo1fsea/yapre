@@ -43,6 +43,8 @@ add_subdirectory(${FREETYPE_DIR})
 set(UTFCPP_DIR "external/utfcpp")
 add_subdirectory(${UTFCPP_DIR})
 
+set(ASIO_DIR "external/asio")
+
 # set(DEBUGGER_LUA "external/debugger_lua")
 # add_subdirectory(${DEBUGGER_LUA})
 
@@ -64,6 +66,7 @@ include_directories(
     ${CPP_LONENOISE_DIR}
     ${FREETYPE_DIR}/include
     ${UTFCPP_DIR}/source
+    ${ASIO_DIR}/asio/include
     # ${DEBUGGER_LUA}/include
     )
 
