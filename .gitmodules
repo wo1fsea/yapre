@@ -19,3 +19,6 @@
 [submodule "external/utfcpp"]
 	path = external/utfcpp
 	url = git@github.com:nemtrif/utfcpp.git
+[submodule "external/asio"]
+	path = external/asio
+	url = git@github.com:chriskohlhoff/asio.git
