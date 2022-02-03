@@ -11,7 +11,7 @@ enum ScheduleTag : unsigned int { MainTag = 0, WorkerTag, NUM_TAGS };
 
 void Init();
 void Deinit();
-void Update(int delta_ms);
+void Update();
 void Post(ScheduleTag tag, Function function);
 void Dispatch(ScheduleTag tag, Function function);
 void Defer(ScheduleTag tag, Function function);
@@ -29,5 +29,8 @@ void DispatchOnWorker(Function function);
 void DeferOnWorker(Function function);
 void WaitOnWorker(Function function,
                   std::chrono::steady_clock::duration duration);
+
+void SetupUpdateFunctionOnWorker(Function function,
+                                 std::chrono::steady_clock::duration duration);
 }; // namespace scheduler
 }; // namespace yapre

@@ -36,8 +36,24 @@ const std::string platform = "emscripten";
 const std::string platform = "unknown";
 #endif
 
+void _Update() {
+  auto now = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed_seconds = now - last_time;
+  int delta_ms = elapsed_seconds.count() * 1000;
+  if (delta_ms < kMinUpdateDeltaMs) {
+    return;
+  }
+
+  last_time = now;
+  for (void (*fptr)(int) : kUpdateFPtrs) {
+    fptr(delta_ms);
+  }
+}
+
 bool Init() {
   scheduler::Init();
+  scheduler::SetupUpdateFunctionOnWorker(_Update,
+                                         std::chrono::milliseconds(10));
 
 // setup data path
 #ifdef YAPRE_ANDROID
@@ -67,20 +83,7 @@ void Deinit() {
   }
 }
 
-void Update() {
-  auto now = std::chrono::system_clock::now();
-  std::chrono::duration<double> elapsed_seconds = now - last_time;
-  int delta_ms = elapsed_seconds.count() * 1000;
-  if (delta_ms < kMinUpdateDeltaMs) {
-    return;
-  }
-
-  last_time = now;
-  for (void (*fptr)(int) : kUpdateFPtrs) {
-    fptr(delta_ms);
-  }
-  scheduler::Update(delta_ms);
-}
+void Update() { scheduler::Update(); }
 
 bool ToStop() { return to_stop; }
 void SetToStop() { to_stop = true; }

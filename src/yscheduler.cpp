@@ -27,7 +27,7 @@ void _WorkerRun() {
     if (worker_context->stopped()) {
       worker_context->restart();
     }
-    worker_context->run_one();
+    worker_context->run_one_for(kRunForDeltaMs);
   }
 }
 
@@ -54,13 +54,12 @@ void Deinit() {
   worker_threads.clear();
 }
 
-void Update(int delta_ms) {
-
+void Update() {
   auto main_context = context_map[ScheduleTag::MainTag];
   if (main_context->stopped()) {
     main_context->restart();
   }
-  main_context->poll();
+  main_context->run_one_for(kRunForDeltaMs);
 }
 
 void Post(ScheduleTag tag, Function function) {
@@ -97,6 +96,29 @@ void DeferOnWorker(Function function) { Defer(WorkerTag, function); }
 void WaitOnWorker(Function function,
                   std::chrono::steady_clock::duration duration) {
   Wait(WorkerTag, function, duration);
+}
+
+void _UpdateFunction(Function function,
+                     std::chrono::steady_clock::duration duration,
+                     std::shared_ptr<asio::steady_timer> timer) {
+  if (core::ToStop())
+    return;
+
+  function();
+  timer->expires_at(timer->expiry() + duration);
+  timer->async_wait([function, duration, timer](std::error_code ec) {
+    _UpdateFunction(function, duration, timer);
+  });
+}
+
+void SetupUpdateFunctionOnWorker(Function function,
+                                 std::chrono::steady_clock::duration duration) {
+
+  auto &context = *(context_map[MainTag]);
+  auto timer = std::make_shared<asio::steady_timer>(context, duration);
+  timer->async_wait([function, duration, timer](std::error_code ec) {
+    _UpdateFunction(function, duration, timer);
+  });
 }
 
 }; // namespace scheduler

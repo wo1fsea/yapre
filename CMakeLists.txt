@@ -58,6 +58,7 @@ set(ASIO_DIR "external/asio")
 include_directories(
     src/
     src/systems/
+    src/systems/graphics/
     ${SDL2_DIR}/include
     ${GLAD_DIR}/include
     ${ASSIMP_INCLUDE_DIRS} 
