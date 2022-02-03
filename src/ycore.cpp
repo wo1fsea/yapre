@@ -12,7 +12,7 @@
 #endif
 
 #include "yluabind.hpp"
-#include "ytimer.h"
+#include "yscheduler.h"
 
 namespace yapre {
 namespace core {
@@ -37,6 +37,7 @@ const std::string platform = "unknown";
 #endif
 
 bool Init() {
+  scheduler::Init();
 
 // setup data path
 #ifdef YAPRE_ANDROID
@@ -60,6 +61,7 @@ bool Init() {
 }
 
 void Deinit() {
+  scheduler::Deinit();
   for (void (*fptr)(void) : kDeinitFPtrs) {
     fptr();
   }
@@ -77,6 +79,7 @@ void Update() {
   for (void (*fptr)(int) : kUpdateFPtrs) {
     fptr(delta_ms);
   }
+  scheduler::Update(delta_ms);
 }
 
 bool ToStop() { return to_stop; }
