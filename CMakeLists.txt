@@ -57,6 +57,7 @@ set(ASIO_DIR "external/asio")
 
 include_directories(
     src/
+    src/systems/
     ${SDL2_DIR}/include
     ${GLAD_DIR}/include
     ${ASSIMP_INCLUDE_DIRS} 
@@ -70,13 +71,14 @@ include_directories(
     # ${DEBUGGER_LUA}/include
     )
 
-file(GLOB PROJECT_INCLUDE 
+file(GLOB_RECURSE PROJECT_INCLUDE 
     src/*.hpp 
     src/*.h
     )
-file(GLOB PROJECT_SRC 
+file(GLOB_RECURSE PROJECT_SRC 
     src/*.cpp
     )
+
 file(GLOB PROJECT_CONFIG 
     CMakeLists.txt
     Readme.md
