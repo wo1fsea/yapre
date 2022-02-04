@@ -1,4 +1,6 @@
 #include "ylua.h"
+#include "yluainterface.inl"
+
 #include <functional>
 #include <iostream>
 #include <string>
@@ -26,13 +28,14 @@ lua_State *GetMainLuaState() {
 }
 
 bool Init() {
+  Define();
+
   int result = luaL_dofile(GetMainLuaState(), kDefaultLuaEntryFilePath);
   if (result != 0) {
     auto s = lua_tostring(GetMainLuaState(), -1);
     std::cout << s << std::endl;
     return false;
   }
-
   return GGetGolbalFunc<bool>("Init")();
 }
 

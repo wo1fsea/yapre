@@ -20,7 +20,6 @@ bool Init() {
   if (SDL_Init(SDL_INIT_TIMER)) {
     return false;
   }
-  lua::GStateModule{"yapre"}.Define("AddTimer", AddTimer);
   return true;
 }
 
