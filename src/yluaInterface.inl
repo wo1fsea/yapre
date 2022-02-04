@@ -3,6 +3,7 @@
 #include "yluabind.hpp"
 #include "yrenderer.h"
 #include "yrepl.h"
+#include "yscheduler.h"
 #include "ytimer.h"
 
 namespace yapre {
@@ -19,6 +20,7 @@ void Define() {
       .Define("BindTouchInputCallback", input::BindTouchInputCallback)
       .Define("UnbindTouchInputCallback", input::UnbindMouseInputCallback);
 
+  // renderer
   lua::GStateModule("yapre")
       .Define<void (*)(const std::string &, std::tuple<int, int, int>,
                        std::tuple<int, int>, float,
@@ -42,9 +44,17 @@ void Define() {
       .Ctor<unsigned int, unsigned int>("new")
       .Member("SetPixel", &Texture::SetPixel);
 
+  // repl
   lua::GStateModule("yapre").Define("DebugRead", repl::DebugRead);
   lua::GStateModule("yapre").Define("DebugWrite", repl::DebugWrite);
-  lua::GStateModule{"yapre"}.Define("AddTimer", timer::AddTimer);
+
+  // lua::GStateModule{"yapre"}.Define("AddTimer", timer::AddTimer);
+
+  lua::GStateModule{"yapre"}.Define(
+      "AddTimer",
+      std::function([](int ms, const std::function<void()> &callback) {
+        scheduler::WaitOnMain(callback, std::chrono::milliseconds(ms));
+      }));
 }
 }; // namespace lua
 }; // namespace yapre
