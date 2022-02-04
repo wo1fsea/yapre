@@ -4,7 +4,6 @@
 #include "yrenderer.h"
 #include "yrepl.h"
 #include "yscheduler.h"
-#include "ytimer.h"
 
 namespace yapre {
 namespace lua {
@@ -48,8 +47,7 @@ void Define() {
   lua::GStateModule("yapre").Define("DebugRead", repl::DebugRead);
   lua::GStateModule("yapre").Define("DebugWrite", repl::DebugWrite);
 
-  // lua::GStateModule{"yapre"}.Define("AddTimer", timer::AddTimer);
-
+  // timer
   lua::GStateModule{"yapre"}.Define(
       "AddTimer",
       std::function([](int ms, const std::function<void()> &callback) {
