@@ -44,9 +44,7 @@ set(UTFCPP_DIR "external/utfcpp")
 add_subdirectory(${UTFCPP_DIR})
 
 set(ASIO_DIR "external/asio")
-
-# set(DEBUGGER_LUA "external/debugger_lua")
-# add_subdirectory(${DEBUGGER_LUA})
+option(ASIO_NO_DEPRECATED ON)
 
 # option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 # option(ASSIMP_BUILD_TESTS OFF)
