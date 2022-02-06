@@ -21,6 +21,8 @@ namespace repl {
 bool Init() { return true; }
 void Deinit() {}
 void Update(int delta_ms) {}
+std::string DebugRead() { return ""; }
+void DebugWrite(std::string data) {}
 
 #else
 
@@ -37,7 +39,6 @@ bool Init() {
         [](const char *editBuffer, std::vector<std::string> &completions) {
           if (editBuffer[0] == 'y') {
             completions.push_back("yapre");
-            // completions.push_back("yy");
           }
         });
 
