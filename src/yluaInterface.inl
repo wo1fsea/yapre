@@ -1,4 +1,5 @@
 #include "yaudio.h"
+#include "ycore.h"
 #include "yinput.h"
 #include "yluabind.hpp"
 #include "yrenderer.h"
@@ -7,9 +8,15 @@
 
 namespace yapre {
 namespace lua {
+
 void Define() {
+  // core
+  lua::GStateModule{"yapre"}.Define("Exit", core::SetToStop);
+  lua::GStateModule{"yapre"}.Define("platform", core::platform);
+
   // audio
   lua::GStateModule{"yapre"}.Define("Beep", audio::Beep);
+
   // input
   lua::GStateModule{"yapre"}
       .Define("BindKeyboardInputCallback", input::BindKeyboardInputCallback)
@@ -39,10 +46,6 @@ void Define() {
       .Define("SetRenderSize", renderer::SetRenderSize)
       .Define("SetKeepAspect", renderer::SetKeepAspect);
 
-  lua::GLuaClass<Texture>("yapre", "Texture")
-      .Ctor<unsigned int, unsigned int>("new")
-      .Member("SetPixel", &Texture::SetPixel);
-
   // repl
   lua::GStateModule("yapre").Define("DebugRead", repl::DebugRead);
   lua::GStateModule("yapre").Define("DebugWrite", repl::DebugWrite);
@@ -53,6 +56,12 @@ void Define() {
       std::function([](int ms, const std::function<void()> &callback) {
         scheduler::WaitOnMain(callback, std::chrono::milliseconds(ms));
       }));
+
+  // class
+  lua::GLuaClass<Texture>("yapre", "Texture")
+      .Ctor<unsigned int, unsigned int>("new")
+      .Member("SetPixel", &Texture::SetPixel);
 }
+
 }; // namespace lua
 }; // namespace yapre

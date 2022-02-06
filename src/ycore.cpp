@@ -14,11 +14,10 @@
 #include "yluabind.hpp"
 #include "yscheduler.h"
 
+#include "ysystems.inl"
+
 namespace yapre {
 namespace core {
-
-bool to_stop = false;
-std::chrono::time_point<std::chrono::system_clock> last_time;
 
 #if defined(YAPRE_WINDOWS)
 const std::string platform = "windows";
@@ -36,6 +35,12 @@ const std::string platform = "emscripten";
 const std::string platform = "unknown";
 #endif
 
+const int kMinUpdateDeltaMs = 30;
+
+bool to_stop = false;
+
+std::chrono::time_point<std::chrono::system_clock> last_time;
+
 void _Update() {
   auto now = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = now - last_time;
@@ -50,11 +55,7 @@ void _Update() {
   }
 }
 
-bool Init() {
-  scheduler::Init();
-  scheduler::SetupUpdateFunctionOnWorker(_Update,
-                                         std::chrono::milliseconds(10));
-
+inline void _SetupDataPath() {
 // setup data path
 #ifdef YAPRE_ANDROID
   std::string data_path = SDL_AndroidGetExternalStoragePath();
@@ -63,24 +64,26 @@ bool Init() {
   std::string data_path = "./data";
 #endif
   chdir(data_path.c_str());
+}
 
-  for (bool (*fptr)(void) : kInitFPtrs) {
-    if (!fptr())
-      return false;
+bool Init() {
+  _SetupDataPath();
+
+  bool result = InitSystems();
+  if (!result) {
+    return false;
   }
+
+  scheduler::Init();
+  scheduler::SetupUpdateFunctionOnMain(_Update, std::chrono::milliseconds(10));
+
   last_time = std::chrono::system_clock::now();
-
-  lua::GStateModule{"yapre"}.Define("Exit", SetToStop);
-  lua::GStateModule{"yapre"}.Define("platform", platform);
-
   return true;
 }
 
 void Deinit() {
   scheduler::Deinit();
-  for (void (*fptr)(void) : kDeinitFPtrs) {
-    fptr();
-  }
+  DeinitSystems();
 }
 
 void Update() { scheduler::Update(); }

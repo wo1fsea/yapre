@@ -111,8 +111,8 @@ void _UpdateFunction(Function function,
   });
 }
 
-void SetupUpdateFunctionOnWorker(Function function,
-                                 std::chrono::steady_clock::duration duration) {
+void SetupUpdateFunctionOnMain(Function function,
+                               std::chrono::steady_clock::duration duration) {
 
   auto &context = *(context_map[MainTag]);
   auto timer = std::make_shared<asio::steady_timer>(context, duration);

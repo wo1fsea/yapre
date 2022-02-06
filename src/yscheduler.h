@@ -30,7 +30,7 @@ void DeferOnWorker(Function function);
 void WaitOnWorker(Function function,
                   std::chrono::steady_clock::duration duration);
 
-void SetupUpdateFunctionOnWorker(Function function,
-                                 std::chrono::steady_clock::duration duration);
+void SetupUpdateFunctionOnMain(Function function,
+                               std::chrono::steady_clock::duration duration);
 }; // namespace scheduler
 }; // namespace yapre
