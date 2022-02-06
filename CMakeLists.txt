@@ -73,6 +73,7 @@ include_directories(
 file(GLOB_RECURSE PROJECT_INCLUDE 
     src/*.hpp 
     src/*.h
+    src/*.inl
     )
 file(GLOB_RECURSE PROJECT_SRC 
     src/*.cpp
