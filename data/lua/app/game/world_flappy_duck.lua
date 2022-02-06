@@ -123,7 +123,7 @@ yecs.Behavior:Register("world_flappy_duck_cactus_behavior", {
         end
         self.data.x = -10
         self.data.y = 0
-        self.data.speed = 10
+        self.data.speed = 50
         self.position.z = 64
 
         self.tick:AddTick("cactus_tick", function(delta_ms)
@@ -134,7 +134,7 @@ yecs.Behavior:Register("world_flappy_duck_cactus_behavior", {
                 return
             end
 
-            self.data.x = self.data.x - self.data.speed / delta_ms
+            self.data.x = self.data.x - self.data.speed * delta_ms / 1000
 
             if self.data.x < -self.size.width then
                 local cs = self.world:GetEntitiesByTags({"cactus"})
@@ -266,7 +266,7 @@ yecs.Behavior:Register("world_flappy_duck_background_behavior", {
                 return
             end
 
-            self.data.x = self.data.x - self.data.speed / delta_ms
+            self.data.x = self.data.x - self.data.speed * delta_ms / 1000
             if self.data.x < -self.size.width then
                 local bs = self.world:GetEntitiesByTags({self.data.tag})
                 local p_x = 0 -- panel_width

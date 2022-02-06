@@ -43,8 +43,8 @@ add_subdirectory(${FREETYPE_DIR})
 set(UTFCPP_DIR "external/utfcpp")
 add_subdirectory(${UTFCPP_DIR})
 
-# set(DEBUGGER_LUA "external/debugger_lua")
-# add_subdirectory(${DEBUGGER_LUA})
+set(ASIO_DIR "external/asio")
+option(ASIO_NO_DEPRECATED ON)
 
 # option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 # option(ASSIMP_BUILD_TESTS OFF)
@@ -55,6 +55,8 @@ add_subdirectory(${UTFCPP_DIR})
 
 include_directories(
     src/
+    src/systems/
+    src/systems/graphics/
     ${SDL2_DIR}/include
     ${GLAD_DIR}/include
     ${ASSIMP_INCLUDE_DIRS} 
@@ -64,16 +66,18 @@ include_directories(
     ${CPP_LONENOISE_DIR}
     ${FREETYPE_DIR}/include
     ${UTFCPP_DIR}/source
+    ${ASIO_DIR}/asio/include
     # ${DEBUGGER_LUA}/include
     )
 
-file(GLOB PROJECT_INCLUDE 
+file(GLOB_RECURSE PROJECT_INCLUDE 
     src/*.hpp 
     src/*.h
     )
-file(GLOB PROJECT_SRC 
+file(GLOB_RECURSE PROJECT_SRC 
     src/*.cpp
     )
+
 file(GLOB PROJECT_CONFIG 
     CMakeLists.txt
     Readme.md

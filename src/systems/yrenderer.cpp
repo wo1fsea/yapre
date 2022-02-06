@@ -79,27 +79,6 @@ bool Init() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glDisableVertexAttribArray(0);
 
-  lua::GStateModule("yapre")
-      .Define<void (*)(
-          const std::string &, std::tuple<int, int, int>, std::tuple<int, int>,
-          float, std::tuple<float, float, float>)>("DrawSprite", DrawSprite)
-      .Define<void (*)(Texture *, std::tuple<int, int, int>,
-                       std::tuple<int, int>, float,
-                       std::tuple<float, float, float>)>(
-          "DrawSpriteWithImageData", DrawSprite)
-      .Define<void (*)(const std::string &, float, std::tuple<int, int, int>,
-                       std::tuple<int, int>, std::tuple<float, float, float>)>(
-          "DrawText", DrawText)
-      .Define<std::tuple<int, int> (*)(const std::string &, float,
-                                       std::tuple<int, int>)>(
-          "CalculateTextRenderSize", CalculateTextRenderSize)
-      .Define("SetClearColor", SetClearColor)
-      .Define("SetRenderSize", SetRenderSize)
-      .Define("SetKeepAspect", SetKeepAspect);
-
-  lua::GLuaClass<Texture>("yapre", "Texture")
-      .Ctor<unsigned int, unsigned int>("new")
-      .Member("SetPixel", &Texture::SetPixel);
   SetRenderSize(320, 240);
   return true;
 }

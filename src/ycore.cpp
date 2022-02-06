@@ -12,13 +12,12 @@
 #endif
 
 #include "yluabind.hpp"
-#include "ytimer.h"
+#include "yscheduler.h"
+
+#include "ysystems.inl"
 
 namespace yapre {
 namespace core {
-
-bool to_stop = false;
-std::chrono::time_point<std::chrono::system_clock> last_time;
 
 #if defined(YAPRE_WINDOWS)
 const std::string platform = "windows";
@@ -36,36 +35,13 @@ const std::string platform = "emscripten";
 const std::string platform = "unknown";
 #endif
 
-bool Init() {
+const int kMinUpdateDeltaMs = 30;
 
-// setup data path
-#ifdef YAPRE_ANDROID
-  std::string data_path = SDL_AndroidGetExternalStoragePath();
-  data_path += "/data";
-#else
-  std::string data_path = "./data";
-#endif
-  chdir(data_path.c_str());
+bool to_stop = false;
 
-  for (bool (*fptr)(void) : kInitFPtrs) {
-    if (!fptr())
-      return false;
-  }
-  last_time = std::chrono::system_clock::now();
+std::chrono::time_point<std::chrono::system_clock> last_time;
 
-  lua::GStateModule{"yapre"}.Define("Exit", SetToStop);
-  lua::GStateModule{"yapre"}.Define("platform", platform);
-
-  return true;
-}
-
-void Deinit() {
-  for (void (*fptr)(void) : kDeinitFPtrs) {
-    fptr();
-  }
-}
-
-void Update() {
+void _Update() {
   auto now = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = now - last_time;
   int delta_ms = elapsed_seconds.count() * 1000;
@@ -78,6 +54,39 @@ void Update() {
     fptr(delta_ms);
   }
 }
+
+inline void _SetupDataPath() {
+// setup data path
+#ifdef YAPRE_ANDROID
+  std::string data_path = SDL_AndroidGetExternalStoragePath();
+  data_path += "/data";
+#else
+  std::string data_path = "./data";
+#endif
+  chdir(data_path.c_str());
+}
+
+bool Init() {
+  _SetupDataPath();
+
+  bool result = InitSystems();
+  if (!result) {
+    return false;
+  }
+
+  scheduler::Init();
+  scheduler::SetupUpdateFunctionOnMain(_Update, std::chrono::milliseconds(10));
+
+  last_time = std::chrono::system_clock::now();
+  return true;
+}
+
+void Deinit() {
+  scheduler::Deinit();
+  DeinitSystems();
+}
+
+void Update() { scheduler::Update(); }
 
 bool ToStop() { return to_stop; }
 void SetToStop() { to_stop = true; }

@@ -71,9 +71,6 @@ bool Init() {
     linenoise::SaveHistory(path);
   });
 
-  lua::GStateModule("yapre").Define("DebugRead", DebugRead);
-  lua::GStateModule("yapre").Define("DebugWrite", DebugWrite);
-
   return true;
 }
 void Deinit() {

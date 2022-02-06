@@ -47,8 +47,6 @@ bool Init() {
 
   SDL_PauseAudio(0);
 
-  lua::GStateModule{"yapre"}.Define("Beep", Beep);
-
   return true;
 }
 
