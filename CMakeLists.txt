@@ -67,16 +67,19 @@ include_directories(
     ${FREETYPE_DIR}/include
     ${UTFCPP_DIR}/source
     ${ASIO_DIR}/asio/include
-    # ${DEBUGGER_LUA}/include
     )
 
 file(GLOB_RECURSE PROJECT_INCLUDE 
-    src/*.hpp 
     src/*.h
+    src/*.hpp
     src/*.inl
+    src/*/*.h
+    src/*/*.hpp
+    src/*/*.inl
     )
 file(GLOB_RECURSE PROJECT_SRC 
     src/*.cpp
+    src/*/*.cpp
     )
 
 file(GLOB PROJECT_CONFIG 
@@ -122,7 +125,6 @@ if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
         std_image
         lua
         freetype
-        # debugger_lua
         # assimp 
         )
 else()
@@ -135,7 +137,6 @@ else()
         std_image
         lua
         freetype
-        # debugger_lua
         # assimp 
         )
 endif()
