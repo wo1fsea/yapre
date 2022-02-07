@@ -24,9 +24,11 @@ std::vector<std::shared_ptr<std::thread>> worker_threads;
 void _WorkerRun() {
   auto worker_context = context_map[ScheduleTag::WorkerTag];
   while (!core::ToStop()) {
+    /*
     if (worker_context->stopped()) {
       worker_context->restart();
     }
+    */
     worker_context->run_one_for(kRunForDeltaMs);
   }
 }
@@ -56,9 +58,11 @@ void Deinit() {
 
 void Update() {
   auto main_context = context_map[ScheduleTag::MainTag];
+  /*
   if (main_context->stopped()) {
     main_context->restart();
   }
+  */
   main_context->run_one_for(kRunForDeltaMs);
 }
 
