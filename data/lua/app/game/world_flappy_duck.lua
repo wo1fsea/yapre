@@ -370,7 +370,7 @@ function world_flappy_duck:Make()
     local button = yecs.EntityFactory:Make("button", {"world_flappy_duck_button_behavior"})
     canvas.tree:AddChild(button)
 
-    local label = yecs.EntityFactory:Make("label", {"world_flappy_duck_label_behavior"})
+    local label = yecs.EntityFactory:Make("sprite_label", {"world_flappy_duck_label_behavior"})
     canvas.tree:AddChild(label)
 
     local duck_head = yecs.EntityFactory:Make("image", {"world_flappy_duck_duck_head_behavior"})

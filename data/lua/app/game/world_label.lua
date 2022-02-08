@@ -33,11 +33,11 @@ function world_label:Make()
     canvas.layout:SetCenterX(world:GetRoot().layout:GetCenterX(), 0)
     canvas.layout:SetCenterY(world:GetRoot().layout:GetCenterY(), 0)
 
-    local time_label = yecs.EntityFactory:Make("label", {"world_label_time_label_behavior"})
-    local world_label_a = yecs.EntityFactory:Make("label")
-    local world_label_b = yecs.EntityFactory:Make("label")
-    local world_label_c = yecs.EntityFactory:Make("label")
-    local world_label_d = yecs.EntityFactory:Make("label")
+    local time_label = yecs.EntityFactory:Make("sprite_label", {"world_label_time_label_behavior"})
+    local world_label_a = yecs.EntityFactory:Make("sprite_label")
+    local world_label_b = yecs.EntityFactory:Make("sprite_label")
+    local world_label_c = yecs.EntityFactory:Make("sprite_label")
+    local world_label_d = yecs.EntityFactory:Make("sprite_label")
 
     time_label:SetFontSize(2)
     time_label.position = {
