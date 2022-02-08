@@ -35,8 +35,6 @@ const std::string platform = "emscripten";
 const std::string platform = "unknown";
 #endif
 
-const int kMinUpdateDeltaMs = 30;
-
 bool to_stop = false;
 
 std::chrono::time_point<std::chrono::system_clock> last_time;
@@ -45,9 +43,6 @@ void _Update() {
   auto now = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = now - last_time;
   int delta_ms = elapsed_seconds.count() * 1000;
-  if (delta_ms < kMinUpdateDeltaMs) {
-    return;
-  }
 
   last_time = now;
   for (void (*fptr)(int) : kUpdateFPtrs) {
@@ -75,15 +70,15 @@ bool Init() {
   }
 
   scheduler::Init();
-  scheduler::SetupUpdateFunctionOnMain(_Update, std::chrono::milliseconds(10));
+  scheduler::SetupUpdateFunctionOnMain(_Update, std::chrono::milliseconds(25));
 
   last_time = std::chrono::system_clock::now();
   return true;
 }
 
 void Deinit() {
-  scheduler::Deinit();
   DeinitSystems();
+  scheduler::Deinit();
 }
 
 void Update() { scheduler::Update(); }

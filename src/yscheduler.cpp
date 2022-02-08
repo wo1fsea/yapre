@@ -54,6 +54,7 @@ void Deinit() {
     thread->join();
   }
   worker_threads.clear();
+  context_map.clear();
 }
 
 void Update() {
