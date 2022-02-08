@@ -43,6 +43,11 @@ add_subdirectory(${FREETYPE_DIR})
 set(UTFCPP_DIR "external/utfcpp")
 add_subdirectory(${UTFCPP_DIR})
 
+set(BOX2D_DIR "external/box2d")
+option(BOX2D_BUILD_UNIT_TESTS OFF)
+option(BOX2D_BUILD_TESTBED OFF)
+add_subdirectory(${BOX2D_DIR})
+
 set(ASIO_DIR "external/asio")
 option(ASIO_NO_DEPRECATED ON)
 
@@ -67,6 +72,7 @@ include_directories(
     ${FREETYPE_DIR}/include
     ${UTFCPP_DIR}/source
     ${ASIO_DIR}/asio/include
+    ${BOX2D_DIR}/include
     )
 
 file(GLOB_RECURSE PROJECT_INCLUDE 
@@ -125,6 +131,7 @@ if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
         std_image
         lua
         freetype
+        box2d
         # assimp 
         )
 else()
@@ -137,6 +144,7 @@ else()
         std_image
         lua
         freetype
+        box2d
         # assimp 
         )
 endif()
