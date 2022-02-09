@@ -10,17 +10,9 @@ set(BUILD_STATIC_LIBS ON)
 function(platform_setup_target)
 endfunction()
 
-option(YAPRE_BUILD_PLATFORM "Platform" "") 
-if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
-    include(platform/emscripten/CMakeLists.txt)
-else()
-    option(SDL_SHARED FALSE)
-    set(SDL2_DIR "external/SDL")
-    add_subdirectory(${SDL2_DIR})
-    if(YAPRE_BUILD_PLATFORM STREQUAL "ios")
-        include(platform/ios/CMakeLists.txt)
-    endif()
-endif()
+option(SDL_SHARED FALSE)
+set(SDL2_DIR "external/SDL")
+add_subdirectory(${SDL2_DIR})
 
 set(GLAD_DIR "external/glad")
 add_subdirectory(${GLAD_DIR})
@@ -120,6 +112,8 @@ target_link_libraries(
         glm_static
         std_image
         lua
+        freetype
+        box2d
         # assimp
 )
 
