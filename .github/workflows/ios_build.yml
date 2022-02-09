@@ -1,0 +1,30 @@
+name: mac_build
+on:
+  push:
+    branches:
+      - main 
+
+  pull_request:
+
+  schedule:
+      - cron: "0 5 * * 1"  # runs at 05:00 UTC on Mondays
+
+jobs:
+  build:
+    runs-on: macos-11
+    env:
+      configuration: Release
+    strategy:
+      fail-fast: true
+      max-parallel: 4
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Build
+        run: |
+          sh ./build_scripts/build_ios_simulator.sh
+          cd ./build/ios_simulator
+          xcodebuild -scheme yapre build
+
