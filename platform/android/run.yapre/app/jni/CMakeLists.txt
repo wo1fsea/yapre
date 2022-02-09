@@ -10,9 +10,17 @@ set(BUILD_STATIC_LIBS ON)
 function(platform_setup_target)
 endfunction()
 
-option(SDL_SHARED OFF)
-set(SDL2_DIR "external/SDL")
-add_subdirectory(${SDL2_DIR})
+option(YAPRE_BUILD_PLATFORM "Platform" "") 
+if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
+    include(platform/emscripten/CMakeLists.txt)
+else()
+    option(SDL_SHARED FALSE)
+    set(SDL2_DIR "external/SDL")
+    add_subdirectory(${SDL2_DIR})
+    if(YAPRE_BUILD_PLATFORM STREQUAL "ios")
+        include(platform/ios/CMakeLists.txt)
+    endif()
+endif()
 
 set(GLAD_DIR "external/glad")
 add_subdirectory(${GLAD_DIR})
@@ -29,6 +37,20 @@ add_subdirectory(${LUA_DIR})
 set(CPP_LONENOISE_DIR "external/cpp-linenoise")
 add_subdirectory(${CPP_LONENOISE_DIR})
 
+set(FREETYPE_DIR "external/freetype")
+add_subdirectory(${FREETYPE_DIR})
+
+set(UTFCPP_DIR "external/utfcpp")
+add_subdirectory(${UTFCPP_DIR})
+
+set(BOX2D_DIR "external/box2d")
+option(BOX2D_BUILD_UNIT_TESTS OFF)
+option(BOX2D_BUILD_TESTBED OFF)
+add_subdirectory(${BOX2D_DIR})
+
+set(ASIO_DIR "external/asio")
+option(ASIO_NO_DEPRECATED ON)
+
 # option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 # option(ASSIMP_BUILD_TESTS OFF)
 
@@ -37,33 +59,45 @@ add_subdirectory(${CPP_LONENOISE_DIR})
 # add_subdirectory(${ASSIMP_DIR})
 
 include_directories(
-        ./src/
-        ${SDL2_DIR}/include
-        ${GLAD_DIR}/include
-        ${ASSIMP_INCLUDE_DIRS}
-        ${GLM_DIR}
-        ${STB_IMAGE_DIR}/include
-        ${LUA_DIR}/src
-        ${CPP_LONENOISE_DIR}
-)
+    src/
+    src/systems/
+    src/systems/graphics/
+    ${SDL2_DIR}/include
+    ${GLAD_DIR}/include
+    ${ASSIMP_INCLUDE_DIRS} 
+    ${GLM_DIR}
+    ${STB_IMAGE_DIR}/include
+    ${LUA_DIR}/src
+    ${CPP_LONENOISE_DIR}
+    ${FREETYPE_DIR}/include
+    ${UTFCPP_DIR}/source
+    ${ASIO_DIR}/asio/include
+    ${BOX2D_DIR}/include
+    )
 
-file(GLOB PROJECT_INCLUDE
-        ./src/*.hpp
-        ./src/*.h
-        )
-file(GLOB PROJECT_SRC
-        ./src/*.cpp
-        )
-file(GLOB PROJECT_CONFIG
-        CMakeLists.txt
-        Readme.md
-        .gitattributes
-        .gitignore
-        .gitmodules
-        )
+file(GLOB_RECURSE PROJECT_INCLUDE 
+    src/*.h
+    src/*.hpp
+    src/*.inl
+    src/*/*.h
+    src/*/*.hpp
+    src/*/*.inl
+    )
+file(GLOB_RECURSE PROJECT_SRC 
+    src/*.cpp
+    src/*/*.cpp
+    )
+
+file(GLOB PROJECT_CONFIG 
+    CMakeLists.txt
+    Readme.md
+    .gitattributes
+    .gitignore
+    .gitmodules
+    )
 file(GLOB PROJECT_RESOURCE
-        data
-        )
+    data
+    )
 
 source_group("include" FILES ${PROJECT_INCLUDE})
 source_group("src" FILES ${PROJECT_SRC})
@@ -89,8 +123,4 @@ target_link_libraries(
         # assimp
 )
 
-
 platform_setup_target()
-
-
-
