@@ -2,13 +2,14 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "glad/glad.h"
 
 namespace yapre {
 class Texture {
 private:
-  std::shared_ptr<unsigned char[]> data_ptr = nullptr;
+  std::vector<unsigned char> data_ptr;
   int width = 0;
   int height = 0;
   int channel = 4;
@@ -36,7 +37,7 @@ public:
   inline int Channel() { return channel; }
   inline int RealSize() { return real_size; }
   inline unsigned int TextureID() { return texture_id; }
-  inline unsigned char *Data() { return data_ptr.get(); }
+  inline unsigned char *Data() { return data_ptr.data(); }
   inline void ClearChanged() { changed = false; };
 };
 } // namespace yapre

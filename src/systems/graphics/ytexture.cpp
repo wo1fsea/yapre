@@ -22,8 +22,7 @@ Texture::Texture(const std::string &file_path) {
     real_size *= 2;
   }
 
-  data_ptr = std::shared_ptr<unsigned char[]>(
-      new unsigned char[real_size * real_size * channel]);
+  data_ptr.resize(real_size * real_size * channel);
 
   for (int x = 0; x < real_size; ++x) {
     for (int y = 0; y < real_size; ++y) {
@@ -52,8 +51,7 @@ Texture::Texture(unsigned int width_, unsigned int height_)
   while (real_size < size) {
     real_size *= 2;
   }
-  data_ptr = std::shared_ptr<unsigned char[]>(
-      new unsigned char[real_size * real_size * channel]);
+  data_ptr.resize(real_size * real_size * channel);
 
   for (int i = 0; i < real_size * real_size * channel; i++) {
     data_ptr[i] = 0;
@@ -72,7 +70,7 @@ void Texture::UpdateData() {
   changed = false;
   glBindTexture(GL_TEXTURE_2D, texture_id);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, real_size, real_size, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, data_ptr.get());
+               GL_UNSIGNED_BYTE, data_ptr.data());
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
