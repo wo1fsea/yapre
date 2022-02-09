@@ -6,7 +6,7 @@
 
 |windows|mac|linux|emscripten|iOS|Anodroid|
 |-------|-------|-------|-------|------|-------|
-|![Build Status](https://github.com/wo1fsea/yapre/actions/workflows/windows_build.yml/badge.svg)|![Build Status](https://github.com/wo1fsea/yapre/actions/workflows/mac_build.yml/badge.svg)|![Build Status](https://github.com/wo1fsea/yapre/actions/workflows/linux_build.yml/badge.svg)|![Build Status](https://github.com/wo1fsea/yapre/actions/workflows/emscripten_build.yml/badge.svg)|![Build Status](https://github.com/wo1fsea/yapre/actions/workflows/ios_build.yml/badge.svg)|no ci yet|
+|![Build Status](https://github.com/wo1fsea/yapre/actions/workflows/windows_build.yml/badge.svg)|![Build Status](https://github.com/wo1fsea/yapre/actions/workflows/mac_build.yml/badge.svg)|![Build Status](https://github.com/wo1fsea/yapre/actions/workflows/linux_build.yml/badge.svg)|![Build Status](https://github.com/wo1fsea/yapre/actions/workflows/emscripten_build.yml/badge.svg)|![Build Status](https://github.com/wo1fsea/yapre/actions/workflows/ios_build.yml/badge.svg)|![Build Status](https://github.com/wo1fsea/yapre/actions/workflows/android_build.yml/badge.svg)|
 
 ## Intro
 
