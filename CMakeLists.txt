@@ -51,6 +51,17 @@ add_subdirectory(${BOX2D_DIR})
 set(ASIO_DIR "external/asio")
 option(ASIO_NO_DEPRECATED ON)
 
+set(BGFX_CMAKE_DIR "external/bgfx.cmake")
+option(BGFX_BUILD_TOOLS ON)
+option(BGFX_BUILD_EXAMPLES OFF)
+option(BGFX_INSTALL OFF)
+option(BGFX_INSTALL_EXAMPLES OFF)
+option(BGFX_CUSTOM_TARGETS OFF)
+option(BGFX_AMALGAMATED OFF)
+option(BX_AMALGAMATED OFF)
+option(BGFX_CONFIG_RENDERER_WEBGPU OFF)
+add_subdirectory(${BGFX_CMAKE_DIR})
+
 # option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 # option(ASSIMP_BUILD_TESTS OFF)
 
@@ -132,6 +143,9 @@ if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
         lua
         freetype
         box2d
+        bgfx
+        bx
+        bimg
         # assimp 
         )
 else()
@@ -145,6 +159,9 @@ else()
         lua
         freetype
         box2d
+        bgfx
+        bx
+        bimg
         # assimp 
         )
 endif()
