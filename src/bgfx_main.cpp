@@ -12,6 +12,10 @@
 #include "emscripten.h"
 #endif // BX_PLATFORM_EMSCRIPTEN
 
+#if BX_PLATFORM_IOS
+void* YapreSDLGetNwh(SDL_SysWMinfo wmi, SDL_Window *window);
+#endif
+
 struct PosColorVertex {
   float x;
   float y;
@@ -127,7 +131,7 @@ int main(int argc, char **argv) {
   const int height = 600;
   SDL_Window *window = SDL_CreateWindow(argv[0], SDL_WINDOWPOS_UNDEFINED,
                                         SDL_WINDOWPOS_UNDEFINED, width, height,
-                                        SDL_WINDOW_SHOWN);
+                                        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 
   if (window == nullptr) {
     printf("Window could not be created. SDL_Error: %s\n", SDL_GetError());
@@ -155,6 +159,8 @@ int main(int argc, char **argv) {
   pd.nwh = (void *)(uintptr_t)wmi.info.x11.window;
 #elif BX_PLATFORM_EMSCRIPTEN
   pd.nwh = (void *)"#canvas";
+#elif BX_PLATFORM_IOS
+  pd.nwh = YapreSDLGetNwh(wmi, window);
 #endif // BX_PLATFORM_WINDOWS ? BX_PLATFORM_OSX ? BX_PLATFORM_LINUX ?
        // BX_PLATFORM_EMSCRIPTEN
 
@@ -181,12 +187,12 @@ int main(int argc, char **argv) {
       bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
 
   std::string vshader;
-  if (!fileops::read_file("data/bgfx_shader/v_simple.bin", vshader)) {
+  if (!fileops::read_file("data/bgfx_shader/ios/v_simple.bin", vshader)) {
     return 1;
   }
 
   std::string fshader;
-  if (!fileops::read_file("data/bgfx_shader/f_simple.bin", fshader)) {
+  if (!fileops::read_file("data/bgfx_shader/ios/f_simple.bin", fshader)) {
     return 1;
   }
 
