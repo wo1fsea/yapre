@@ -215,12 +215,12 @@ int main(int argc, char **argv) {
       bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
 
   std::string vshader;
-  if (!fileops::read_file("data/bgfx_shader/v_simple.bin", vshader)) {
+  if (!fileops::read_file("data/bgfx_shader/asmjs/v_simple.bin", vshader)) {
     return 1;
   }
 
   std::string fshader;
-  if (!fileops::read_file("data/bgfx_shader/f_simple.bin", fshader)) {
+  if (!fileops::read_file("data/bgfx_shader/asmjs/f_simple.bin", fshader)) {
     return 1;
   }
 
