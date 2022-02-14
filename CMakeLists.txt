@@ -13,13 +13,14 @@ endfunction()
 option(YAPRE_BUILD_PLATFORM "Platform" "") 
 if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
     include(platform/emscripten/CMakeLists.txt)
-else()
-    option(SDL_SHARED FALSE)
-    set(SDL2_DIR "external/SDL")
-    add_subdirectory(${SDL2_DIR})
-    if(YAPRE_BUILD_PLATFORM STREQUAL "ios")
-        include(platform/ios/CMakeLists.txt)
-    endif()
+endif()
+
+set(SDL_VIDEO_OPENGL_ES ON)
+option(SDL_SHARED FALSE)
+set(SDL2_DIR "external/SDL")
+add_subdirectory(${SDL2_DIR})
+if(YAPRE_BUILD_PLATFORM STREQUAL "ios")
+    include(platform/ios/CMakeLists.txt)
 endif()
 
 set(GLAD_DIR "external/glad")
@@ -74,6 +75,7 @@ include_directories(
     src/systems/
     src/systems/graphics/
     ${SDL2_DIR}/include
+    ${SDL2_DIR}/src
     ${GLAD_DIR}/include
     ${ASSIMP_INCLUDE_DIRS} 
     ${GLM_DIR}
@@ -96,7 +98,9 @@ file(GLOB_RECURSE PROJECT_INCLUDE
     )
 file(GLOB_RECURSE PROJECT_SRC 
     src/*.cpp
+    src/*.mm
     src/*/*.cpp
+    src/*/*.mm
     )
 
 file(GLOB PROJECT_CONFIG 
@@ -134,21 +138,7 @@ add_executable(
     )
 
 
-if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
-    target_link_libraries(
-        ${PROJECT_NAME} 
-        glad 
-        glm_static
-        std_image
-        lua
-        freetype
-        box2d
-        bgfx
-        bx
-        bimg
-        # assimp 
-        )
-else()
+
     target_link_libraries(
         ${PROJECT_NAME} 
         SDL2main 
@@ -164,7 +154,6 @@ else()
         bimg
         # assimp 
         )
-endif()
 
 set_target_properties(
     ${PROJECT_NAME} 
