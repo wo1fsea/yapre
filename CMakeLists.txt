@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
+
 project(yapre)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -14,14 +15,13 @@ option(YAPRE_BUILD_PLATFORM "Platform" "")
 if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
     include(platform/emscripten/CMakeLists.txt)
 endif()
-
-set(SDL_VIDEO_OPENGL_ES ON)
-option(SDL_SHARED FALSE)
-set(SDL2_DIR "external/SDL")
-add_subdirectory(${SDL2_DIR})
 if(YAPRE_BUILD_PLATFORM STREQUAL "ios")
     include(platform/ios/CMakeLists.txt)
 endif()
+
+option(SDL_SHARED FALSE)
+set(SDL2_DIR "external/SDL")
+add_subdirectory(${SDL2_DIR})
 
 set(GLAD_DIR "external/glad")
 add_subdirectory(${GLAD_DIR})
@@ -130,6 +130,7 @@ elseif(YAPRE_BUILD_PLATFORM STREQUAL "android")
 elseif(YAPRE_BUILD_PLATFORM STREQUAL "ios")
     add_compile_options(-DYAPRE_IOS)
 endif()
+
 add_executable(
     ${PROJECT_NAME} 
     ${PROJECT_INCLUDE} 
@@ -137,23 +138,21 @@ add_executable(
     ${PROJECT_RESOURCE}
     )
 
-
-
-    target_link_libraries(
-        ${PROJECT_NAME} 
-        SDL2main 
-        SDL2-static 
-        glad 
-        glm_static
-        std_image
-        lua
-        freetype
-        box2d
-        bgfx
-        bx
-        bimg
-        # assimp 
-        )
+target_link_libraries(
+    ${PROJECT_NAME} 
+    SDL2main 
+    SDL2-static 
+    glad 
+    glm_static
+    std_image
+    lua
+    freetype
+    box2d
+    bgfx
+    bx
+    bimg
+    # assimp 
+    )
 
 set_target_properties(
     ${PROJECT_NAME} 
