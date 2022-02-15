@@ -7,7 +7,7 @@
 #include "ywindow.h"
 #include <SDL_main.h>
 
-int __main(int argc, char *args[]) {
+int main(int argc, char *args[]) {
   if (!yapre::window::Init()) {
     return 0;
   }

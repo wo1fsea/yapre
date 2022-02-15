@@ -39,23 +39,6 @@ void PrintSdlError() {
   std::cout << error_message << std::endl;
 }
 
-void SetupSdlGl() {
-  SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-
-  /*
-SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-*/
-
-  // Also request a depth buffer
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-
-  // Default OpenGL is fine.
-  SDL_GL_LoadLibrary(NULL);
-}
-
 bool Init() {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     PrintSdlError();
@@ -63,7 +46,6 @@ bool Init() {
   }
   atexit(SDL_Quit);
 
-  SetupSdlGl();
   auto [w, h] = renderer::GetPreferRenderSize();
 
   if (kFullScreen) {
@@ -82,14 +64,6 @@ bool Init() {
     return false;
   }
 
-  mainContext = SDL_GL_CreateContext(mainWindow);
-  if (mainContext == NULL) {
-    PrintSdlError();
-    return false;
-  }
-
-  // SDL_GL_SetSwapInterval(1);
-
   return true;
 }
 
@@ -98,13 +72,10 @@ void Deinit() {
   SDL_Quit();
 }
 
-void SwapWinodw() {
-  if (mainWindow) {
-    SDL_GL_SwapWindow(mainWindow);
-  }
-}
+void SwapWinodw() {}
 
 void ResetWindowSize() {
+  return;
 #if defined(YPARE_WINDOWS) || defined(YPARE_MAC) || defined(YPARE_LINUX)
   if (mainWindow) {
     auto [w, h] = renderer::GetPreferRenderSize();
