@@ -140,6 +140,8 @@ bool Init() {
   pd.nwh = (void *)"#canvas";
 #elif BX_PLATFORM_IOS
   pd.nwh = YapreSDLGetNwh(wmi, window);
+#elif BX_PLATFORM_ANDROID
+  pd.nwh = wmi.info.android.window;
 #endif // BX_PLATFORM_WINDOWS ? BX_PLATFORM_OSX ? BX_PLATFORM_LINUX ?
        // BX_PLATFORM_EMSCRIPTEN
 
