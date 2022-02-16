@@ -168,6 +168,7 @@ bool Init() {
   bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(
       bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
 
+  // fixme: using loadProgram
   std::string vshader;
   if (!fileops::read_file("./bgfx_shader/osx/v_simple.bin", vshader)) {
     std::cout << "1" << std::endl;
@@ -183,6 +184,7 @@ bool Init() {
   bgfx::ShaderHandle vsh = createShader(vshader, "vshader");
   bgfx::ShaderHandle fsh = createShader(fshader, "fshader");
   bgfx::ProgramHandle program = bgfx::createProgram(vsh, fsh, true);
+  // end using loadProgram
 
   context.width = width;
   context.height = height;
