@@ -4,7 +4,7 @@
 #include <iostream>
 #include <tuple>
 
-#include <SDL.h>
+#include "SDL.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -47,7 +47,7 @@ bool Init() {
   atexit(SDL_Quit);
 
   auto [w, h] = renderer::GetPreferRenderSize();
-
+  // SDL_SetHint(SDL_HINT_VIDEO_EXTERNAL_CONTEXT, "1");
   if (kFullScreen) {
     mainWindow = SDL_CreateWindow(kWindowCaption, SDL_WINDOWPOS_UNDEFINED,
                                   SDL_WINDOWPOS_UNDEFINED, 0, 0,

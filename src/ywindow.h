@@ -1,8 +1,8 @@
 #pragma once
 
 #include <tuple>
-#include <SDL.h>
 
+class SDL_Window;
 namespace yapre {
 namespace window{
 extern SDL_Window *mainWindow;
