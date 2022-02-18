@@ -27,4 +27,4 @@
 	url = git@github.com:erincatto/box2d.git
 [submodule "external/bgfx.cmake"]
 	path = external/bgfx.cmake
-	url = git@github.com:pr0g/bgfx.cmake.git
+	url = git@github.com:wo1fsea/bgfx.cmake.git
