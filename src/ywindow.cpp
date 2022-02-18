@@ -47,15 +47,15 @@ bool Init() {
   atexit(SDL_Quit);
 
   auto [w, h] = renderer::GetPreferRenderSize();
-  // SDL_SetHint(SDL_HINT_VIDEO_EXTERNAL_CONTEXT, "1");
+  SDL_SetHint(SDL_HINT_VIDEO_EXTERNAL_CONTEXT, "1");
   if (kFullScreen) {
     mainWindow = SDL_CreateWindow(kWindowCaption, SDL_WINDOWPOS_UNDEFINED,
                                   SDL_WINDOWPOS_UNDEFINED, 0, 0,
-                                  SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+                                  SDL_WINDOW_FULLSCREEN);
   } else {
     mainWindow = SDL_CreateWindow(kWindowCaption, SDL_WINDOWPOS_UNDEFINED,
                                   SDL_WINDOWPOS_UNDEFINED, w, h,
-                                  SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+                                  SDL_WINDOW_RESIZABLE);
     // SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
   }
 
