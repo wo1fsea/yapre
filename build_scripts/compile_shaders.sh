@@ -18,5 +18,6 @@ compile_shader()
 
 compile_shader v_simple f_simple osx metal
 compile_shader v_simple f_simple ios metal
-compile_shader v_simple f_simple asmjs 100_es
-#compile_shader v_simple f_simple windows s_3_0
+compile_shader v_simple f_simple asmjs 300_es
+compile_shader v_simple f_simple android 300_es
+compile_shader v_simple f_simple windows 150
