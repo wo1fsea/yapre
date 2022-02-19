@@ -157,10 +157,6 @@ bool Init() {
   bgfx_init.platformData = pd;
   bgfx::init(bgfx_init);
 
-  bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x6495EDFF, 1.0f,
-                     0);
-  bgfx::setViewRect(0, 0, 0, render_width, render_height);
-
   bgfx::VertexLayout pos_col_vert_layout;
   pos_col_vert_layout.begin()
       .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
@@ -274,9 +270,31 @@ std::tuple<int, int> CalculateTextRenderSize(const std::string &text,
   return std::make_tuple(0, 0);
 }
 
-void RefreshViewport() {}
+void RefreshViewport() {
+  auto [w, h] = window::GetDrawableSize();
+  auto [dw, dh] = GetRealRenderSize();
+  int rx = 0;
+  int ry = 0;
 
-void Update(int delta_ms) {
+  if (1.0 * dw / dh > 1.0 * w / h) {
+    int rh = w * dh / dw;
+    ry = (h - rh) / 2;
+    h = rh;
+  } else {
+    int rw = h * dw / dh;
+    rx = (w - rw) / 2;
+    w = rw;
+  }
+
+  _UpdateRenderSize(dw, dh);
+
+  viewport_x = rx;
+  viewport_y = ry;
+  viewport_w = w;
+  viewport_h = h;
+}
+
+void _Draw() {
   float cam_rotation[16];
   bx::mtxRotateXYZ(cam_rotation, 0.f, 0.f, 0.f);
 
@@ -303,7 +321,25 @@ void Update(int delta_ms) {
   bgfx::setIndexBuffer(context.ibh);
 
   bgfx::submit(0, context.program);
+}
 
+void Update(int delta_ms) {
+  auto [w, h] = window::GetDrawableSize();
+  lua::GStateModule("yapre")
+      .Define("drawable_width", w)
+      .Define("drawable_height", h);
+
+  context.width = w;
+  context.height = h;
+
+  bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x000000FF, 1.0f,
+                     0);
+  bgfx::reset(w, h, BGFX_RESET_VSYNC);
+  bgfx::setViewRect(0, 0, 0, w, h);
+
+  std::cout << w << ',' << h << std::endl;
+  RefreshViewport();
+  _Draw();
   bgfx::frame();
 }
 
