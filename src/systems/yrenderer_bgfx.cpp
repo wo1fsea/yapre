@@ -41,8 +41,8 @@ namespace renderer_bgfx {
 
 const float kMaxZ = 1024 * 1024;
 
-int render_width = 800;
-int render_height = 6000;
+int render_width = 320;
+int render_height = 240;
 bool keep_aspect = true;
 
 unsigned int VBO = 0;
@@ -119,7 +119,6 @@ bool Init() {
 #if !BX_PLATFORM_EMSCRIPTEN
   SDL_SysWMinfo wmi;
   SDL_VERSION(&wmi.version);
-  std::cout << "FFF" << std::endl;
   if (!SDL_GetWindowWMInfo(yapre::window::mainWindow, &wmi)) {
     std::cout << "SDL_SysWMinfo could not be retrieved. SDL_Error:"
               << SDL_GetError() << std::endl;
@@ -128,37 +127,39 @@ bool Init() {
   bgfx::renderFrame(); // single threaded mode
 #endif                 // !BX_PLATFORM_EMSCRIPTEN
 
+  bgfx::Init bgfx_init;
+  bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
   bgfx::PlatformData pd{};
 #if BX_PLATFORM_WINDOWS
+  bgfx_init.type = bgfx::RendererType::OpenGL;
   pd.nwh = wmi.info.win.window;
 #elif BX_PLATFORM_OSX
+  bgfx_init.type = bgfx::RendererType::Metal;
   pd.nwh = wmi.info.cocoa.window;
 #elif BX_PLATFORM_LINUX
+  bgfx_init.type = bgfx::RendererType::OpenGL;
   pd.ndt = wmi.info.x11.display;
   pd.nwh = (void *)(uintptr_t)wmi.info.x11.window;
 #elif BX_PLATFORM_EMSCRIPTEN
+  bgfx_init.type = bgfx::RendererType::OpenGLES;
   pd.nwh = (void *)"#canvas";
 #elif BX_PLATFORM_IOS
-  pd.nwh = YapreSDLGetNwh(wmi, window);
+  bgfx_init.type = bgfx::RendererType::Metal;
+  pd.nwh = YapreSDLGetNwh(wmi, yapre::window::mainWindow);
 #elif BX_PLATFORM_ANDROID
+  bgfx_init.type = bgfx::RendererType::OpenGLES;
   pd.nwh = wmi.info.android.window;
-#endif // BX_PLATFORM_WINDOWS ? BX_PLATFORM_OSX ? BX_PLATFORM_LINUX ?
-       // BX_PLATFORM_EMSCRIPTEN
+#endif
 
-  int width = 800;
-  int height = 600;
-
-  bgfx::Init bgfx_init;
-  bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
-  bgfx_init.resolution.width = width;
-  bgfx_init.resolution.height = height;
+  bgfx_init.resolution.width = render_width;
+  bgfx_init.resolution.height = render_height;
   bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
   bgfx_init.platformData = pd;
   bgfx::init(bgfx_init);
 
   bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x6495EDFF, 1.0f,
                      0);
-  bgfx::setViewRect(0, 0, 0, width, height);
+  bgfx::setViewRect(0, 0, 0, render_width, render_height);
 
   bgfx::VertexLayout pos_col_vert_layout;
   pos_col_vert_layout.begin()
@@ -170,26 +171,36 @@ bool Init() {
   bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(
       bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
 
-  // fixme: using loadProgram
+#if BX_PLATFORM_WINDOWS
+  std::string shaderPath = "./bgfx_shader/windows/";
+#elif BX_PLATFORM_OSX
+  std::string shaderPath = "./bgfx_shader/osx/";
+#elif BX_PLATFORM_LINUX
+  std::string shaderPath = "./bgfx_shader/linux/";
+#elif BX_PLATFORM_EMSCRIPTEN
+  std::string shaderPath = "./bgfx_shader/asmjs/";
+#elif BX_PLATFORM_IOS
+  std::string shaderPath = "./bgfx_shader/ios/";
+#elif BX_PLATFORM_ANDROID
+  std::string shaderPath = "./bgfx_shader/android/";
+#endif
+
   std::string vshader;
-  if (!fileops::read_file("./bgfx_shader/osx/v_simple.bin", vshader)) {
-    std::cout << "1" << std::endl;
+  if (!fileops::read_file(shaderPath + "v_simple.bin", vshader)) {
     return false;
   }
 
   std::string fshader;
-  if (!fileops::read_file("./bgfx_shader/osx/f_simple.bin", fshader)) {
-    std::cout << "2" << std::endl;
+  if (!fileops::read_file(shaderPath + "f_simple.bin", fshader)) {
     return false;
   }
 
   bgfx::ShaderHandle vsh = createShader(vshader, "vshader");
   bgfx::ShaderHandle fsh = createShader(fshader, "fshader");
   bgfx::ProgramHandle program = bgfx::createProgram(vsh, fsh, true);
-  // end using loadProgram
 
-  context.width = width;
-  context.height = height;
+  context.width = render_width;
+  context.height = render_height;
   context.program = program;
   context.window = yapre::window::mainWindow;
   context.vbh = vbh;

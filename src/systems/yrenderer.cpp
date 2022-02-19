@@ -387,7 +387,6 @@ void Update(int delta_ms) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   DrawAll();
-  window::SwapWinodw();
 }
 
 std::tuple<int, int> ConvertToViewport(int x, int y) {
