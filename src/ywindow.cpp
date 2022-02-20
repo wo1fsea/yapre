@@ -17,22 +17,8 @@ namespace window {
 const bool kFullScreen = 0;
 const char *kWindowCaption = "yapre";
 SDL_Window *mainWindow = nullptr;
-SDL_GLContext mainContext;
 
-std::tuple<int, int> GetDrawableSize() {
-  auto [w, h] = renderer::GetPreferRenderSize();
-
-#ifdef __EMSCRIPTEN__
-  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context =
-      emscripten_webgl_get_current_context();
-  emscripten_webgl_get_drawing_buffer_size(context, &w, &h);
-#else
-  if (mainWindow) {
-    SDL_GetWindowSize(mainWindow, &w, &h);
-  }
-#endif
-  return std::make_tuple(w, h);
-}
+int OnWindowEvent(void *data, SDL_Event *event);
 
 void PrintSdlError() {
   auto error_message = SDL_GetError();
@@ -65,12 +51,29 @@ bool Init() {
     return false;
   }
 
+  SDL_AddEventWatch(OnWindowEvent, mainWindow);
+
   return true;
 }
 
 void Deinit() {
   SDL_DestroyWindow(mainWindow);
   SDL_Quit();
+}
+
+std::tuple<int, int> GetDrawableSize() {
+  auto [w, h] = renderer::GetPreferRenderSize();
+
+#ifdef __EMSCRIPTEN__
+  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context =
+      emscripten_webgl_get_current_context();
+  emscripten_webgl_get_drawing_buffer_size(context, &w, &h);
+#else
+  if (mainWindow) {
+    SDL_GetWindowSize(mainWindow, &w, &h);
+  }
+#endif
+  return std::make_tuple(w, h);
 }
 
 void ResetWindowSize() {
@@ -80,6 +83,17 @@ void ResetWindowSize() {
     SDL_SetWindowSize(mainWindow, w, h);
   }
 #endif
+}
+
+int OnWindowEvent(void *data, SDL_Event *event) {
+  if (event->type == SDL_WINDOWEVENT &&
+      event->window.event == SDL_WINDOWEVENT_RESIZED) {
+    SDL_Window *win = SDL_GetWindowFromID(event->window.windowID);
+    if (win == (SDL_Window *)data) {
+      printf("resizing.....\n");
+    }
+  }
+  return 0;
 }
 
 } // namespace window

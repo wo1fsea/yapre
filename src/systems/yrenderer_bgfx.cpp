@@ -122,7 +122,8 @@ using DrawData =
     std::tuple<unsigned int, unsigned int, glm::mat4, glm::mat4, glm::vec3>;
 std::unordered_map<std::string, std::shared_ptr<Texture>> texture_map;
 std::vector<DrawData> draw_list;
-glm::fvec4 clean_color = glm::fvec4(0.2, 0.2, 0.2, 1);
+
+uint32_t clean_color = 0xffffffff;
 
 const float default_vertices[] = {
     // pos      // tex
@@ -213,6 +214,8 @@ bool Init() {
   context.height = render_height;
   context.window = yapre::window::mainWindow;
 
+  bgfx::reset(render_width, render_height, BGFX_RESET_VSYNC);
+  bgfx::setViewRect(0, 0, 0, render_width, render_height);
   return true;
 }
 
@@ -243,7 +246,16 @@ void _UpdateRenderSize(int width, int height) {
       .Define("render_height", height);
 }
 
-void SetRenderSize(int width, int height) {}
+void SetRenderSize(int width, int height) {
+  render_width = width;
+  render_height = height;
+  window::ResetWindowSize();
+  _UpdateRenderSize(width, height);
+
+  auto [w, h] = GetRealRenderSize();
+  bgfx::reset(w, h, BGFX_RESET_VSYNC);
+  bgfx::setViewRect(0, 0, 0, w, h);
+}
 
 void DrawSprite(const std::string &texture_filename, glm::vec3 position,
                 glm::vec2 size, float rotate, glm::vec3 color) {
@@ -345,8 +357,6 @@ void Update(int delta_ms) {
 
   bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x000000FF, 1.0f,
                      0);
-  bgfx::reset(w, h, BGFX_RESET_VSYNC);
-  bgfx::setViewRect(0, 0, 0, w, h);
 
   RefreshViewport();
   _Draw();
@@ -360,10 +370,10 @@ std::tuple<int, int> ConvertToViewport(int x, int y) {
 }
 
 void SetClearColor(float R, float G, float B, float A) {
-  clean_color.r = R;
-  clean_color.g = G;
-  clean_color.b = B;
-  clean_color.a = A;
+  clean_color = (int)(255 * R);
+  clean_color = (clean_color << 8) + (int)(255 * G);
+  clean_color = (clean_color << 8) + (int)(255 * B);
+  clean_color = (clean_color << 8) + (int)(255 * A);
 }
 
 void SetKeepAspect(bool keey_aspect_) {}
