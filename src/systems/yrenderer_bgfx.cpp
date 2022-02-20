@@ -45,9 +45,6 @@ int render_width = 320;
 int render_height = 240;
 bool keep_aspect = true;
 
-unsigned int VBO = 0;
-unsigned int draw_count = 0;
-
 struct PosColorVertex {
   float x;
   float y;
@@ -67,12 +64,39 @@ static const uint16_t cube_tri_list[] = {
     1, 5, 3, 5, 7, 3, 0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7,
 };
 
-static bgfx::ShaderHandle createShader(const std::string &shader,
-                                       const char *name) {
-  const bgfx::Memory *mem = bgfx::copy(shader.data(), shader.size());
+bgfx::ShaderHandle loadShader(const std::string &name) {
+#if BX_PLATFORM_WINDOWS
+  std::string shaderPath = "./bgfx_shader/windows/";
+#elif BX_PLATFORM_OSX
+  std::string shaderPath = "./bgfx_shader/osx/";
+#elif BX_PLATFORM_LINUX
+  std::string shaderPath = "./bgfx_shader/linux/";
+#elif BX_PLATFORM_EMSCRIPTEN
+  std::string shaderPath = "./bgfx_shader/asmjs/";
+#elif BX_PLATFORM_IOS
+  std::string shaderPath = "./bgfx_shader/ios/";
+#elif BX_PLATFORM_ANDROID
+  std::string shaderPath = "./bgfx_shader/android/";
+#endif
+
+  std::stringstream shaderStream;
+  std::ifstream shaderFile(shaderPath + name);
+  shaderStream << shaderFile.rdbuf();
+  shaderFile.close();
+  std::string shaderFileContext = shaderStream.str();
+  const bgfx::Memory *mem =
+      bgfx::copy(shaderFileContext.data(), shaderFileContext.size());
   const bgfx::ShaderHandle handle = bgfx::createShader(mem);
-  bgfx::setName(handle, name);
+  bgfx::setName(handle, name.c_str());
   return handle;
+}
+
+bgfx::ProgramHandle loadProgram(const std::string &vsName,
+                                const std::string &psName) {
+  bgfx::ShaderHandle vsh = loadShader(vsName);
+  bgfx::ShaderHandle fsh = loadShader(psName);
+  bgfx::ProgramHandle program = bgfx::createProgram(vsh, fsh, true);
+  return program;
 }
 
 struct context_t {
@@ -114,11 +138,47 @@ int viewport_h = render_height;
 
 context_t context;
 
-bool Init() {
+inline bgfx::PlatformData _GetPlatformData(SDL_SysWMinfo wmi) {
+  bgfx::PlatformData pd{};
+#if BX_PLATFORM_WINDOWS
+  pd.nwh = wmi.info.win.window;
+#elif BX_PLATFORM_OSX
+  pd.nwh = wmi.info.cocoa.window;
+#elif BX_PLATFORM_LINUX
+  pd.ndt = wmi.info.x11.display;
+  pd.nwh = (void *)(uintptr_t)wmi.info.x11.window;
+#elif BX_PLATFORM_EMSCRIPTEN
+  pd.nwh = (void *)"#canvas";
+#elif BX_PLATFORM_IOS
+  pd.nwh = YapreSDLGetNwh(wmi, yapre::window::mainWindow);
+#elif BX_PLATFORM_ANDROID
+  pd.nwh = wmi.info.android.window;
+#endif
+  return pd;
+}
 
-#if !BX_PLATFORM_EMSCRIPTEN
+inline bgfx::RendererType::Enum _GetRendererType() {
+#if BX_PLATFORM_WINDOWS
+  return bgfx::RendererType::OpenGL;
+#elif BX_PLATFORM_OSX
+  return bgfx::RendererType::Metal;
+#elif BX_PLATFORM_LINUX
+  return bgfx::RendererType::OpenGL;
+#elif BX_PLATFORM_EMSCRIPTEN
+  return bgfx::RendererType::OpenGLES;
+#elif BX_PLATFORM_IOS
+  return bgfx::RendererType::Metal;
+#elif BX_PLATFORM_ANDROID
+  return bgfx::RendererType::OpenGLES;
+#endif
+  return bgfx::RendererType::Count;
+}
+
+bool Init() {
   SDL_SysWMinfo wmi;
   SDL_VERSION(&wmi.version);
+
+#if !BX_PLATFORM_EMSCRIPTEN
   if (!SDL_GetWindowWMInfo(yapre::window::mainWindow, &wmi)) {
     std::cout << "SDL_SysWMinfo could not be retrieved. SDL_Error:"
               << SDL_GetError() << std::endl;
@@ -128,33 +188,11 @@ bool Init() {
 #endif                 // !BX_PLATFORM_EMSCRIPTEN
 
   bgfx::Init bgfx_init;
-  bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
-  bgfx::PlatformData pd{};
-#if BX_PLATFORM_WINDOWS
-  bgfx_init.type = bgfx::RendererType::OpenGL;
-  pd.nwh = wmi.info.win.window;
-#elif BX_PLATFORM_OSX
-  bgfx_init.type = bgfx::RendererType::Metal;
-  pd.nwh = wmi.info.cocoa.window;
-#elif BX_PLATFORM_LINUX
-  bgfx_init.type = bgfx::RendererType::OpenGL;
-  pd.ndt = wmi.info.x11.display;
-  pd.nwh = (void *)(uintptr_t)wmi.info.x11.window;
-#elif BX_PLATFORM_EMSCRIPTEN
-  bgfx_init.type = bgfx::RendererType::OpenGLES;
-  pd.nwh = (void *)"#canvas";
-#elif BX_PLATFORM_IOS
-  bgfx_init.type = bgfx::RendererType::Metal;
-  pd.nwh = YapreSDLGetNwh(wmi, yapre::window::mainWindow);
-#elif BX_PLATFORM_ANDROID
-  bgfx_init.type = bgfx::RendererType::OpenGLES;
-  pd.nwh = wmi.info.android.window;
-#endif
-
+  bgfx_init.type = _GetRendererType();
+  bgfx_init.platformData = _GetPlatformData(wmi);
   bgfx_init.resolution.width = render_width;
   bgfx_init.resolution.height = render_height;
   bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
-  bgfx_init.platformData = pd;
   bgfx::init(bgfx_init);
 
   bgfx::VertexLayout pos_col_vert_layout;
@@ -166,41 +204,14 @@ bool Init() {
       bgfx::makeRef(cube_vertices, sizeof(cube_vertices)), pos_col_vert_layout);
   bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(
       bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
+  context.vbh = vbh;
+  context.ibh = ibh;
 
-#if BX_PLATFORM_WINDOWS
-  std::string shaderPath = "./bgfx_shader/windows/";
-#elif BX_PLATFORM_OSX
-  std::string shaderPath = "./bgfx_shader/osx/";
-#elif BX_PLATFORM_LINUX
-  std::string shaderPath = "./bgfx_shader/linux/";
-#elif BX_PLATFORM_EMSCRIPTEN
-  std::string shaderPath = "./bgfx_shader/asmjs/";
-#elif BX_PLATFORM_IOS
-  std::string shaderPath = "./bgfx_shader/ios/";
-#elif BX_PLATFORM_ANDROID
-  std::string shaderPath = "./bgfx_shader/android/";
-#endif
-
-  std::string vshader;
-  if (!fileops::read_file(shaderPath + "v_simple.bin", vshader)) {
-    return false;
-  }
-
-  std::string fshader;
-  if (!fileops::read_file(shaderPath + "f_simple.bin", fshader)) {
-    return false;
-  }
-
-  bgfx::ShaderHandle vsh = createShader(vshader, "vshader");
-  bgfx::ShaderHandle fsh = createShader(fshader, "fshader");
-  bgfx::ProgramHandle program = bgfx::createProgram(vsh, fsh, true);
+  context.program = loadProgram("v_simple.bin", "f_simple.bin");
 
   context.width = render_width;
   context.height = render_height;
-  context.program = program;
   context.window = yapre::window::mainWindow;
-  context.vbh = vbh;
-  context.ibh = ibh;
 
   return true;
 }
@@ -337,7 +348,6 @@ void Update(int delta_ms) {
   bgfx::reset(w, h, BGFX_RESET_VSYNC);
   bgfx::setViewRect(0, 0, 0, w, h);
 
-  std::cout << w << ',' << h << std::endl;
   RefreshViewport();
   _Draw();
   bgfx::frame();
