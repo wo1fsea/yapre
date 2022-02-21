@@ -36,9 +36,7 @@ void Define() {
                        std::tuple<int, int>, float,
                        std::tuple<float, float, float>)>(
           "DrawSpriteWithImageData", renderer::DrawSprite)
-      .Define<void (*)(const std::string &, float, std::tuple<int, int, int>,
-                       std::tuple<int, int>, std::tuple<float, float, float>)>(
-          "DrawText", renderer::DrawText)
+      .Define("DrawText", renderer::DrawText_)
       .Define<std::tuple<int, int> (*)(const std::string &, float,
                                        std::tuple<int, int>)>(
           "CalculateTextRenderSize", renderer::CalculateTextRenderSize)

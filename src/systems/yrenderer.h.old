@@ -5,7 +5,7 @@
 #include <tuple>
 
 namespace yapre {
-namespace renderer_bgfx {
+namespace renderer {
 bool Init();
 void Deinit();
 void Update(int delta_ms);

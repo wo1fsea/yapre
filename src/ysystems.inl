@@ -3,7 +3,7 @@
 #include "yaudio.h"
 #include "yinput.h"
 #include "ylua.h"
-#include "yrenderer_bgfx.h"
+#include "yrenderer.h"
 #include "yrepl.h"
 
 namespace yapre {
@@ -14,14 +14,14 @@ using DeinitFPtr = void (*)(void);
 using UpdateFPtr = void (*)(int);
 
 constexpr std::array<InitFPtr, kSysmtemNum> kInitFPtrs{
-    &repl::Init, &audio::Init, &renderer_bgfx::Init, &input::Init, &lua::Init};
+    &repl::Init, &audio::Init, &renderer::Init, &input::Init, &lua::Init};
 
 constexpr std::array<DeinitFPtr, kSysmtemNum> kDeinitFPtrs{
-    &input::Deinit, &renderer_bgfx::Deinit, &audio::Deinit, &lua::Deinit,
+    &input::Deinit, &renderer::Deinit, &audio::Deinit, &lua::Deinit,
     &repl::Deinit};
 
 constexpr std::array<UpdateFPtr, kSysmtemNum> kUpdateFPtrs{
-    &input::Update, &lua::Update, &audio::Update, &renderer_bgfx::Update,
+    &input::Update, &lua::Update, &audio::Update, &renderer::Update,
     &repl::Update};
 
 inline bool InitSystems() {

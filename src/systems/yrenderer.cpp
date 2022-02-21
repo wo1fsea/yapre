@@ -9,12 +9,28 @@
 #include "ytexture.h"
 #include "ywindow.h"
 
-#include <SDL.h>
+#include "SDL.h"
+#include "SDL_syswm.h"
+#include "bgfx/bgfx.h"
+#include "bgfx/platform.h"
+#include "bx/math.h"
+
+#include "file-ops.h"
+
+#if BX_PLATFORM_EMSCRIPTEN
+#include "emscripten.h"
+#endif // BX_PLATFORM_EMSCRIPTEN
+
+#if BX_PLATFORM_IOS
+void *YapreSDLGetNwh(SDL_SysWMinfo wmi, SDL_Window *window);
+#endif
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <string>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
@@ -29,14 +45,85 @@ int render_width = 320;
 int render_height = 240;
 bool keep_aspect = true;
 
-unsigned int VBO = 0;
-unsigned int draw_count = 0;
+struct PosColorVertex {
+  float x;
+  float y;
+  float z;
+  uint32_t abgr;
+};
+
+static PosColorVertex cube_vertices[] = {
+    {-1.0f, 1.0f, 1.0f, 0xff000000},   {1.0f, 1.0f, 1.0f, 0xff0000ff},
+    {-1.0f, -1.0f, 1.0f, 0xff00ff00},  {1.0f, -1.0f, 1.0f, 0xff00ffff},
+    {-1.0f, 1.0f, -1.0f, 0xffff0000},  {1.0f, 1.0f, -1.0f, 0xffff00ff},
+    {-1.0f, -1.0f, -1.0f, 0xffffff00}, {1.0f, -1.0f, -1.0f, 0xffffffff},
+};
+
+static const uint16_t cube_tri_list[] = {
+    0, 1, 2, 1, 3, 2, 4, 6, 5, 5, 6, 7, 0, 2, 4, 4, 2, 6,
+    1, 5, 3, 5, 7, 3, 0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7,
+};
+
+bgfx::ShaderHandle loadShader(const std::string &name) {
+#if BX_PLATFORM_WINDOWS
+  std::string shaderPath = "./bgfx_shader/windows/";
+#elif BX_PLATFORM_OSX
+  std::string shaderPath = "./bgfx_shader/osx/";
+#elif BX_PLATFORM_LINUX
+  std::string shaderPath = "./bgfx_shader/linux/";
+#elif BX_PLATFORM_EMSCRIPTEN
+  std::string shaderPath = "./bgfx_shader/asmjs/";
+#elif BX_PLATFORM_IOS
+  std::string shaderPath = "./bgfx_shader/ios/";
+#elif BX_PLATFORM_ANDROID
+  std::string shaderPath = "./bgfx_shader/android/";
+#endif
+
+  std::stringstream shaderStream;
+  std::ifstream shaderFile(shaderPath + name);
+  shaderStream << shaderFile.rdbuf();
+  shaderFile.close();
+  std::string shaderFileContext = shaderStream.str();
+  const bgfx::Memory *mem =
+      bgfx::copy(shaderFileContext.data(), shaderFileContext.size());
+  const bgfx::ShaderHandle handle = bgfx::createShader(mem);
+  bgfx::setName(handle, name.c_str());
+  return handle;
+}
+
+bgfx::ProgramHandle loadProgram(const std::string &vsName,
+                                const std::string &psName) {
+  bgfx::ShaderHandle vsh = loadShader(vsName);
+  bgfx::ShaderHandle fsh = loadShader(psName);
+  bgfx::ProgramHandle program = bgfx::createProgram(vsh, fsh, true);
+  return program;
+}
+
+struct context_t {
+  SDL_Window *window = nullptr;
+  bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
+  bgfx::VertexBufferHandle vbh = BGFX_INVALID_HANDLE;
+  bgfx::IndexBufferHandle ibh = BGFX_INVALID_HANDLE;
+
+  float cam_pitch = 0.0f;
+  float cam_yaw = 0.0f;
+  float rot_scale = 0.01f;
+
+  int prev_mouse_x = 0;
+  int prev_mouse_y = 0;
+
+  int width = 0;
+  int height = 0;
+
+  bool quit = false;
+};
 
 using DrawData =
     std::tuple<unsigned int, unsigned int, glm::mat4, glm::mat4, glm::vec3>;
 std::unordered_map<std::string, std::shared_ptr<Texture>> texture_map;
 std::vector<DrawData> draw_list;
-glm::fvec4 clean_color = glm::fvec4(0.2, 0.2, 0.2, 1);
+
+uint32_t clean_color = 0xffffffff;
 
 const float default_vertices[] = {
     // pos      // tex
@@ -50,34 +137,82 @@ int viewport_y = 0;
 int viewport_w = render_width;
 int viewport_h = render_height;
 
-/// Holds all state information relevant to a character as loaded using FreeType
+context_t context;
 
-void PrintGlInfo() {
-  std::cout << "OpenGL loaded" << std::endl;
-  std::cout << "Vendor:" << glGetString(GL_VENDOR) << std::endl;
-  std::cout << "Renderer:" << glGetString(GL_RENDERER) << std::endl;
-  std::cout << "Version:" << glGetString(GL_VERSION) << std::endl;
+inline bgfx::PlatformData _GetPlatformData(SDL_SysWMinfo wmi) {
+  bgfx::PlatformData pd{};
+#if BX_PLATFORM_WINDOWS
+  pd.nwh = wmi.info.win.window;
+#elif BX_PLATFORM_OSX
+  pd.nwh = wmi.info.cocoa.window;
+#elif BX_PLATFORM_LINUX
+  pd.ndt = wmi.info.x11.display;
+  pd.nwh = (void *)(uintptr_t)wmi.info.x11.window;
+#elif BX_PLATFORM_EMSCRIPTEN
+  pd.nwh = (void *)"#canvas";
+#elif BX_PLATFORM_IOS
+  pd.nwh = YapreSDLGetNwh(wmi, yapre::window::mainWindow);
+#elif BX_PLATFORM_ANDROID
+  pd.nwh = wmi.info.android.window;
+#endif
+  return pd;
+}
+
+inline bgfx::RendererType::Enum _GetRendererType() {
+#if BX_PLATFORM_WINDOWS
+  return bgfx::RendererType::OpenGL;
+#elif BX_PLATFORM_OSX
+  return bgfx::RendererType::Metal;
+#elif BX_PLATFORM_LINUX
+  return bgfx::RendererType::OpenGL;
+#elif BX_PLATFORM_EMSCRIPTEN
+  return bgfx::RendererType::OpenGLES;
+#elif BX_PLATFORM_IOS
+  return bgfx::RendererType::Metal;
+#elif BX_PLATFORM_ANDROID
+  return bgfx::RendererType::OpenGLES;
+#endif
+  return bgfx::RendererType::Count;
 }
 
 bool Init() {
-  gladLoadGLLoader(SDL_GL_GetProcAddress);
-  PrintGlInfo();
-  // glEnable(GL_DEPTH_TEST);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  SDL_SysWMinfo wmi;
+  SDL_VERSION(&wmi.version);
 
-  shader_sprite = new Shader();
-  shader_sprite->CompileFile("./shader/sprite.vs", "./shader/sprite.fs");
+#if !BX_PLATFORM_EMSCRIPTEN
+  if (!SDL_GetWindowWMInfo(yapre::window::mainWindow, &wmi)) {
+    std::cout << "SDL_SysWMinfo could not be retrieved. SDL_Error:"
+              << SDL_GetError() << std::endl;
+    return false;
+  }
+  bgfx::renderFrame(); // single threaded mode
+#endif                 // !BX_PLATFORM_EMSCRIPTEN
 
-  glGenBuffers(1, &VBO);
+  bgfx::Init bgfx_init;
+  bgfx_init.type = _GetRendererType();
+  bgfx_init.platformData = _GetPlatformData(wmi);
+  bgfx_init.resolution.width = render_width;
+  bgfx_init.resolution.height = render_height;
+  bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
+  bgfx::init(bgfx_init);
 
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(default_vertices), default_vertices,
-               GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glDisableVertexAttribArray(0);
+  bgfx::VertexLayout pos_col_vert_layout;
+  pos_col_vert_layout.begin()
+      .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+      .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+      .end();
+  bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(
+      bgfx::makeRef(cube_vertices, sizeof(cube_vertices)), pos_col_vert_layout);
+  bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(
+      bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
+  context.vbh = vbh;
+  context.ibh = ibh;
+
+  context.program = loadProgram("v_simple.bin", "f_simple.bin");
+
+  context.width = render_width;
+  context.height = render_height;
+  context.window = yapre::window::mainWindow;
 
   SetRenderSize(320, 240);
   return true;
@@ -115,240 +250,43 @@ void SetRenderSize(int width, int height) {
   render_height = height;
   window::ResetWindowSize();
   _UpdateRenderSize(width, height);
+
+  auto [w, h] = GetRealRenderSize();
+  bgfx::reset(w, h, BGFX_RESET_VSYNC);
+  bgfx::setViewRect(0, 0, 0, w, h);
 }
 
 void DrawSprite(const std::string &texture_filename, glm::vec3 position,
                 glm::vec2 size, float rotate, glm::vec3 color) {
   std::shared_ptr<Texture> texture_ptr;
-  auto i = texture_map.find(texture_filename);
-  if (i != texture_map.end()) {
-    texture_ptr = i->second;
-  } else {
-    texture_ptr = std::make_shared<Texture>(texture_filename);
-    texture_map[texture_filename] = texture_ptr;
-  }
-  DrawSprite(texture_ptr.get(), position, size, rotate, color);
 }
 
 void DrawSprite(const std::string &texture_filename, int x, int y, int z,
                 int width, int height, float rotate, float R, float G,
-                float B) {
-  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height),
-             rotate, glm::vec3(R, G, B));
-}
+                float B) {}
 
 void DrawSprite(const std::string &texture_filename,
                 std::tuple<int, int, int> position, std::tuple<int, int> size,
-                float rotate, std::tuple<float, float, float> color) {
-  auto [x, y, z] = position;
-  auto [width, height] = size;
-  auto [R, G, B] = color;
-  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height),
-             rotate, glm::vec3(R, G, B));
-}
+                float rotate, std::tuple<float, float, float> color) {}
 
 void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
-                float rotate, glm::vec3 color) {
-
-  texture->UpdateData();
-
-  if (size.x < 0 || size.y < 0) {
-    size.x = texture->Width();
-    size.y = texture->Height();
-  }
-  int real_size = texture->RealSize();
-
-  position.z = position.z;
-  glm::mat4 model = glm::mat4(1.0f);
-  model = glm::translate(model, position);
-  model = glm::translate(
-      model, glm::vec3(0.5f * size.x, 0.5f * size.y,
-                       0.0f)); // move origin of rotation to center of quad
-  model = glm::rotate(model, glm::radians(rotate),
-                      glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
-  model = glm::translate(model, glm::vec3(-0.5f * size.x, -0.5f * size.y,
-                                          0.0f)); // move origin back
-
-  model = glm::scale(model, glm::vec3(real_size * size.x / texture->Width(),
-                                      real_size * size.y / texture->Height(),
-                                      1.0f)); // last scale
-
-  auto [w, h] = GetRealRenderSize();
-  glm::mat4 projection =
-      glm::ortho(0.0f, 1.f * w, 1.f * h, 0.0f, -kMaxZ, kMaxZ);
-  unsigned int draw_id = position.z * 1024 * 1024 + draw_count;
-  draw_count++;
-
-  draw_list.emplace_back(
-      std::make_tuple(draw_id, texture->TextureID(), model, projection, color));
-  return;
-}
+                float rotate, glm::vec3 color) {}
 
 void DrawSprite(Texture *image_data, int x, int y, int z, int width, int height,
-                float rotate, float R, float G, float B) {
-  DrawSprite(image_data, glm::vec3(x, y, z), glm::vec2(width, height), rotate,
-             glm::vec3(R, G, B));
-}
+                float rotate, float R, float G, float B) {}
 
 void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
                 std::tuple<int, int> size, float rotate,
-                std::tuple<float, float, float> color) {
-  auto [x, y, z] = position;
-  auto [width, height] = size;
-  auto [R, G, B] = color;
-  DrawSprite(image_data, glm::vec3(x, y, z), glm::vec2(width, height), rotate,
-             glm::vec3(R, G, B));
-}
+                std::tuple<float, float, float> color) {}
 
-void DrawText(const std::string &text, float scale, glm::vec3 position,
-              glm::vec2 area, glm::vec3 color) {
-
-  char *str = (char *)text.c_str();  // utf-8 string
-  char *str_i = str;                 // string iterator
-  char *end = str + strlen(str) + 1; // end iterator
-
-  glm::vec3 o_pos(position);
-
-  do {
-    uint32_t code = utf8::next(str_i, end); // get 32 bit code of a utf-8 symbol
-    if (code == 0)
-      continue;
-
-    if (code == '\n') {
-      position.x = o_pos.x;
-      position.y += font::kFontSize * scale;
-      if (area.y > 0 && position.y > o_pos.y + area.y) {
-        break;
-      }
-      continue;
-    }
-
-    glm::vec3 c_pos(position);
-    auto char_data = font::GetCharData(code);
-    char_data->texture->UpdateData();
-
-    c_pos.x = c_pos.x + char_data->bearing_x * scale;
-    c_pos.y =
-        c_pos.y +
-        (font::GetCharData(0x9F8D)->bearing_y - char_data->bearing_y) * scale;
-
-    float w = char_data->width * scale;
-    float h = char_data->height * scale;
-
-    int real_size = char_data->texture->RealSize();
-
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, c_pos); // move origin back
-
-    model = glm::scale(model,
-                       glm::vec3(real_size * w / char_data->texture->Width(),
-                                 real_size * h / char_data->texture->Height(),
-                                 1.0f)); // last scale
-
-    auto [rw, rh] = GetRealRenderSize();
-    glm::mat4 projection =
-        glm::ortho(0.0f, 1.f * rw, 1.f * rh, 0.0f, -kMaxZ, kMaxZ);
-    unsigned int draw_id = position.z * 1024 * 1024 + draw_count;
-    draw_count++;
-
-    draw_list.emplace_back(std::make_tuple(
-        draw_id, char_data->texture->TextureID(), model, projection, color));
-
-    position.x += char_data->advance * scale;
-
-    if (area.x > 0 && position.x > o_pos.x + area.x) {
-      position.x = o_pos.x;
-      position.y += font::kFontSize * scale;
-    }
-
-    if (area.y > 0 && position.y > o_pos.y + area.y) {
-      break;
-    }
-
-  } while (str_i < end);
-}
-
-void DrawText(const std::string &text, float scale,
-              std::tuple<int, int, int> position, std::tuple<int, int> area,
-              std::tuple<float, float, float> color) {
-  auto [x, y, z] = position;
-  auto [width, height] = area;
-  auto [R, G, B] = color;
-  DrawText(text, scale, glm::vec3(x, y, z), glm::vec2(width, height),
-           glm::vec3(R, G, B));
-}
+void DrawText_(const std::string &text, float scale,
+               std::tuple<int, int, int> position, std::tuple<int, int> area,
+               std::tuple<float, float, float> color) {}
 
 std::tuple<int, int> CalculateTextRenderSize(const std::string &text,
                                              float scale,
                                              std::tuple<int, int> area) {
-
-  auto [aw, ah] = area;
-  int render_width = 0;
-  int render_height = 0;
-  int pos_x = 0;
-  int pos_y = 0;
-
-  char *str = (char *)text.c_str();  // utf-8 string
-  char *str_i = str;                 // string iterator
-  char *end = str + strlen(str) + 1; // end iterator
-
-  do {
-    uint32_t code = utf8::next(str_i, end); // get 32 bit code of a utf-8 symbol
-    if (code == 0)
-      continue;
-
-    if (code == '\n') {
-      pos_x = 0;
-      pos_y += font::kFontSize * scale;
-      if (ah > 0 && pos_y > ah) {
-        break;
-      }
-      continue;
-    }
-
-    auto char_data = font::GetCharData(code);
-    pos_x += char_data->advance * scale;
-
-    if (aw > 0 && pos_x > aw) {
-      pos_x = 0;
-      pos_y += font::kFontSize * scale;
-    }
-
-    if (ah > 0 && pos_y > ah) {
-      break;
-    }
-
-    render_width = pos_x > render_width ? pos_x : render_width;
-    render_height = pos_y + font::kFontSize * scale;
-  } while (str_i < end);
-
-  return std::make_tuple(render_width, render_height);
-}
-
-void DrawAll() {
-  draw_count = 0;
-
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glEnableVertexAttribArray(0);
-  glActiveTexture(GL_TEXTURE0);
-
-  std::sort(draw_list.begin(), draw_list.end(),
-            [](const DrawData &a, const DrawData &b) {
-              return std::get<0>(a) < std::get<0>(b);
-            });
-
-  for (auto [draw_id, texture_id, model, projection, color] : draw_list) {
-    shader_sprite->Use();
-    shader_sprite->SetInteger("sprite", 0);
-    shader_sprite->SetMatrix4("projection", projection);
-    shader_sprite->SetMatrix4("model", model);
-    shader_sprite->SetVector3f("spriteColor", color);
-    glBindTexture(GL_TEXTURE_2D, texture_id);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-  }
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  draw_list.clear();
+  return std::make_tuple(0, 0);
 }
 
 void RefreshViewport() {
@@ -375,18 +313,50 @@ void RefreshViewport() {
   viewport_h = h;
 }
 
+void _Draw() {
+  float cam_rotation[16];
+  bx::mtxRotateXYZ(cam_rotation, 0.f, 0.f, 0.f);
+
+  float cam_translation[16];
+  bx::mtxTranslate(cam_translation, 0.0f, 0.0f, -5.0f);
+
+  float cam_transform[16];
+  bx::mtxMul(cam_transform, cam_translation, cam_rotation);
+
+  float view[16];
+  bx::mtxInverse(view, cam_transform);
+
+  float proj[16];
+  bx::mtxProj(proj, 60.0f, float(context.width) / float(context.height), 0.1f,
+              100.0f, bgfx::getCaps()->homogeneousDepth);
+
+  bgfx::setViewTransform(0, view, proj);
+
+  float model[16];
+  bx::mtxIdentity(model);
+  bgfx::setTransform(model);
+
+  bgfx::setVertexBuffer(0, context.vbh);
+  bgfx::setIndexBuffer(context.ibh);
+
+  bgfx::submit(0, context.program);
+}
+
 void Update(int delta_ms) {
   auto [w, h] = window::GetDrawableSize();
   lua::GStateModule("yapre")
       .Define("drawable_width", w)
       .Define("drawable_height", h);
 
-  RefreshViewport();
-  glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
-  glClearColor(clean_color.r, clean_color.g, clean_color.b, clean_color.a);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  context.width = w;
+  context.height = h;
 
-  DrawAll();
+  bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, clean_color, 1.0f,
+                     0);
+
+  RefreshViewport();
+  _Draw();
+  bgfx::frame();
 }
 
 std::tuple<int, int> ConvertToViewport(int x, int y) {
@@ -396,13 +366,13 @@ std::tuple<int, int> ConvertToViewport(int x, int y) {
 }
 
 void SetClearColor(float R, float G, float B, float A) {
-  clean_color.r = R;
-  clean_color.g = G;
-  clean_color.b = B;
-  clean_color.a = A;
+  clean_color = (int)(255 * R);
+  clean_color = (clean_color << 8) + (int)(255 * G);
+  clean_color = (clean_color << 8) + (int)(255 * B);
+  clean_color = (clean_color << 8) + (int)(255 * A);
 }
 
-void SetKeepAspect(bool keey_aspect_) { keep_aspect = keey_aspect_; }
+void SetKeepAspect(bool keey_aspect_) {}
 
 } // namespace renderer
 } // namespace yapre

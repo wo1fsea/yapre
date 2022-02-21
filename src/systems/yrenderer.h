@@ -29,14 +29,10 @@ void DrawSprite(Texture *texture, int x, int y, int z, int width, int height,
 void DrawSprite(Texture *texture, std::tuple<int, int, int> position,
                 std::tuple<int, int> size, float rotate,
                 std::tuple<float, float, float> color);
-void DrawText(const std::string &text, float scale = 1.0f,
-              glm::vec3 position = glm::vec3(0.0f),
-              glm::vec2 area = glm::vec2(-1.0f),
-              glm::vec3 color = glm::vec3(1.0f));
-void DrawText(const std::string &text, float scale = 1.0f,
-              std::tuple<int, int, int> position = {0, 0, 0},
-              std::tuple<int, int> area = {-1, -1},
-              std::tuple<float, float, float> color = {1.0f, 1.0f, 1.0f});
+void DrawText_(const std::string &text, float scale = 1.0f,
+               std::tuple<int, int, int> position = {0, 0, 0},
+               std::tuple<int, int> area = {-1, -1},
+               std::tuple<float, float, float> color = {1.0f, 1.0f, 1.0f});
 std::tuple<int, int> CalculateTextRenderSize(const std::string &, float,
                                              std::tuple<int, int>);
 void SetClearColor(float R, float G, float B, float A);
