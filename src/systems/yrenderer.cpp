@@ -10,7 +10,7 @@
 #include "ywindow.h"
 
 #include "SDL.h"
-#include "SDL_syswm.h"
+
 #include "bgfx/bgfx.h"
 #include "bgfx/platform.h"
 #include "bx/math.h"
@@ -139,22 +139,9 @@ int viewport_h = render_height;
 
 context_t context;
 
-inline bgfx::PlatformData _GetPlatformData(SDL_SysWMinfo wmi) {
+inline bgfx::PlatformData _GetPlatformData() {
   bgfx::PlatformData pd{};
-#if BX_PLATFORM_WINDOWS
-  pd.nwh = wmi.info.win.window;
-#elif BX_PLATFORM_OSX
-  pd.nwh = wmi.info.cocoa.window;
-#elif BX_PLATFORM_LINUX
-  pd.ndt = wmi.info.x11.display;
-  pd.nwh = (void *)(uintptr_t)wmi.info.x11.window;
-#elif BX_PLATFORM_EMSCRIPTEN
-  pd.nwh = (void *)"#canvas";
-#elif BX_PLATFORM_IOS
-  pd.nwh = YapreSDLGetNwh(wmi, yapre::window::mainWindow);
-#elif BX_PLATFORM_ANDROID
-  pd.nwh = wmi.info.android.window;
-#endif
+  std::tie(pd.nwh, pd.ndt) = window::GetPlatformData();
   return pd;
 }
 
@@ -176,21 +163,13 @@ inline bgfx::RendererType::Enum _GetRendererType() {
 }
 
 bool Init() {
-  SDL_SysWMinfo wmi;
-  SDL_VERSION(&wmi.version);
-
 #if !BX_PLATFORM_EMSCRIPTEN
-  if (!SDL_GetWindowWMInfo(yapre::window::mainWindow, &wmi)) {
-    std::cout << "SDL_SysWMinfo could not be retrieved. SDL_Error:"
-              << SDL_GetError() << std::endl;
-    return false;
-  }
   bgfx::renderFrame(); // single threaded mode
 #endif                 // !BX_PLATFORM_EMSCRIPTEN
 
   bgfx::Init bgfx_init;
   bgfx_init.type = _GetRendererType();
-  bgfx_init.platformData = _GetPlatformData(wmi);
+  bgfx_init.platformData = _GetPlatformData();
   bgfx_init.resolution.width = render_width;
   bgfx_init.resolution.height = render_height;
   bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
@@ -280,8 +259,8 @@ void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
                 std::tuple<float, float, float> color) {}
 
 void DrawText(const std::string &text, float scale,
-               std::tuple<int, int, int> position, std::tuple<int, int> area,
-               std::tuple<float, float, float> color) {}
+              std::tuple<int, int, int> position, std::tuple<int, int> area,
+              std::tuple<float, float, float> color) {}
 
 std::tuple<int, int> CalculateTextRenderSize(const std::string &text,
                                              float scale,

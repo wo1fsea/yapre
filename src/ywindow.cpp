@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include "SDL.h"
+#include "SDL_syswm.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -94,6 +95,35 @@ int OnWindowEvent(void *data, SDL_Event *event) {
     }
   }
   return 0;
+}
+
+std::tuple<void *, void *> GetPlatformData() {
+  SDL_SysWMinfo wmi;
+  SDL_VERSION(&wmi.version);
+
+  if (!SDL_GetWindowWMInfo(yapre::window::mainWindow, &wmi)) {
+    PrintSdlError();
+  }
+
+  void *nwh = 0;
+  void *ndt = 0;
+
+#if defined(YAPRE_WINDOWS)
+  nwh = wmi.info.win.window;
+#elif defined(YAPRE_MAC)
+  nwh = wmi.info.cocoa.window;
+#elif defined(YAPRE_LIUNX)
+  nwh = (void *)(uintptr_t)wmi.info.x11.window;
+  ndt = wmi.info.x11.display;
+#elif defined(YAPRE_ANDROID)
+  nwh = wmi.info.android.window;
+#elif defined(YAPRE_IOS)
+  nwh = YapreSDLGetNwh(wmi, yapre::window::mainWindow);
+#elif defined(YAPRE_EMSCRIPTEN)
+  nwh = (void *)"#canvas";
+#endif
+
+  return std::make_tuple(nwh, ndt);
 }
 
 } // namespace window
