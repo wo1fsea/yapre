@@ -15,8 +15,6 @@
 #include "bgfx/platform.h"
 #include "bx/math.h"
 
-#include "file-ops.h"
-
 #if BX_PLATFORM_EMSCRIPTEN
 #include "emscripten.h"
 #endif // BX_PLATFORM_EMSCRIPTEN
