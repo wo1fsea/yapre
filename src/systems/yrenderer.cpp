@@ -1,11 +1,9 @@
 #include "yrenderer.h"
 
-#include "glad/glad.h"
 #include "glm/glm.hpp"
 
 #include "yfont.h"
 #include "yluabind.hpp"
-#include "yshader.h"
 #include "ytexture.h"
 #include "ywindow.h"
 
@@ -128,8 +126,6 @@ const float default_vertices[] = {
     0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
 
-Shader *shader_sprite = nullptr;
-Shader *shader_text = nullptr;
 int viewport_x = 0;
 int viewport_y = 0;
 int viewport_w = render_width;
@@ -195,7 +191,7 @@ bool Init() {
   return true;
 }
 
-void Deinit() { delete shader_sprite; }
+void Deinit() {}
 
 std::tuple<int, int> GetPreferRenderSize() {
   return std::make_tuple(render_width, render_height);

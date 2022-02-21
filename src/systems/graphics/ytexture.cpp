@@ -41,7 +41,7 @@ Texture::Texture(const std::string &file_path) {
   }
   stbi_image_free(file_data);
 
-  glGenTextures(1, &texture_id);
+  // glGenTextures(1, &texture_id);
 }
 
 Texture::Texture(unsigned int width_, unsigned int height_)
@@ -57,10 +57,12 @@ Texture::Texture(unsigned int width_, unsigned int height_)
     data_ptr[i] = 0;
   }
 
-  glGenTextures(1, &texture_id);
+  // glGenTextures(1, &texture_id);
 }
 
-Texture::~Texture() { glDeleteTextures(1, &texture_id); }
+Texture::~Texture() {
+  // glDeleteTextures(1, &texture_id);
+}
 
 void Texture::UpdateData() {
   if (!changed) {
@@ -68,6 +70,7 @@ void Texture::UpdateData() {
   }
 
   changed = false;
+  /*
   glBindTexture(GL_TEXTURE_2D, texture_id);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, real_size, real_size, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, data_ptr.data());
@@ -78,6 +81,7 @@ void Texture::UpdateData() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   glBindTexture(GL_TEXTURE_2D, 0);
+  */
 }
 
 } // namespace yapre

@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 
-#include "glad/glad.h"
-
 namespace yapre {
 class Texture {
 private:

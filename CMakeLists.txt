@@ -23,9 +23,6 @@ option(SDL_SHARED FALSE)
 set(SDL2_DIR "external/SDL")
 add_subdirectory(${SDL2_DIR})
 
-set(GLAD_DIR "external/glad")
-add_subdirectory(${GLAD_DIR})
-
 set(GLM_DIR "external/glm")
 add_subdirectory(${GLM_DIR})
 
@@ -76,7 +73,6 @@ include_directories(
     src/systems/graphics/
     ${SDL2_DIR}/include
     ${SDL2_DIR}/src
-    ${GLAD_DIR}/include
     ${ASSIMP_INCLUDE_DIRS} 
     ${GLM_DIR}
     ${STB_IMAGE_DIR}/include
@@ -142,7 +138,6 @@ target_link_libraries(
     ${PROJECT_NAME} 
     SDL2main 
     SDL2-static 
-    glad 
     glm_static
     std_image
     lua
