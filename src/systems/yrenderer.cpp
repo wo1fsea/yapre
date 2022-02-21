@@ -279,7 +279,7 @@ void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
                 std::tuple<int, int> size, float rotate,
                 std::tuple<float, float, float> color) {}
 
-void DrawText_(const std::string &text, float scale,
+void DrawText(const std::string &text, float scale,
                std::tuple<int, int, int> position, std::tuple<int, int> area,
                std::tuple<float, float, float> color) {}
 
