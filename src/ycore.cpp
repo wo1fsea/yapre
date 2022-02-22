@@ -77,8 +77,8 @@ bool Init() {
 }
 
 void Deinit() {
-  DeinitSystems();
   scheduler::Deinit();
+  DeinitSystems();
 }
 
 void Update() { scheduler::Update(); }
