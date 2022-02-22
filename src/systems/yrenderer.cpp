@@ -59,7 +59,7 @@ static PosColorVertex cube_vertices[] = {
 };
 
 static const uint16_t cube_tri_list[] = {
-    0, 1, 2, 0, 3, 1,
+    1,3,0,2,1,0
 };
 
 bgfx::ShaderHandle loadShader(const std::string &name) {
