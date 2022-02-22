@@ -40,8 +40,12 @@ glm::fvec4 clean_color = glm::fvec4(0.2, 0.2, 0.2, 1);
 
 const float default_vertices[] = {
     // pos      // tex
-    0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
+    0.0f, 1.0f, 0.0f, 1.0f, 
+    1.0f, 0.0f, 1.0f, 0.0f, 
+    0.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, 1.0f, 
+    1.0f, 1.0f, 1.0f, 1.0f, 
+    1.0f, 0.0f, 1.0f, 0.0f};
 
 Shader *shader_sprite = nullptr;
 Shader *shader_text = nullptr;

@@ -49,15 +49,16 @@ struct PosColorVertex {
 };
 
 static PosColorVertex cube_vertices[] = {
-    {-1.0f, 1.0f, 1.0f, 0xff000000},   {1.0f, 1.0f, 1.0f, 0xff0000ff},
-    {-1.0f, -1.0f, 1.0f, 0xff00ff00},  {1.0f, -1.0f, 1.0f, 0xff00ffff},
-    {-1.0f, 1.0f, -1.0f, 0xffff0000},  {1.0f, 1.0f, -1.0f, 0xffff00ff},
-    {-1.0f, -1.0f, -1.0f, 0xffffff00}, {1.0f, -1.0f, -1.0f, 0xffffffff},
+    {0.0f, 1.0f, 0.0f, 1.0f},
+    {1.0f, 0.0f, 1.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    // 0{0.0f, 1.0f, 0.0f, 1.0f},
+    {1.0f, 1.0f, 1.0f, 1.0f},
+    // 1{1.0f, 0.0f, 1.0f, 0.0f},
 };
 
 static const uint16_t cube_tri_list[] = {
-    0, 1, 2, 1, 3, 2, 4, 6, 5, 5, 6, 7, 0, 2, 4, 4, 2, 6,
-    1, 5, 3, 5, 7, 3, 0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7,
+    0, 1, 2, 0, 3, 1,
 };
 
 bgfx::ShaderHandle loadShader(const std::string &name) {
@@ -171,8 +172,8 @@ bool Init() {
 
   bgfx::VertexLayout pos_col_vert_layout;
   pos_col_vert_layout.begin()
-      .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-      .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+      .add(bgfx::Attrib::Position, 2, bgfx::AttribType::Float)
+      .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
       .end();
   bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(
       bgfx::makeRef(cube_vertices, sizeof(cube_vertices)), pos_col_vert_layout);
