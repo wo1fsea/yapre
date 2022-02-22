@@ -45,16 +45,17 @@ struct PosColorVertex {
   float x;
   float y;
   float z;
-  uint32_t abgr;
+  float u;
+  float v;
 };
 
 static PosColorVertex cube_vertices[] = {
-    {0.0f, 1.0f, 0.0f, 1.0f},
-    {1.0f, 0.0f, 1.0f, 0.0f},
-    {0.0f, 0.0f, 0.0f, 0.0f},
-    // 0{0.0f, 1.0f, 0.0f, 1.0f},
-    {1.0f, 1.0f, 1.0f, 1.0f},
-    // 1{1.0f, 0.0f, 1.0f, 0.0f},
+    {0.0f, 1.0f, 0.0f, 0.0f, 1.0f},
+    {1.0f, 0.0f, 0.0f, 1.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+    // 0{0.0f, 1.0f, 0.0f, 0.0f, 1.0f},
+    {1.0f, 1.0f, 0.0f, 1.0f, 1.0f},
+    // 1{1.0f, 0.0f, 0.0f, 1.0f, 0.0f},
 };
 
 static const uint16_t cube_tri_list[] = {
@@ -172,7 +173,7 @@ bool Init() {
 
   bgfx::VertexLayout pos_col_vert_layout;
   pos_col_vert_layout.begin()
-      .add(bgfx::Attrib::Position, 2, bgfx::AttribType::Float)
+      .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
       .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
       .end();
   bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(
