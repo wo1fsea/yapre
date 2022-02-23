@@ -158,6 +158,8 @@ inline bgfx::RendererType::Enum _GetRendererType() {
   return bgfx::RendererType::Count;
 }
 
+int OnWindowEvent(void *data, SDL_Event *event);
+
 bool Init() {
 #if !BX_PLATFORM_EMSCRIPTEN
   bgfx::renderFrame(); // single threaded mode
@@ -189,11 +191,13 @@ bool Init() {
   context.height = render_height;
   context.window = yapre::window::mainWindow;
 
+  SDL_AddEventWatch(OnWindowEvent, yapre::window::mainWindow);
   SetRenderSize(320, 240);
+
   return true;
 }
 
-void Deinit() {}
+void Deinit() { SDL_DelEventWatch(OnWindowEvent, yapre::window::mainWindow); }
 
 std::tuple<int, int> GetPreferRenderSize() {
   return std::make_tuple(render_width, render_height);
@@ -401,6 +405,19 @@ void SetClearColor(float R, float G, float B, float A) {
 }
 
 void SetKeepAspect(bool keey_aspect_) {}
+
+int OnWindowEvent(void *data, SDL_Event *event) {
+  if (event->type == SDL_WINDOWEVENT &&
+      event->window.event == SDL_WINDOWEVENT_RESIZED) {
+    SDL_Window *win = SDL_GetWindowFromID(event->window.windowID);
+    if (win == (SDL_Window *)data) {
+      auto [w, h] = yapre::window::GetDrawableSize();
+      SetRenderSize(w, h);
+      std::cout << w << "," << h << std::endl;
+    }
+  }
+  return 0;
+}
 
 } // namespace renderer
 } // namespace yapre

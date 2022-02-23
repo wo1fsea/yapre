@@ -52,8 +52,6 @@ bool Init() {
     return false;
   }
 
-  SDL_AddEventWatch(OnWindowEvent, mainWindow);
-
   return true;
 }
 
