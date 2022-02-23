@@ -59,7 +59,7 @@ static PosColorVertex cube_vertices[] = {
 };
 
 static const uint16_t cube_tri_list[] = {
-    1,3,0,2,1,0
+    0, 1, 2, 0, 3, 1,
 };
 
 bgfx::ShaderHandle loadShader(const std::string &name) {
@@ -234,25 +234,79 @@ void SetRenderSize(int width, int height) {
 void DrawSprite(const std::string &texture_filename, glm::vec3 position,
                 glm::vec2 size, float rotate, glm::vec3 color) {
   std::shared_ptr<Texture> texture_ptr;
+  DrawSprite(texture_ptr.get(), position, size, rotate, color);
 }
 
 void DrawSprite(const std::string &texture_filename, int x, int y, int z,
                 int width, int height, float rotate, float R, float G,
-                float B) {}
+                float B) {
+  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height),
+             rotate, glm::vec3(R, G, B));
+}
 
 void DrawSprite(const std::string &texture_filename,
                 std::tuple<int, int, int> position, std::tuple<int, int> size,
-                float rotate, std::tuple<float, float, float> color) {}
+                float rotate, std::tuple<float, float, float> color) {
+  auto [x, y, z] = position;
+  auto [width, height] = size;
+  auto [R, G, B] = color;
+  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height),
+             rotate, glm::vec3(R, G, B));
+}
 
 void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
-                float rotate, glm::vec3 color) {}
+                float rotate, glm::vec3 color) {
+  float cam_rotation[16];
+  bx::mtxRotateXYZ(cam_rotation, 0.f, 0.f, 0.f);
+
+  float cam_translation[16];
+  bx::mtxTranslate(cam_translation, 0.0f, 0.0f, -5.0f);
+
+  float cam_transform[16];
+  bx::mtxMul(cam_transform, cam_translation, cam_rotation);
+
+  float view[16];
+  bx::mtxInverse(view, cam_transform);
+
+  float proj[16];
+  auto [w, h] = GetRealRenderSize();
+  bx::mtxOrtho(proj, 0.f, w, h, 0.f, kMaxZ, -kMaxZ, 0,
+               bgfx ::getCaps()->homogeneousDepth);
+
+  bgfx::setViewTransform(0, view, proj);
+  bgfx::setViewRect(0, 0, 0, (uint16_t)w, (uint16_t)h);
+
+  float model[16];
+  float model_translate[16];
+  float model_scale[16];
+
+  bx::mtxTranslate(model_translate, position.x, position.y, position.z);
+  bx::mtxScale(model_scale, size.x, size.y, 1.0f);
+  bx::mtxMul(model, model_scale, model_translate);
+
+  bgfx::setTransform(model);
+
+  bgfx::setVertexBuffer(0, context.vbh);
+  bgfx::setIndexBuffer(context.ibh);
+
+  bgfx::submit(0, context.program);
+}
 
 void DrawSprite(Texture *image_data, int x, int y, int z, int width, int height,
-                float rotate, float R, float G, float B) {}
+                float rotate, float R, float G, float B) {
+  DrawSprite(image_data, glm::vec3(x, y, z), glm::vec2(width, height), rotate,
+             glm::vec3(R, G, B));
+}
 
 void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
                 std::tuple<int, int> size, float rotate,
-                std::tuple<float, float, float> color) {}
+                std::tuple<float, float, float> color) {
+  auto [x, y, z] = position;
+  auto [width, height] = size;
+  auto [R, G, B] = color;
+  DrawSprite(image_data, glm::vec3(x, y, z), glm::vec2(width, height), rotate,
+             glm::vec3(R, G, B));
+}
 
 void DrawText(const std::string &text, float scale,
               std::tuple<int, int, int> position, std::tuple<int, int> area,
@@ -330,7 +384,6 @@ void Update(int delta_ms) {
                      0);
 
   RefreshViewport();
-  _Draw();
   bgfx::frame();
 }
 
