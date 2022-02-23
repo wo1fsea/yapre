@@ -19,8 +19,6 @@ const bool kFullScreen = 0;
 const char *kWindowCaption = "yapre";
 SDL_Window *mainWindow = nullptr;
 
-int OnWindowEvent(void *data, SDL_Event *event);
-
 void PrintSdlError() {
   auto error_message = SDL_GetError();
   std::cout << error_message << std::endl;

@@ -1,7 +1,5 @@
 #include "yrenderer.h"
 
-#include "glm/glm.hpp"
-
 #include "yfont.h"
 #include "yluabind.hpp"
 #include "ytexture.h"
@@ -116,17 +114,7 @@ struct context_t {
   bool quit = false;
 };
 
-using DrawData =
-    std::tuple<unsigned int, unsigned int, glm::mat4, glm::mat4, glm::vec3>;
-std::unordered_map<std::string, std::shared_ptr<Texture>> texture_map;
-std::vector<DrawData> draw_list;
-
 uint32_t clean_color = 0xffffffff;
-
-const float default_vertices[] = {
-    // pos      // tex
-    0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
 
 int viewport_x = 0;
 int viewport_y = 0;
@@ -227,25 +215,20 @@ void _UpdateRenderSize(int width, int height) {
 void SetRenderSize(int width, int height) {
   render_width = width;
   render_height = height;
-  window::ResetWindowSize();
   _UpdateRenderSize(width, height);
+
+  window::ResetWindowSize();
 
   auto [w, h] = GetRealRenderSize();
   bgfx::reset(w, h, BGFX_RESET_VSYNC);
   bgfx::setViewRect(0, 0, 0, w, h);
 }
 
-void DrawSprite(const std::string &texture_filename, glm::vec3 position,
-                glm::vec2 size, float rotate, glm::vec3 color) {
-  std::shared_ptr<Texture> texture_ptr;
-  DrawSprite(texture_ptr.get(), position, size, rotate, color);
-}
-
 void DrawSprite(const std::string &texture_filename, int x, int y, int z,
                 int width, int height, float rotate, float R, float G,
                 float B) {
-  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height),
-             rotate, glm::vec3(R, G, B));
+  DrawSprite(texture_filename, std::make_tuple(x, y, z),
+             std::make_tuple(width, height), rotate, std::make_tuple(R, G, B));
 }
 
 void DrawSprite(const std::string &texture_filename,
@@ -254,12 +237,7 @@ void DrawSprite(const std::string &texture_filename,
   auto [x, y, z] = position;
   auto [width, height] = size;
   auto [R, G, B] = color;
-  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height),
-             rotate, glm::vec3(R, G, B));
-}
 
-void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
-                float rotate, glm::vec3 color) {
   float cam_rotation[16];
   bx::mtxRotateXYZ(cam_rotation, 0.f, 0.f, 0.f);
 
@@ -284,8 +262,8 @@ void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
   float model_translate[16];
   float model_scale[16];
 
-  bx::mtxTranslate(model_translate, position.x, position.y, position.z);
-  bx::mtxScale(model_scale, size.x, size.y, 1.0f);
+  bx::mtxTranslate(model_translate, x, y, z);
+  bx::mtxScale(model_scale, width, height, 1.0f);
   bx::mtxMul(model, model_scale, model_translate);
 
   bgfx::setTransform(model);
@@ -298,18 +276,14 @@ void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
 
 void DrawSprite(Texture *image_data, int x, int y, int z, int width, int height,
                 float rotate, float R, float G, float B) {
-  DrawSprite(image_data, glm::vec3(x, y, z), glm::vec2(width, height), rotate,
-             glm::vec3(R, G, B));
+  DrawSprite(image_data, std::make_tuple(x, y, z),
+             std::make_tuple(width, height), rotate, std::make_tuple(R, G, B));
 }
 
 void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
                 std::tuple<int, int> size, float rotate,
                 std::tuple<float, float, float> color) {
-  auto [x, y, z] = position;
-  auto [width, height] = size;
-  auto [R, G, B] = color;
-  DrawSprite(image_data, glm::vec3(x, y, z), glm::vec2(width, height), rotate,
-             glm::vec3(R, G, B));
+  DrawSprite(image_data, position, size, rotate, color);
 }
 
 void DrawText(const std::string &text, float scale,
