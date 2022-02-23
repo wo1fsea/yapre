@@ -378,7 +378,7 @@ void SetClearColor(float R, float G, float B, float A) {
   clean_color = (clean_color << 8) + (int)(255 * A);
 }
 
-void SetKeepAspect(bool keey_aspect_) {}
+void SetKeepAspect(bool keey_aspect_) { keep_aspect = keey_aspect_; }
 
 int OnWindowEvent(void *data, SDL_Event *event) {
   if (event->type == SDL_WINDOWEVENT &&
