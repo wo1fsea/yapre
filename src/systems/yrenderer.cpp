@@ -234,6 +234,18 @@ void DrawSprite(const std::string &texture_filename, int x, int y, int z,
 void DrawSprite(const std::string &texture_filename,
                 std::tuple<int, int, int> position, std::tuple<int, int> size,
                 float rotate, std::tuple<float, float, float> color) {
+  DrawSprite(NULL, position, size, rotate, color);
+}
+
+void DrawSprite(Texture *image_data, int x, int y, int z, int width, int height,
+                float rotate, float R, float G, float B) {
+  DrawSprite(image_data, std::make_tuple(x, y, z),
+             std::make_tuple(width, height), rotate, std::make_tuple(R, G, B));
+}
+
+void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
+                std::tuple<int, int> size, float rotate,
+                std::tuple<float, float, float> color) {
   auto [x, y, z] = position;
   auto [width, height] = size;
   auto [R, G, B] = color;
@@ -272,18 +284,6 @@ void DrawSprite(const std::string &texture_filename,
   bgfx::setIndexBuffer(context.ibh);
 
   bgfx::submit(0, context.program);
-}
-
-void DrawSprite(Texture *image_data, int x, int y, int z, int width, int height,
-                float rotate, float R, float G, float B) {
-  DrawSprite(image_data, std::make_tuple(x, y, z),
-             std::make_tuple(width, height), rotate, std::make_tuple(R, G, B));
-}
-
-void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
-                std::tuple<int, int> size, float rotate,
-                std::tuple<float, float, float> color) {
-  DrawSprite(image_data, position, size, rotate, color);
 }
 
 void DrawText(const std::string &text, float scale,

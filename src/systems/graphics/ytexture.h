@@ -2,18 +2,24 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
+
+#include "bgfx/bgfx.h"
 
 namespace yapre {
 class Texture {
 private:
+  static std::unordered_map<std::string, Texture> texture_cache;
+
   std::vector<unsigned char> data_ptr;
   int width = 0;
   int height = 0;
   int channel = 4;
   int real_size = 0;
-  unsigned int texture_id = 0;
   bool changed = true;
+
+  bgfx::TextureHandle texture_handler = BGFX_INVALID_HANDLE;
 
 public:
   Texture(const std::string &file_path);
@@ -34,8 +40,8 @@ public:
   inline int Height() { return height; }
   inline int Channel() { return channel; }
   inline int RealSize() { return real_size; }
-  inline unsigned int TextureID() { return texture_id; }
   inline unsigned char *Data() { return data_ptr.data(); }
   inline void ClearChanged() { changed = false; };
+  inline bgfx::TextureHandle TextureHandler() { return texture_handler; }
 };
 } // namespace yapre

@@ -1,5 +1,6 @@
 #include "ytexture.h"
 
+#include "bgfx/bgfx.h"
 #include "stb_image.h"
 
 #include <cassert>
@@ -41,7 +42,9 @@ Texture::Texture(const std::string &file_path) {
   }
   stbi_image_free(file_data);
 
-  // glGenTextures(1, &texture_id);
+  texture_handler = bgfx::createTexture2D(
+      (uint16_t)width, (uint16_t)height, false, 1, bgfx::TextureFormat::BGRA8,
+      0, bgfx::copy(data_ptr.data(), width * height * channel));
 }
 
 Texture::Texture(unsigned int width_, unsigned int height_)
@@ -57,31 +60,22 @@ Texture::Texture(unsigned int width_, unsigned int height_)
     data_ptr[i] = 0;
   }
 
-  // glGenTextures(1, &texture_id);
+  texture_handler = bgfx::createTexture2D(
+      (uint16_t)width, (uint16_t)height, false, 1, bgfx::TextureFormat::BGRA8,
+      0, bgfx::copy(data_ptr.data(), width * height * channel));
 }
 
-Texture::~Texture() {
-  // glDeleteTextures(1, &texture_id);
-}
+Texture::~Texture() { bgfx::destroy(texture_handler); }
 
 void Texture::UpdateData() {
   if (!changed) {
     return;
   }
 
+  bgfx::updateTexture2D(texture_handler, 0, 0, 0, 0, (uint16_t)width,
+                        (uint16_t)height,
+                        bgfx::copy(data_ptr.data(), width * height * channel));
   changed = false;
-  /*
-  glBindTexture(GL_TEXTURE_2D, texture_id);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, real_size, real_size, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, data_ptr.data());
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-  */
 }
 
 } // namespace yapre
