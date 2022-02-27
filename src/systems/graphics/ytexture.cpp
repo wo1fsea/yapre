@@ -7,6 +7,21 @@
 
 namespace yapre {
 
+std::unordered_map<std::string, std::shared_ptr<Texture>>
+    Texture::texture_cache;
+
+std::shared_ptr<Texture> Texture::GetFromFile(const std::string &file_path) {
+  std::shared_ptr<Texture> texture_ptr;
+  auto i = Texture::texture_cache.find(file_path);
+  if (i != Texture::texture_cache.end()) {
+    texture_ptr = i->second;
+  } else {
+    texture_ptr = std::make_shared<Texture>(file_path);
+    Texture::texture_cache[file_path] = texture_ptr;
+  }
+  return texture_ptr;
+}
+
 Texture::Texture(const std::string &file_path) {
   int n_channel;
   int n_width, n_height;
@@ -43,7 +58,7 @@ Texture::Texture(const std::string &file_path) {
   stbi_image_free(file_data);
 
   texture_handler = bgfx::createTexture2D(
-      (uint16_t)width, (uint16_t)height, false, 1, bgfx::TextureFormat::BGRA8,
+      (uint16_t)width, (uint16_t)height, false, 1, bgfx::TextureFormat::RGBA8,
       0, bgfx::copy(data_ptr.data(), width * height * channel));
 }
 
@@ -61,7 +76,7 @@ Texture::Texture(unsigned int width_, unsigned int height_)
   }
 
   texture_handler = bgfx::createTexture2D(
-      (uint16_t)width, (uint16_t)height, false, 1, bgfx::TextureFormat::BGRA8,
+      (uint16_t)width, (uint16_t)height, false, 1, bgfx::TextureFormat::RGBA8,
       0, bgfx::copy(data_ptr.data(), width * height * channel));
 }
 

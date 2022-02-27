@@ -100,6 +100,8 @@ struct context_t {
   bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
   bgfx::VertexBufferHandle vbh = BGFX_INVALID_HANDLE;
   bgfx::IndexBufferHandle ibh = BGFX_INVALID_HANDLE;
+  bgfx::UniformHandle sampler = BGFX_INVALID_HANDLE;
+  bgfx::UniformHandle spriteColor = BGFX_INVALID_HANDLE;
 
   float cam_pitch = 0.0f;
   float cam_yaw = 0.0f;
@@ -170,8 +172,14 @@ bool Init() {
       bgfx::makeRef(cube_vertices, sizeof(cube_vertices)), pos_col_vert_layout);
   bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(
       bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
+
   context.vbh = vbh;
   context.ibh = ibh;
+
+  context.sampler =
+      bgfx::createUniform("spriteTex", bgfx::UniformType::Sampler);
+  context.spriteColor =
+      bgfx::createUniform("spriteColor", bgfx::UniformType::Vec4);
 
   context.program = loadProgram("v_simple.bin", "f_simple.bin");
 
@@ -234,7 +242,8 @@ void DrawSprite(const std::string &texture_filename, int x, int y, int z,
 void DrawSprite(const std::string &texture_filename,
                 std::tuple<int, int, int> position, std::tuple<int, int> size,
                 float rotate, std::tuple<float, float, float> color) {
-  DrawSprite(NULL, position, size, rotate, color);
+  auto texture_ptr = Texture::GetFromFile(texture_filename);
+  DrawSprite(texture_ptr.get(), position, size, rotate, color);
 }
 
 void DrawSprite(Texture *image_data, int x, int y, int z, int width, int height,
@@ -282,7 +291,13 @@ void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
 
   bgfx::setVertexBuffer(0, context.vbh);
   bgfx::setIndexBuffer(context.ibh);
+  bgfx::setTexture(0, context.sampler, image_data->TextureHandler());
 
+  float spriteColor[4] = {R, G, B, 1.f};
+  bgfx::setUniform(context.spriteColor, spriteColor);
+  bgfx::setState(BGFX_STATE_WRITE_RGB |
+                 BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA,
+                                       BGFX_STATE_BLEND_INV_SRC_ALPHA));
   bgfx::submit(0, context.program);
 }
 

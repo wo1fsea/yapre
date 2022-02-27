@@ -10,7 +10,8 @@
 namespace yapre {
 class Texture {
 private:
-  static std::unordered_map<std::string, Texture> texture_cache;
+  static std::unordered_map<std::string, std::shared_ptr<Texture>>
+      texture_cache;
 
   std::vector<unsigned char> data_ptr;
   int width = 0;
@@ -22,6 +23,8 @@ private:
   bgfx::TextureHandle texture_handler = BGFX_INVALID_HANDLE;
 
 public:
+  static std::shared_ptr<Texture> GetFromFile(const std::string &file_path);
+
   Texture(const std::string &file_path);
   Texture(unsigned int width_, unsigned int height_);
   ~Texture();
@@ -44,4 +47,5 @@ public:
   inline void ClearChanged() { changed = false; };
   inline bgfx::TextureHandle TextureHandler() { return texture_handler; }
 };
+
 } // namespace yapre
