@@ -38,6 +38,7 @@ const float kMaxZ = 1024 * 1024;
 int render_width = 320;
 int render_height = 240;
 bool keep_aspect = true;
+unsigned int draw_count = 0;
 
 struct PosColorVertex {
   float x;
@@ -246,18 +247,21 @@ void DrawSprite(const std::string &texture_filename,
   DrawSprite(texture_ptr.get(), position, size, rotate, color);
 }
 
-void DrawSprite(Texture *image_data, int x, int y, int z, int width, int height,
+void DrawSprite(Texture *texture, int x, int y, int z, int width, int height,
                 float rotate, float R, float G, float B) {
-  DrawSprite(image_data, std::make_tuple(x, y, z),
-             std::make_tuple(width, height), rotate, std::make_tuple(R, G, B));
+  DrawSprite(texture, std::make_tuple(x, y, z), std::make_tuple(width, height),
+             rotate, std::make_tuple(R, G, B));
 }
 
-void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
+void DrawSprite(Texture *texture, std::tuple<int, int, int> position,
                 std::tuple<int, int> size, float rotate,
                 std::tuple<float, float, float> color) {
   auto [x, y, z] = position;
   auto [width, height] = size;
   auto [R, G, B] = color;
+  auto real_size = texture->RealSize();
+
+  draw_count += 1;
 
   float cam_rotation[16];
   bx::mtxRotateXYZ(cam_rotation, 0.f, 0.f, 0.f);
@@ -284,14 +288,15 @@ void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
   float model_scale[16];
 
   bx::mtxTranslate(model_translate, x, y, z);
-  bx::mtxScale(model_scale, width, height, 1.0f);
+  bx::mtxScale(model_scale, width * real_size / texture->Width(),
+               height * real_size / texture->Height(), 1.0f);
   bx::mtxMul(model, model_scale, model_translate);
 
   bgfx::setTransform(model);
 
   bgfx::setVertexBuffer(0, context.vbh);
   bgfx::setIndexBuffer(context.ibh);
-  bgfx::setTexture(0, context.sampler, image_data->TextureHandler());
+  bgfx::setTexture(0, context.sampler, texture->TextureHandler());
 
   float spriteColor[4] = {R, G, B, 1.f};
   bgfx::setUniform(context.spriteColor, spriteColor);
@@ -378,6 +383,7 @@ void Update(int delta_ms) {
 
   RefreshViewport();
   bgfx::frame();
+  draw_count = 0;
 }
 
 std::tuple<int, int> ConvertToViewport(int x, int y) {
