@@ -96,26 +96,22 @@ bgfx::ProgramHandle loadProgram(const std::string &vsName,
   return program;
 }
 
-struct context_t {
-  SDL_Window *window = nullptr;
-  bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
-  bgfx::VertexBufferHandle vbh = BGFX_INVALID_HANDLE;
-  bgfx::IndexBufferHandle ibh = BGFX_INVALID_HANDLE;
-  bgfx::UniformHandle sampler = BGFX_INVALID_HANDLE;
-  bgfx::UniformHandle spriteColor = BGFX_INVALID_HANDLE;
-
-  float cam_pitch = 0.0f;
-  float cam_yaw = 0.0f;
-  float rot_scale = 0.01f;
-
-  int prev_mouse_x = 0;
-  int prev_mouse_y = 0;
-
-  int width = 0;
-  int height = 0;
-
-  bool quit = false;
+struct DrawData {
+  int id = 0;
+  std::tuple<int, int, int> position;
+  std::tuple<int, int> size;
+  std::tuple<float, float, float, float> color;
+  float rotate;
+  Texture *texture_ptr;
 };
+
+std::vector<DrawData> draw_list;
+
+bgfx::VertexBufferHandle vbh = BGFX_INVALID_HANDLE;
+bgfx::IndexBufferHandle ibh = BGFX_INVALID_HANDLE;
+bgfx::UniformHandle sampler = BGFX_INVALID_HANDLE;
+bgfx::UniformHandle spriteColor = BGFX_INVALID_HANDLE;
+bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
 
 uint32_t clean_color = 0xffffffff;
 
@@ -123,8 +119,6 @@ int viewport_x = 0;
 int viewport_y = 0;
 int viewport_w = render_width;
 int viewport_h = render_height;
-
-context_t context;
 
 inline bgfx::PlatformData _GetPlatformData() {
   bgfx::PlatformData pd{};
@@ -169,28 +163,18 @@ bool Init() {
       .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
       .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
       .end();
-  bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(
+  vbh = bgfx::createVertexBuffer(
       bgfx::makeRef(cube_vertices, sizeof(cube_vertices)), pos_col_vert_layout);
-  bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(
+  ibh = bgfx::createIndexBuffer(
       bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
 
-  context.vbh = vbh;
-  context.ibh = ibh;
+  sampler = bgfx::createUniform("spriteTex", bgfx::UniformType::Sampler);
+  spriteColor = bgfx::createUniform("spriteColor", bgfx::UniformType::Vec4);
 
-  context.sampler =
-      bgfx::createUniform("spriteTex", bgfx::UniformType::Sampler);
-  context.spriteColor =
-      bgfx::createUniform("spriteColor", bgfx::UniformType::Vec4);
-
-  context.program = loadProgram("v_simple.bin", "f_simple.bin");
-
-  context.width = render_width;
-  context.height = render_height;
-  context.window = yapre::window::mainWindow;
+  program = loadProgram("v_simple.bin", "f_simple.bin");
 
   SDL_AddEventWatch(OnWindowEvent, yapre::window::mainWindow);
   SetRenderSize(320, 240);
-
   return true;
 }
 
@@ -257,9 +241,19 @@ void DrawSprite(Texture *texture, std::tuple<int, int, int> position,
                 std::tuple<int, int> size, float rotate,
                 std::tuple<float, float, float> color) {
   auto [x, y, z] = position;
-  auto [width, height] = size;
   auto [R, G, B] = color;
-  auto real_size = texture->RealSize();
+  auto r_color = std::make_tuple(R, G, B, 1.0f);
+  int draw_id = std::get<2>(position) * 1024 * 1024 + draw_count;
+  draw_count++;
+  draw_list.emplace_back(DrawData{0, std::make_tuple(x, y, draw_count), size,
+                                  r_color, rotate, texture});
+}
+
+void Draw(DrawData draw_data) {
+  auto [x, y, z] = draw_data.position;
+  auto [width, height] = draw_data.size;
+  auto [R, G, B, A] = draw_data.color;
+  auto real_size = draw_data.texture_ptr->RealSize();
 
   draw_count += 1;
 
@@ -277,8 +271,7 @@ void DrawSprite(Texture *texture, std::tuple<int, int, int> position,
 
   float proj[16];
   auto [w, h] = GetRealRenderSize();
-  bx::mtxOrtho(proj, 0.f, w, h, 0.f, kMaxZ, -kMaxZ, 0,
-               bgfx ::getCaps()->homogeneousDepth);
+  bx::mtxOrtho(proj, 0.f, w, h, 0.f, -kMaxZ, kMaxZ, 0, true);
 
   bgfx::setViewTransform(0, view, proj);
   bgfx::setViewRect(0, 0, 0, (uint16_t)w, (uint16_t)h);
@@ -288,22 +281,24 @@ void DrawSprite(Texture *texture, std::tuple<int, int, int> position,
   float model_scale[16];
 
   bx::mtxTranslate(model_translate, x, y, z);
-  bx::mtxScale(model_scale, width * real_size / texture->Width(),
-               height * real_size / texture->Height(), 1.0f);
+  bx::mtxScale(model_scale, width * real_size / draw_data.texture_ptr->Width(),
+               height * real_size / draw_data.texture_ptr->Height(), 1.0f);
   bx::mtxMul(model, model_scale, model_translate);
 
   bgfx::setTransform(model);
 
-  bgfx::setVertexBuffer(0, context.vbh);
-  bgfx::setIndexBuffer(context.ibh);
-  bgfx::setTexture(0, context.sampler, texture->TextureHandler());
+  bgfx::setVertexBuffer(0, vbh);
+  bgfx::setIndexBuffer(ibh);
+  bgfx::setTexture(0, sampler, draw_data.texture_ptr->TextureHandler());
 
-  float spriteColor[4] = {R, G, B, 1.f};
-  bgfx::setUniform(context.spriteColor, spriteColor);
-  bgfx::setState(BGFX_STATE_WRITE_RGB |
+  float spriteColorData[4] = {R, G, B, 1.f};
+  bgfx::setUniform(spriteColor, spriteColorData);
+  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_Z |
+                 BGFX_STATE_DEPTH_TEST_ALWAYS |
                  BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA,
                                        BGFX_STATE_BLEND_INV_SRC_ALPHA));
-  bgfx::submit(0, context.program);
+  bgfx::setViewMode(0, bgfx::ViewMode::Sequential);
+  bgfx::submit(0, program);
 }
 
 void DrawText(const std::string &text, float scale,
@@ -340,48 +335,26 @@ void RefreshViewport() {
   viewport_h = h;
 }
 
-void _Draw() {
-  float cam_rotation[16];
-  bx::mtxRotateXYZ(cam_rotation, 0.f, 0.f, 0.f);
-
-  float cam_translation[16];
-  bx::mtxTranslate(cam_translation, 0.0f, 0.0f, -5.0f);
-
-  float cam_transform[16];
-  bx::mtxMul(cam_transform, cam_translation, cam_rotation);
-
-  float view[16];
-  bx::mtxInverse(view, cam_transform);
-
-  float proj[16];
-  bx::mtxProj(proj, 60.0f, float(context.width) / float(context.height), 0.1f,
-              100.0f, bgfx::getCaps()->homogeneousDepth);
-
-  bgfx::setViewTransform(0, view, proj);
-
-  float model[16];
-  bx::mtxIdentity(model);
-  bgfx::setTransform(model);
-
-  bgfx::setVertexBuffer(0, context.vbh);
-  bgfx::setIndexBuffer(context.ibh);
-
-  bgfx::submit(0, context.program);
-}
-
 void Update(int delta_ms) {
+  draw_count = 0;
+
+  std::sort(draw_list.begin(), draw_list.end(),
+            [](const DrawData &a, const DrawData &b) { return a.id < b.id; });
+
   auto [w, h] = window::GetDrawableSize();
   lua::GStateModule("yapre")
       .Define("drawable_width", w)
       .Define("drawable_height", h);
 
-  context.width = w;
-  context.height = h;
-
-  bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, clean_color, 1.0f,
+  RefreshViewport();
+  bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, clean_color, 0.0f,
                      0);
 
-  RefreshViewport();
+  for (auto draw_data : draw_list) {
+    Draw(draw_data);
+  }
+
+  draw_list.clear();
   bgfx::frame();
   draw_count = 0;
 }
