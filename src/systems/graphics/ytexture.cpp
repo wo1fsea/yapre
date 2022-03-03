@@ -60,7 +60,7 @@ Texture::Texture(const std::string &file_path) {
   texture_handler = bgfx::createTexture2D(
       (uint16_t)real_size, (uint16_t)real_size, false, 1,
       bgfx::TextureFormat::RGBA8, BGFX_SAMPLER_UVW_CLAMP | BGFX_SAMPLER_POINT,
-      bgfx::copy(data_ptr.data(), data_ptr.size()));
+      bgfx::makeRef(data_ptr.data(), data_ptr.size()));
 }
 
 Texture::Texture(unsigned int width_, unsigned int height_)
@@ -79,20 +79,9 @@ Texture::Texture(unsigned int width_, unsigned int height_)
   texture_handler = bgfx::createTexture2D(
       (uint16_t)real_size, (uint16_t)real_size, false, 1,
       bgfx::TextureFormat::RGBA8, BGFX_SAMPLER_UVW_CLAMP | BGFX_SAMPLER_POINT,
-      bgfx::copy(data_ptr.data(), data_ptr.size()));
+      bgfx::makeRef(data_ptr.data(), data_ptr.size()));
 }
 
 Texture::~Texture() { bgfx::destroy(texture_handler); }
-
-void Texture::UpdateData() {
-  if (!changed) {
-    return;
-  }
-
-  bgfx::updateTexture2D(texture_handler, 0, 0, 0, 0, (uint16_t)real_size,
-                        (uint16_t)real_size,
-                        bgfx::copy(data_ptr.data(), data_ptr.size()));
-  changed = false;
-}
 
 } // namespace yapre

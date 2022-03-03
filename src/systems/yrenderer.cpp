@@ -289,12 +289,103 @@ void Draw(DrawData draw_data) {
 
 void DrawText(const std::string &text, float scale,
               std::tuple<int, int, int> position, std::tuple<int, int> area,
-              std::tuple<float, float, float> color) {}
+              std::tuple<float, float, float> color) {
+
+  char *str = (char *)text.c_str();  // utf-8 string
+  char *str_i = str;                 // string iterator
+  char *end = str + strlen(str) + 1; // end iterator
+
+  auto [a_w, a_h] = area;
+  auto [o_x, o_y, o_z] = position;
+  auto [c_x, c_y, c_z] = position;
+
+  do {
+    uint32_t code = utf8::next(str_i, end); // get 32 bit code of a utf-8 symbol
+    if (code == 0)
+      continue;
+
+    if (code == '\n') {
+      c_x = o_x;
+      c_y += font::kFontSize * scale;
+      if (a_h > 0 && c_y > o_y + a_h) {
+        break;
+      }
+      continue;
+    }
+
+    int i_x = c_x;
+    int i_y = c_y;
+    int i_z = c_z++;
+
+    auto char_data = font::GetCharData(code);
+
+    i_x += char_data->bearing_x * scale;
+    i_y +=
+        (font::GetCharData(0x9F8D)->bearing_y - char_data->bearing_y) * scale;
+
+    auto i_size =
+        std::make_tuple(char_data->width * scale, char_data->height * scale);
+
+    DrawSprite(char_data->texture.get(), std::make_tuple(i_x, i_y, i_z), i_size,
+               0, color);
+
+    c_x += char_data->advance * scale;
+
+    if (a_w > 0 && c_x > o_x + a_w) {
+      c_x = o_x;
+      c_y += font::kFontSize * scale;
+    }
+
+    if (a_h > 0 && c_y > o_y + a_h) {
+      break;
+    }
+  } while (str_i < end);
+}
 
 std::tuple<int, int> CalculateTextRenderSize(const std::string &text,
                                              float scale,
                                              std::tuple<int, int> area) {
-  return std::make_tuple(0, 0);
+  auto [aw, ah] = area;
+  int render_width = 0;
+  int render_height = 0;
+  int pos_x = 0;
+  int pos_y = 0;
+
+  char *str = (char *)text.c_str();  // utf-8 string
+  char *str_i = str;                 // string iterator
+  char *end = str + strlen(str) + 1; // end iterator
+
+  do {
+    uint32_t code = utf8::next(str_i, end); // get 32 bit code of a utf-8 symbol
+    if (code == 0)
+      continue;
+
+    if (code == '\n') {
+      pos_x = 0;
+      pos_y += font::kFontSize * scale;
+      if (ah > 0 && pos_y > ah) {
+        break;
+      }
+      continue;
+    }
+
+    auto char_data = font::GetCharData(code);
+    pos_x += char_data->advance * scale;
+
+    if (aw > 0 && pos_x > aw) {
+      pos_x = 0;
+      pos_y += font::kFontSize * scale;
+    }
+
+    if (ah > 0 && pos_y > ah) {
+      break;
+    }
+
+    render_width = pos_x > render_width ? pos_x : render_width;
+    render_height = pos_y + font::kFontSize * scale;
+  } while (str_i < end);
+
+  return std::make_tuple(render_width, render_height);
 }
 
 void RefreshViewport() {
