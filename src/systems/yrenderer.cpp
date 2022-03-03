@@ -245,7 +245,7 @@ void DrawSprite(Texture *texture, std::tuple<int, int, int> position,
   auto r_color = std::make_tuple(R, G, B, 1.0f);
   int draw_id = std::get<2>(position) * 1024 * 1024 + draw_count;
   draw_count++;
-  draw_list.emplace_back(DrawData{0, std::make_tuple(x, y, draw_count), size,
+  draw_list.emplace_back(DrawData{draw_id, std::make_tuple(x, y, draw_count), size,
                                   r_color, rotate, texture});
 }
 
