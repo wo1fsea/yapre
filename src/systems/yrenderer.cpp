@@ -6,18 +6,9 @@
 #include "ywindow.h"
 
 #include "SDL.h"
-
 #include "bgfx/bgfx.h"
 #include "bgfx/platform.h"
 #include "bx/math.h"
-
-#if BX_PLATFORM_EMSCRIPTEN
-#include "emscripten.h"
-#endif // BX_PLATFORM_EMSCRIPTEN
-
-#if BX_PLATFORM_IOS
-void *YapreSDLGetNwh(SDL_SysWMinfo wmi, SDL_Window *window);
-#endif
 
 #include <algorithm>
 #include <fstream>
@@ -28,6 +19,14 @@ void *YapreSDLGetNwh(SDL_SysWMinfo wmi, SDL_Window *window);
 #include <tuple>
 #include <unordered_map>
 #include <vector>
+
+#if BX_PLATFORM_EMSCRIPTEN
+#include "emscripten.h"
+#endif // BX_PLATFORM_EMSCRIPTEN
+
+#if BX_PLATFORM_IOS
+void *YapreSDLGetNwh(SDL_SysWMinfo wmi, SDL_Window *window);
+#endif
 
 namespace yapre {
 
@@ -217,24 +216,11 @@ void SetRenderSize(int width, int height) {
   bgfx::setViewRect(0, 0, 0, w, h);
 }
 
-void DrawSprite(const std::string &texture_filename, int x, int y, int z,
-                int width, int height, float rotate, float R, float G,
-                float B) {
-  DrawSprite(texture_filename, std::make_tuple(x, y, z),
-             std::make_tuple(width, height), rotate, std::make_tuple(R, G, B));
-}
-
 void DrawSprite(const std::string &texture_filename,
                 std::tuple<int, int, int> position, std::tuple<int, int> size,
                 float rotate, std::tuple<float, float, float> color) {
   auto texture_ptr = Texture::GetFromFile(texture_filename);
   DrawSprite(texture_ptr.get(), position, size, rotate, color);
-}
-
-void DrawSprite(Texture *texture, int x, int y, int z, int width, int height,
-                float rotate, float R, float G, float B) {
-  DrawSprite(texture, std::make_tuple(x, y, z), std::make_tuple(width, height),
-             rotate, std::make_tuple(R, G, B));
 }
 
 void DrawSprite(Texture *texture, std::tuple<int, int, int> position,
@@ -245,8 +231,8 @@ void DrawSprite(Texture *texture, std::tuple<int, int, int> position,
   auto r_color = std::make_tuple(R, G, B, 1.0f);
   int draw_id = std::get<2>(position) * 1024 * 1024 + draw_count;
   draw_count++;
-  draw_list.emplace_back(DrawData{draw_id, std::make_tuple(x, y, draw_count), size,
-                                  r_color, rotate, texture});
+  draw_list.emplace_back(DrawData{draw_id, std::make_tuple(x, y, draw_count),
+                                  size, r_color, rotate, texture});
 }
 
 void Draw(DrawData draw_data) {
