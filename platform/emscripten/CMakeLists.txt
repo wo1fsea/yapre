@@ -5,7 +5,7 @@ function(platform_setup_target)
         ${PROJECT_NAME} 
         PROPERTIES
         # LINK_FLAGS " --preload-file ./data -O2 -g4 -s ASSERTIONS=1 -s USE_SDL=2 -s FULL_ES2=1  -s ALLOW_MEMORY_GROWTH=1"
-        LINK_FLAGS "--preload-file ./data -O2 -s MAX_WEBGL_VERSION=2 -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=209715200 -s MAXIMUM_MEMORY=4GB -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=8 -Wl,--shared-memory,--no-check-features -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[\"$autoResumeAudioContext\"]"
+        LINK_FLAGS "--preload-file ./data -O2 -s MAX_WEBGL_VERSION=2 -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=209715200 -s MAXIMUM_MEMORY=4GB -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=8 -Wl,--shared-memory,--no-check-features -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[\"$autoResumeAudioContext\"] -s DYNCALLS=1"
         )
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html")
     add_custom_command(
