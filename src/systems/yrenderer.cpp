@@ -36,7 +36,12 @@ const float kMaxZ = 1024 * 1024;
 
 int render_width = 320;
 int render_height = 240;
+
+int preferred_width = 320;
+int preferred_height = 240;
+
 bool keep_aspect = true;
+
 unsigned int draw_count = 0;
 
 struct PosColorVertex {
@@ -106,11 +111,16 @@ struct DrawData {
 
 std::vector<DrawData> draw_list;
 
-bgfx::VertexBufferHandle vbh = BGFX_INVALID_HANDLE;
-bgfx::IndexBufferHandle ibh = BGFX_INVALID_HANDLE;
-bgfx::UniformHandle sampler = BGFX_INVALID_HANDLE;
-bgfx::UniformHandle spriteColor = BGFX_INVALID_HANDLE;
+bgfx::VertexBufferHandle vert_buff_handler = BGFX_INVALID_HANDLE;
+bgfx::IndexBufferHandle idx_buff_handler = BGFX_INVALID_HANDLE;
+bgfx::UniformHandle sprite_tex_sampler = BGFX_INVALID_HANDLE;
+bgfx::UniformHandle sprite_color_handler = BGFX_INVALID_HANDLE;
 bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
+
+bgfx::FrameBufferHandle scene_frame_buffer = BGFX_INVALID_HANDLE;
+
+uint32_t scene_view_id = 0;
+uint32_t backbuffer_view_id = 1;
 
 uint32_t clean_color = 0xffffffff;
 
@@ -162,15 +172,25 @@ bool Init() {
       .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
       .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
       .end();
-  vbh = bgfx::createVertexBuffer(
+  vert_buff_handler = bgfx::createVertexBuffer(
       bgfx::makeRef(cube_vertices, sizeof(cube_vertices)), pos_col_vert_layout);
-  ibh = bgfx::createIndexBuffer(
+  idx_buff_handler = bgfx::createIndexBuffer(
       bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
 
-  sampler = bgfx::createUniform("spriteTex", bgfx::UniformType::Sampler);
-  spriteColor = bgfx::createUniform("spriteColor", bgfx::UniformType::Vec4);
+  sprite_tex_sampler =
+      bgfx::createUniform("spriteTex", bgfx::UniformType::Sampler);
+  sprite_color_handler =
+      bgfx::createUniform("spriteColor", bgfx::UniformType::Vec4);
 
   program = loadProgram("v_simple.bin", "f_simple.bin");
+
+  const uint64_t tsFlags = 0 | BGFX_TEXTURE_RT | BGFX_SAMPLER_MIN_POINT |
+                           BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT |
+                           BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP;
+
+  scene_frame_buffer =
+      bgfx::createFrameBuffer(uint16_t(render_width), uint16_t(render_height),
+                              bgfx::TextureFormat::RGBA8, tsFlags);
 
   SDL_AddEventWatch(OnWindowEvent, yapre::window::mainWindow);
   SetRenderSize(320, 240);
@@ -245,8 +265,7 @@ void Draw(DrawData draw_data) {
   auto [R, G, B, A] = draw_data.color;
   auto real_size = texture_ptr->RealSize();
 
-  draw_count += 1;
-
+  /*
   float cam_rotation[16];
   bx::mtxRotateXYZ(cam_rotation, 0.f, 0.f, 0.f);
 
@@ -258,13 +277,13 @@ void Draw(DrawData draw_data) {
 
   float view[16];
   bx::mtxInverse(view, cam_transform);
-
+  */
   float proj[16];
   auto [w, h] = GetRealRenderSize();
   bx::mtxOrtho(proj, 0.f, w, h, 0.f, -kMaxZ, kMaxZ, 0, true);
 
-  bgfx::setViewTransform(0, view, proj);
-  bgfx::setViewRect(0, 0, 0, (uint16_t)w, (uint16_t)h);
+  bgfx::setViewTransform(scene_view_id, NULL, proj);
+  bgfx::setViewRect(scene_view_id, 0, 0, (uint16_t)w, (uint16_t)h);
 
   float model[16];
   float model_translate[16];
@@ -277,18 +296,18 @@ void Draw(DrawData draw_data) {
 
   bgfx::setTransform(model);
 
-  bgfx::setVertexBuffer(0, vbh);
-  bgfx::setIndexBuffer(ibh);
-  bgfx::setTexture(0, sampler, texture_ptr->TextureHandler());
+  bgfx::setVertexBuffer(0, vert_buff_handler);
+  bgfx::setIndexBuffer(idx_buff_handler);
+  bgfx::setTexture(0, sprite_tex_sampler, texture_ptr->TextureHandler());
 
   float spriteColorData[4] = {R, G, B, 1.f};
-  bgfx::setUniform(spriteColor, spriteColorData);
-  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_Z |
+  bgfx::setUniform(sprite_color_handler, spriteColorData);
+  bgfx::setState(BGFX_STATE_WRITE_RGB |
                  BGFX_STATE_DEPTH_TEST_ALWAYS |
                  BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA,
                                        BGFX_STATE_BLEND_INV_SRC_ALPHA));
-  bgfx::setViewMode(0, bgfx::ViewMode::Sequential);
-  bgfx::submit(0, program);
+
+  bgfx::submit(scene_view_id, program);
 }
 
 void DrawText(const std::string &text, float scale,
@@ -418,6 +437,53 @@ void RefreshViewport() {
   viewport_h = h;
 }
 
+void DrawScene() {
+  bgfx::setViewMode(scene_view_id, bgfx::ViewMode::Sequential);
+  bgfx::setViewFrameBuffer(scene_view_id, scene_frame_buffer);
+  bgfx::setViewClear(scene_view_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
+                     clean_color, 0.0f, 0);
+
+  for (auto draw_data : draw_list) {
+    Draw(draw_data);
+  }
+  draw_list.clear();
+  draw_count = 0;
+}
+
+void DrawScreen() {
+  bgfx::setViewClear(backbuffer_view_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
+                     clean_color, 0.0f, 0);
+  float proj[16];
+  auto [w, h] = GetRealRenderSize();
+  bx::mtxOrtho(proj, 0.f, w, h, 0.f, -kMaxZ, kMaxZ, 0, true);
+
+  bgfx::setViewTransform(backbuffer_view_id, NULL, proj);
+  bgfx::setViewRect(backbuffer_view_id, 0, 0, (uint16_t)w, (uint16_t)h);
+
+  float model[16];
+  float model_translate[16];
+  float model_scale[16];
+
+  bx::mtxTranslate(model_translate, 0, 0, 0);
+  bx::mtxScale(model_scale, preferred_width, preferred_height, 1.0f);
+  bx::mtxMul(model, model_scale, model_translate);
+
+  bgfx::setTransform(model);
+
+  bgfx::setVertexBuffer(0, vert_buff_handler);
+  bgfx::setIndexBuffer(idx_buff_handler);
+  bgfx::setTexture(0, sprite_tex_sampler, bgfx::getTexture(scene_frame_buffer));
+
+  float spriteColorData[4] = {1.0f, 1.f, 1.f, 1.f};
+  bgfx::setUniform(sprite_color_handler, spriteColorData);
+  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_Z |
+                 BGFX_STATE_DEPTH_TEST_ALWAYS |
+                 BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA,
+                                       BGFX_STATE_BLEND_INV_SRC_ALPHA));
+
+  bgfx::submit(backbuffer_view_id, program);
+}
+
 void Update(int delta_ms) {
   draw_count = 0;
 
@@ -430,16 +496,11 @@ void Update(int delta_ms) {
       .Define("drawable_height", h);
 
   RefreshViewport();
-  bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, clean_color, 0.0f,
-                     0);
 
-  for (auto draw_data : draw_list) {
-    Draw(draw_data);
-  }
+  DrawScene();
+  DrawScreen();
 
-  draw_list.clear();
   bgfx::frame();
-  draw_count = 0;
 }
 
 std::tuple<int, int> ConvertToViewport(int x, int y) {
