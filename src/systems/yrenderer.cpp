@@ -236,10 +236,14 @@ void DrawSprite(Texture *texture, std::tuple<int, int, int> position,
 }
 
 void Draw(DrawData draw_data) {
+  auto texture_ptr = draw_data.texture_ptr;
+  if (texture_ptr->Width() == 0 || texture_ptr->Height() == 0)
+    return;
+
   auto [x, y, z] = draw_data.position;
   auto [width, height] = draw_data.size;
   auto [R, G, B, A] = draw_data.color;
-  auto real_size = draw_data.texture_ptr->RealSize();
+  auto real_size = texture_ptr->RealSize();
 
   draw_count += 1;
 
@@ -267,15 +271,15 @@ void Draw(DrawData draw_data) {
   float model_scale[16];
 
   bx::mtxTranslate(model_translate, x, y, z);
-  bx::mtxScale(model_scale, width * real_size / draw_data.texture_ptr->Width(),
-               height * real_size / draw_data.texture_ptr->Height(), 1.0f);
+  bx::mtxScale(model_scale, width * real_size / texture_ptr->Width(),
+               height * real_size / texture_ptr->Height(), 1.0f);
   bx::mtxMul(model, model_scale, model_translate);
 
   bgfx::setTransform(model);
 
   bgfx::setVertexBuffer(0, vbh);
   bgfx::setIndexBuffer(ibh);
-  bgfx::setTexture(0, sampler, draw_data.texture_ptr->TextureHandler());
+  bgfx::setTexture(0, sampler, texture_ptr->TextureHandler());
 
   float spriteColorData[4] = {R, G, B, 1.f};
   bgfx::setUniform(spriteColor, spriteColorData);
@@ -326,8 +330,10 @@ void DrawText(const std::string &text, float scale,
     auto i_size =
         std::make_tuple(char_data->width * scale, char_data->height * scale);
 
-    DrawSprite(char_data->texture.get(), std::make_tuple(i_x, i_y, i_z), i_size,
-               0, color);
+    if (char_data->width > 0 && char_data->height > 0) {
+      DrawSprite(char_data->texture.get(), std::make_tuple(i_x, i_y, i_z),
+                 i_size, 0, color);
+    }
 
     c_x += char_data->advance * scale;
 
