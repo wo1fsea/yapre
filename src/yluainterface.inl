@@ -41,7 +41,7 @@ void Define() {
                                        std::tuple<int, int>)>(
           "CalculateTextRenderSize", renderer::CalculateTextRenderSize)
       .Define("SetClearColor", renderer::SetClearColor)
-      .Define("SetRenderSize", renderer::SetRenderSize)
+      .Define("SetRenderSize", renderer::SetPreferredResolution)
       .Define("SetKeepAspect", renderer::SetKeepAspect);
 
   // repl

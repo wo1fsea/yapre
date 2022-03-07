@@ -89,7 +89,7 @@ bool Init() {
 
 void Deinit() { delete shader_sprite; }
 
-std::tuple<int, int> GetPreferRenderSize() {
+std::tuple<int, int> GetPreferredResolution() {
   return std::make_tuple(render_width, render_height);
 }
 

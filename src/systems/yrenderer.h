@@ -8,8 +8,8 @@ namespace renderer {
 bool Init();
 void Deinit();
 void Update(int delta_ms);
-std::tuple<int, int> GetPreferRenderSize();
-void SetRenderSize(int width, int height);
+std::tuple<int, int> GetPreferredResolution();
+void SetPreferredResolution(int width, int height);
 std::tuple<int, int> ConvertToViewport(int x, int y);
 void DrawSprite(const std::string &texture_filename,
                 std::tuple<int, int, int> position, std::tuple<int, int> size,

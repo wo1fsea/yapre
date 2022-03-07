@@ -33,7 +33,7 @@ bool Init() {
 
   SDL_SetHint(SDL_HINT_VIDEO_EXTERNAL_CONTEXT, "1");
 
-  auto [w, h] = renderer::GetPreferRenderSize();
+  auto [w, h] = renderer::GetPreferredResolution();
   if (kFullScreen) {
     mainWindow =
         SDL_CreateWindow(kWindowCaption, SDL_WINDOWPOS_UNDEFINED,
@@ -59,7 +59,7 @@ void Deinit() {
 }
 
 std::tuple<int, int> GetDrawableSize() {
-  auto [w, h] = renderer::GetPreferRenderSize();
+  auto [w, h] = renderer::GetPreferredResolution();
 
 #ifdef __EMSCRIPTEN__
   EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context =
@@ -76,7 +76,7 @@ std::tuple<int, int> GetDrawableSize() {
 void ResetWindowSize() {
 #if defined(YPARE_WINDOWS) || defined(YPARE_MAC) || defined(YPARE_LINUX)
   if (mainWindow) {
-    auto [w, h] = renderer::GetPreferRenderSize();
+    auto [w, h] = renderer::GetPreferredResolution();
     SDL_SetWindowSize(mainWindow, w, h);
   }
 #endif
