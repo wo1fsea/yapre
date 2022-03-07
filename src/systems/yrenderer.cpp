@@ -195,43 +195,49 @@ std::tuple<int, int> GetBackbufferResolution() { return backbuffer_resolution; }
 void SetPreferredResolution(int width, int height) {
   preferred_resolution = std::make_tuple(width, height);
   UpdateRenderResolution();
-  UpdateBackbufferResolution();
   window::ResetWindowSize();
 }
 
 void UpdateRenderResolution() {
-  auto [w, h] = window::GetDrawableSize();
-  auto [dw, dh] = GetPreferredResolution();
-
-  if (!keep_aspect) {
-    if (1.0 * dw / dh > 1.0 * w / h) {
-      dh = (int)(1.0 * dw * h / w + 0.5);
-    } else {
-      dw = (int)(1.0 * dh * w / h + 0.5);
+    if(keep_aspect){
+        render_resolution = preferred_resolution;
     }
-  }
-  render_resolution = std::make_tuple(dw, dh);
+    else{
+        render_resolution = backbuffer_resolution;
+    }
+    
+    auto [w, h] = render_resolution;
+ 
 
   lua::GStateModule("yapre")
-      .Define("render_width", dw)
-      .Define("render_height", dh);
+      .Define("render_width", w)
+      .Define("render_height", h);
 
   const uint64_t tsFlags = 0 | BGFX_TEXTURE_RT | BGFX_SAMPLER_MIN_POINT |
                            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT |
                            BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP;
 
   if (isValid(scene_frame_buffer)) {
-      bgfx::destroy(scene_frame_buffer);
+    bgfx::destroy(scene_frame_buffer);
   }
   scene_frame_buffer = bgfx::createFrameBuffer(
-      uint16_t(dw), uint16_t(dh), bgfx::TextureFormat::RGBA8, tsFlags);
+      uint16_t(w), uint16_t(h), bgfx::TextureFormat::RGBA8, tsFlags);
 }
 
 void UpdateBackbufferResolution() {
-  backbuffer_resolution = window::GetDrawableSize();
-  auto [w, h] = backbuffer_resolution;
+    auto [w, h] = window::GetDrawableSize();
+    auto [dw, dh] = GetPreferredResolution();
+
+    if (1.0 * dw / dh > 1.0 * w / h) {
+      dh = (int)(1.0 * dw * h / w + 0.5);
+    } else {
+      dw = (int)(1.0 * dh * w / h + 0.5);
+    }
+    backbuffer_resolution = std::make_tuple(dw, dh);
 
   bgfx::reset(w, h, BGFX_RESET_VSYNC);
+    
+    UpdateRenderResolution();
 }
 
 void DrawSprite(const std::string &texture_filename,
@@ -276,12 +282,7 @@ void Draw(DrawData draw_data) {
   float view[16];
   bx::mtxInverse(view, cam_transform);
   */
-  float proj[16];
   auto [w, h] = GetPreferredResolution();
-  bx::mtxOrtho(proj, 0.f, w, h, 0.f, -kMaxZ, kMaxZ, 0, true);
-
-  bgfx::setViewTransform(scene_view_id, NULL, proj);
-  bgfx::setViewRect(scene_view_id, 0, 0, (uint16_t)w, (uint16_t)h);
 
   float model[16];
   float model_translate[16];
@@ -412,16 +413,21 @@ std::tuple<int, int> CalculateTextRenderSize(const std::string &text,
 
 void DrawScene() {
   auto [width, height] = GetRenderResolution();
+
+    
   bgfx::setViewRect(scene_view_id, 0, 0, width, height);
   bgfx::setViewMode(scene_view_id, bgfx::ViewMode::Sequential);
   bgfx::setViewFrameBuffer(scene_view_id, scene_frame_buffer);
   bgfx::setViewClear(scene_view_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
                      clean_color, 0.0f, 0);
-
+    float proj[16];
+    bx::mtxOrtho(proj, 0.f, width, height, 0.f, -kMaxZ, kMaxZ, 0, true);
+    bgfx::setViewTransform(scene_view_id, NULL, proj);
+    
   std::sort(draw_list.begin(), draw_list.end(),
             [](const DrawData &a, const DrawData &b) { return a.id < b.id; });
 
-  for (const DrawData & draw_data : draw_list) {
+  for (const DrawData &draw_data : draw_list) {
     Draw(draw_data);
   }
   draw_list.clear();
@@ -429,26 +435,26 @@ void DrawScene() {
 }
 
 void DrawScreen() {
-  auto [p_w, p_h] = GetPreferredResolution();
+    auto [w_w, w_h] = window::GetDrawableSize();
   auto [r_w, r_h] = GetRenderResolution();
   auto [b_w, b_h] = GetBackbufferResolution();
+    
   float scale = b_w / r_w;
 
   bgfx::setViewClear(backbuffer_view_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
                      clean_color, 0.0f, 0);
   float proj[16];
-  bx::mtxOrtho(proj, 0.f, r_w, r_h, 0.f, -kMaxZ, kMaxZ, 0, true);
+  bx::mtxOrtho(proj, 0.f, b_w, b_h, 0.f, -kMaxZ, kMaxZ, 0, true);
 
   bgfx::setViewTransform(backbuffer_view_id, NULL, proj);
-  bgfx::setViewRect(backbuffer_view_id, 0, 0, (uint16_t)b_w, (uint16_t)b_h);
+  bgfx::setViewRect(backbuffer_view_id, 0, 0, (uint16_t)w_w, (uint16_t)w_h);
 
   float model[16];
   float model_translate[16];
   float model_scale[16];
 
-  bx::mtxTranslate(model_translate, 0,
-                  0, 0);
-  bx::mtxScale(model_scale, p_w, p_h, 1.0f);
+  bx::mtxTranslate(model_translate, (b_w - r_w) / 2., (b_h - r_h) / 2., 0);
+  bx::mtxScale(model_scale, r_w, r_h, 1.0f);
   bx::mtxMul(model, model_scale, model_translate);
 
   bgfx::setTransform(model);
@@ -459,7 +465,7 @@ void DrawScreen() {
 
   float spriteColorData[4] = {1.0f, 1.f, 1.f, 1.f};
   bgfx::setUniform(sprite_color_handler, spriteColorData);
-  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_Z |
+  bgfx::setState(BGFX_STATE_WRITE_RGB |
                  BGFX_STATE_DEPTH_TEST_ALWAYS |
                  BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA,
                                        BGFX_STATE_BLEND_INV_SRC_ALPHA));
@@ -468,6 +474,8 @@ void DrawScreen() {
 }
 
 void Update(int delta_ms) {
+  UpdateBackbufferResolution();
+
   DrawScene();
   DrawScreen();
 
@@ -475,13 +483,13 @@ void Update(int delta_ms) {
 }
 
 std::tuple<int, int> ConvertToViewport(int x, int y) {
-  auto [p_w, p_h] = GetPreferredResolution();
+  auto [w_w, w_h] = window::GetDrawableSize();
   auto [r_w, r_h] = GetRenderResolution();
   auto [b_w, b_h] = GetBackbufferResolution();
-  float scale = b_w / r_w;
+  float scale = 1.0 * w_w / b_w;
 
-  return std::make_tuple((x - (r_w - p_w) / 2) * scale,
-                         (y - (r_h - p_h) / 2) * scale);
+  return std::make_tuple((x / scale - (b_w - r_w) / 2),
+                         (y / scale - (b_h - r_h) / 2));
 }
 
 void SetClearColor(float R, float G, float B, float A) {
@@ -493,16 +501,22 @@ void SetClearColor(float R, float G, float B, float A) {
 
 void SetKeepAspect(bool keey_aspect_) { keep_aspect = keey_aspect_; }
 
-int OnWindowEvent(void* data, SDL_Event* event) {
-    if (event->type == SDL_WINDOWEVENT &&
-        event->window.event == SDL_WINDOWEVENT_RESIZED) {
-        SDL_Window* win = SDL_GetWindowFromID(event->window.windowID);
-        if (win == (SDL_Window*)data) {
-            UpdateBackbufferResolution();
-            UpdateRenderResolution();
-        }
-        return 0;
+int OnWindowEvent(void *data, SDL_Event *event) {
+  if (event->type == SDL_WINDOWEVENT &&
+      event->window.event == SDL_WINDOWEVENT_RESIZED) {
+    SDL_Window *win = SDL_GetWindowFromID(event->window.windowID);
+    if (win == (SDL_Window *)data) {
+
+      auto [p_w, p_h] = GetPreferredResolution();
+      auto [r_w, r_h] = GetRenderResolution();
+      auto [b_w, b_h] = GetBackbufferResolution();
+
+      std::cout << p_w << "," << p_h << std::endl;
+      std::cout << r_w << "," << r_h << std::endl;
+      std::cout << b_w << "," << b_h << std::endl;
     }
+    return 0;
+  }
 }
 
 } // namespace renderer
