@@ -199,15 +199,13 @@ void SetPreferredResolution(int width, int height) {
 }
 
 void UpdateRenderResolution() {
-    if(keep_aspect){
-        render_resolution = preferred_resolution;
-    }
-    else{
-        render_resolution = backbuffer_resolution;
-    }
-    
-    auto [w, h] = render_resolution;
- 
+  if (keep_aspect) {
+    render_resolution = preferred_resolution;
+  } else {
+    render_resolution = backbuffer_resolution;
+  }
+
+  auto [w, h] = render_resolution;
 
   lua::GStateModule("yapre")
       .Define("render_width", w)
@@ -225,19 +223,19 @@ void UpdateRenderResolution() {
 }
 
 void UpdateBackbufferResolution() {
-    auto [w, h] = window::GetDrawableSize();
-    auto [dw, dh] = GetPreferredResolution();
+  auto [w, h] = window::GetDrawableSize();
+  auto [dw, dh] = GetPreferredResolution();
 
-    if (1.0 * dw / dh > 1.0 * w / h) {
-      dh = (int)(1.0 * dw * h / w + 0.5);
-    } else {
-      dw = (int)(1.0 * dh * w / h + 0.5);
-    }
-    backbuffer_resolution = std::make_tuple(dw, dh);
+  if (1.0 * dw / dh > 1.0 * w / h) {
+    dh = (int)(1.0 * dw * h / w + 0.5);
+  } else {
+    dw = (int)(1.0 * dh * w / h + 0.5);
+  }
+  backbuffer_resolution = std::make_tuple(dw, dh);
 
   bgfx::reset(w, h, BGFX_RESET_VSYNC);
-    
-    UpdateRenderResolution();
+
+  UpdateRenderResolution();
 }
 
 void DrawSprite(const std::string &texture_filename,
@@ -414,16 +412,15 @@ std::tuple<int, int> CalculateTextRenderSize(const std::string &text,
 void DrawScene() {
   auto [width, height] = GetRenderResolution();
 
-    
   bgfx::setViewRect(scene_view_id, 0, 0, width, height);
   bgfx::setViewMode(scene_view_id, bgfx::ViewMode::Sequential);
   bgfx::setViewFrameBuffer(scene_view_id, scene_frame_buffer);
   bgfx::setViewClear(scene_view_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
                      clean_color, 0.0f, 0);
-    float proj[16];
-    bx::mtxOrtho(proj, 0.f, width, height, 0.f, -kMaxZ, kMaxZ, 0, true);
-    bgfx::setViewTransform(scene_view_id, NULL, proj);
-    
+  float proj[16];
+  bx::mtxOrtho(proj, 0.f, width, height, 0.f, -kMaxZ, kMaxZ, 0, true);
+  bgfx::setViewTransform(scene_view_id, NULL, proj);
+
   std::sort(draw_list.begin(), draw_list.end(),
             [](const DrawData &a, const DrawData &b) { return a.id < b.id; });
 
@@ -435,10 +432,10 @@ void DrawScene() {
 }
 
 void DrawScreen() {
-    auto [w_w, w_h] = window::GetDrawableSize();
+  auto [w_w, w_h] = window::GetDrawableSize();
   auto [r_w, r_h] = GetRenderResolution();
   auto [b_w, b_h] = GetBackbufferResolution();
-    
+
   float scale = b_w / r_w;
 
   bgfx::setViewClear(backbuffer_view_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
@@ -465,8 +462,7 @@ void DrawScreen() {
 
   float spriteColorData[4] = {1.0f, 1.f, 1.f, 1.f};
   bgfx::setUniform(sprite_color_handler, spriteColorData);
-  bgfx::setState(BGFX_STATE_WRITE_RGB |
-                 BGFX_STATE_DEPTH_TEST_ALWAYS |
+  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_DEPTH_TEST_ALWAYS |
                  BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA,
                                        BGFX_STATE_BLEND_INV_SRC_ALPHA));
 
@@ -515,8 +511,8 @@ int OnWindowEvent(void *data, SDL_Event *event) {
       std::cout << r_w << "," << r_h << std::endl;
       std::cout << b_w << "," << b_h << std::endl;
     }
-    return 0;
   }
+  return 0;
 }
 
 } // namespace renderer
