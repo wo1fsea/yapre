@@ -22,6 +22,7 @@
 
 #if BX_PLATFORM_EMSCRIPTEN
 #include "emscripten.h"
+#include "emscripten/html5.h"
 #endif // BX_PLATFORM_EMSCRIPTEN
 
 #if BX_PLATFORM_IOS
@@ -155,11 +156,12 @@ bool Init() {
   bgfx::renderFrame(); // single threaded mode
 #endif                 // !BX_PLATFORM_EMSCRIPTEN
 
+  auto [w_w, w_h] = window::GetDrawableSize();
   bgfx::Init bgfx_init;
   bgfx_init.type = _GetRendererType();
   bgfx_init.platformData = _GetPlatformData();
-  bgfx_init.resolution.width = std::get<0>(render_resolution);
-  bgfx_init.resolution.height = std::get<1>(render_resolution);
+  bgfx_init.resolution.width = w_w;
+  bgfx_init.resolution.height = w_h;
   bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
   bgfx::init(bgfx_init);
 
@@ -181,7 +183,6 @@ bool Init() {
   program = loadProgram("v_simple.bin", "f_simple.bin");
 
   SetPreferredResolution(320, 240);
-
   SDL_AddEventWatch(OnWindowEvent, yapre::window::mainWindow);
   return true;
 }
@@ -441,7 +442,12 @@ void DrawScreen() {
   bgfx::setViewClear(backbuffer_view_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
                      clean_color, 0.0f, 0);
   float proj[16];
+
+#if defined(YAPRE_MAC) || defined(YAPRE_IOS)
   bx::mtxOrtho(proj, 0.f, b_w, b_h, 0.f, -kMaxZ, kMaxZ, 0, true);
+#else
+  bx::mtxOrtho(proj, 0.f, b_w, 0.f, b_h, -kMaxZ, kMaxZ, 0, true);
+#endif
 
   bgfx::setViewTransform(backbuffer_view_id, NULL, proj);
   bgfx::setViewRect(backbuffer_view_id, 0, 0, (uint16_t)w_w, (uint16_t)w_h);
@@ -482,6 +488,8 @@ std::tuple<int, int> ConvertToViewport(int x, int y) {
   auto [w_w, w_h] = window::GetDrawableSize();
   auto [r_w, r_h] = GetRenderResolution();
   auto [b_w, b_h] = GetBackbufferResolution();
+  std::cout << w_w << "," << w_h << std::endl;
+
   float scale = 1.0 * w_w / b_w;
 
   return std::make_tuple((x / scale - (b_w - r_w) / 2),
@@ -503,10 +511,12 @@ int OnWindowEvent(void *data, SDL_Event *event) {
     SDL_Window *win = SDL_GetWindowFromID(event->window.windowID);
     if (win == (SDL_Window *)data) {
 
+      auto [w_w, w_h] = window::GetDrawableSize();
       auto [p_w, p_h] = GetPreferredResolution();
       auto [r_w, r_h] = GetRenderResolution();
       auto [b_w, b_h] = GetBackbufferResolution();
 
+      std::cout << w_w << "," << w_h << std::endl;
       std::cout << p_w << "," << p_h << std::endl;
       std::cout << r_w << "," << r_h << std::endl;
       std::cout << b_w << "," << b_h << std::endl;

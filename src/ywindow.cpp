@@ -60,11 +60,8 @@ void Deinit() {
 
 std::tuple<int, int> GetDrawableSize() {
   auto [w, h] = renderer::GetPreferredResolution();
-
 #ifdef __EMSCRIPTEN__
-  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context =
-      emscripten_webgl_get_current_context();
-  emscripten_webgl_get_drawing_buffer_size(context, &w, &h);
+  emscripten_get_canvas_element_size("#canvas", &w, &h);
 #else
   if (mainWindow) {
     SDL_GetWindowSize(mainWindow, &w, &h);
