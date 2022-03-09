@@ -1,23 +1,33 @@
 #include "yrenderer.h"
 
-#include "glad/glad.h"
-#include "glm/glm.hpp"
-
 #include "yfont.h"
 #include "yluabind.hpp"
-#include "yshader.h"
 #include "ytexture.h"
 #include "ywindow.h"
 
-#include <SDL.h>
+#include "SDL.h"
+#include "bgfx/bgfx.h"
+#include "bgfx/platform.h"
+#include "bx/math.h"
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <string>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
+
+#if BX_PLATFORM_EMSCRIPTEN
+#include "emscripten.h"
+#include "emscripten/html5.h"
+#endif // BX_PLATFORM_EMSCRIPTEN
+
+#if BX_PLATFORM_IOS
+void *YapreSDLGetNwh(SDL_SysWMinfo wmi, SDL_Window *window);
+#endif
 
 namespace yapre {
 
@@ -25,189 +35,289 @@ namespace renderer {
 
 const float kMaxZ = 1024 * 1024;
 
-int render_width = 320;
-int render_height = 240;
+std::tuple<int, int> preferred_resolution = std::make_tuple(320, 240);
+std::tuple<int, int> render_resolution = std::make_tuple(320, 240);
+std::tuple<int, int> backbuffer_resolution = std::make_tuple(320, 240);
+
 bool keep_aspect = true;
 
-unsigned int VBO = 0;
 unsigned int draw_count = 0;
 
-using DrawData =
-    std::tuple<unsigned int, unsigned int, glm::mat4, glm::mat4, glm::vec3>;
-std::unordered_map<std::string, std::shared_ptr<Texture>> texture_map;
-std::vector<DrawData> draw_list;
-glm::fvec4 clean_color = glm::fvec4(0.2, 0.2, 0.2, 1);
+struct PosColorVertex {
+  float x;
+  float y;
+  float z;
+  float u;
+  float v;
+};
 
-const float default_vertices[] = {
-    // pos      // tex
-    0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
+static PosColorVertex cube_vertices[] = {
+    {0.0f, 1.0f, 0.0f, 0.0f, 1.0f},
+    {1.0f, 0.0f, 0.0f, 1.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+    // 0{0.0f, 1.0f, 0.0f, 0.0f, 1.0f},
+    {1.0f, 1.0f, 0.0f, 1.0f, 1.0f},
+    // 1{1.0f, 0.0f, 0.0f, 1.0f, 0.0f},
+};
 
-Shader *shader_sprite = nullptr;
-Shader *shader_text = nullptr;
-int viewport_x = 0;
-int viewport_y = 0;
-int viewport_w = render_width;
-int viewport_h = render_height;
+static const uint16_t cube_tri_list[] = {
+    0, 1, 2, 0, 3, 1,
+};
 
-/// Holds all state information relevant to a character as loaded using FreeType
+bgfx::ShaderHandle loadShader(const std::string &name) {
+#if BX_PLATFORM_WINDOWS
+  std::string shaderPath = "./bgfx_shader/windows/";
+#elif BX_PLATFORM_OSX
+  std::string shaderPath = "./bgfx_shader/osx/";
+#elif BX_PLATFORM_LINUX
+  std::string shaderPath = "./bgfx_shader/linux/";
+#elif BX_PLATFORM_EMSCRIPTEN
+  std::string shaderPath = "./bgfx_shader/asmjs/";
+#elif BX_PLATFORM_IOS
+  std::string shaderPath = "./bgfx_shader/ios/";
+#elif BX_PLATFORM_ANDROID
+  std::string shaderPath = "./bgfx_shader/android/";
+#endif
 
-void PrintGlInfo() {
-  std::cout << "OpenGL loaded" << std::endl;
-  std::cout << "Vendor:" << glGetString(GL_VENDOR) << std::endl;
-  std::cout << "Renderer:" << glGetString(GL_RENDERER) << std::endl;
-  std::cout << "Version:" << glGetString(GL_VERSION) << std::endl;
+  std::stringstream shaderStream;
+  std::ifstream shaderFile(shaderPath + name);
+  shaderStream << shaderFile.rdbuf();
+  shaderFile.close();
+  std::string shaderFileContext = shaderStream.str();
+  const bgfx::Memory *mem =
+      bgfx::copy(shaderFileContext.data(), shaderFileContext.size());
+  const bgfx::ShaderHandle handle = bgfx::createShader(mem);
+  bgfx::setName(handle, name.c_str());
+  return handle;
 }
 
+bgfx::ProgramHandle loadProgram(const std::string &vsName,
+                                const std::string &psName) {
+  bgfx::ShaderHandle vsh = loadShader(vsName);
+  bgfx::ShaderHandle fsh = loadShader(psName);
+  bgfx::ProgramHandle program = bgfx::createProgram(vsh, fsh, true);
+  return program;
+}
+
+struct DrawData {
+  int id = 0;
+  std::tuple<int, int, int> position;
+  std::tuple<int, int> size;
+  std::tuple<float, float, float, float> color;
+  float rotate;
+  Texture *texture_ptr;
+};
+
+std::vector<DrawData> draw_list;
+
+bgfx::VertexBufferHandle vert_buff_handler = BGFX_INVALID_HANDLE;
+bgfx::IndexBufferHandle idx_buff_handler = BGFX_INVALID_HANDLE;
+bgfx::UniformHandle sprite_tex_sampler = BGFX_INVALID_HANDLE;
+bgfx::UniformHandle sprite_color_handler = BGFX_INVALID_HANDLE;
+bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
+
+bgfx::FrameBufferHandle scene_frame_buffer = BGFX_INVALID_HANDLE;
+
+uint32_t scene_view_id = 0;
+uint32_t backbuffer_view_id = 1;
+
+uint32_t clean_color = 0xffffffff;
+
+void UpdateRenderResolution();
+void UpdateBackbufferResolution();
+
+inline bgfx::PlatformData _GetPlatformData() {
+  bgfx::PlatformData pd{};
+  std::tie(pd.nwh, pd.ndt) = window::GetPlatformData();
+  return pd;
+}
+
+inline bgfx::RendererType::Enum _GetRendererType() {
+#if BX_PLATFORM_WINDOWS
+  return bgfx::RendererType::OpenGL;
+#elif BX_PLATFORM_OSX
+  return bgfx::RendererType::Metal;
+#elif BX_PLATFORM_LINUX
+  return bgfx::RendererType::OpenGL;
+#elif BX_PLATFORM_EMSCRIPTEN
+  return bgfx::RendererType::OpenGLES;
+#elif BX_PLATFORM_IOS
+  return bgfx::RendererType::Metal;
+#elif BX_PLATFORM_ANDROID
+  return bgfx::RendererType::OpenGLES;
+#endif
+  return bgfx::RendererType::Count;
+}
+
+int OnWindowEvent(void *data, SDL_Event *event);
+
 bool Init() {
-  gladLoadGLLoader(SDL_GL_GetProcAddress);
-  PrintGlInfo();
-  // glEnable(GL_DEPTH_TEST);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+#if !BX_PLATFORM_EMSCRIPTEN
+  bgfx::renderFrame(); // single threaded mode
+#endif                 // !BX_PLATFORM_EMSCRIPTEN
 
-  shader_sprite = new Shader();
-  shader_sprite->CompileFile("./shader/sprite.vs", "./shader/sprite.fs");
+  auto [w_w, w_h] = window::GetDrawableSize();
+  bgfx::Init bgfx_init;
+  bgfx_init.type = _GetRendererType();
+  bgfx_init.platformData = _GetPlatformData();
+  bgfx_init.resolution.width = w_w;
+  bgfx_init.resolution.height = w_h;
+  bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
+  bgfx::init(bgfx_init);
 
-  glGenBuffers(1, &VBO);
+  bgfx::VertexLayout pos_col_vert_layout;
+  pos_col_vert_layout.begin()
+      .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+      .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+      .end();
+  vert_buff_handler = bgfx::createVertexBuffer(
+      bgfx::makeRef(cube_vertices, sizeof(cube_vertices)), pos_col_vert_layout);
+  idx_buff_handler = bgfx::createIndexBuffer(
+      bgfx::makeRef(cube_tri_list, sizeof(cube_tri_list)));
 
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(default_vertices), default_vertices,
-               GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glDisableVertexAttribArray(0);
+  sprite_tex_sampler =
+      bgfx::createUniform("spriteTex", bgfx::UniformType::Sampler);
+  sprite_color_handler =
+      bgfx::createUniform("spriteColor", bgfx::UniformType::Vec4);
 
-  SetRenderSize(320, 240);
+  program = loadProgram("v_simple.bin", "f_simple.bin");
+
+  SetPreferredResolution(320, 240);
+  SDL_AddEventWatch(OnWindowEvent, yapre::window::mainWindow);
   return true;
 }
 
-void Deinit() { delete shader_sprite; }
+void Deinit() { SDL_DelEventWatch(OnWindowEvent, yapre::window::mainWindow); }
 
-std::tuple<int, int> GetPreferRenderSize() {
-  return std::make_tuple(render_width, render_height);
-}
+std::tuple<int, int> GetPreferredResolution() { return preferred_resolution; }
+std::tuple<int, int> GetRenderResolution() { return render_resolution; }
+std::tuple<int, int> GetBackbufferResolution() { return backbuffer_resolution; }
 
-std::tuple<int, int> GetRealRenderSize() {
-  auto [w, h] = window::GetDrawableSize();
-  int dw = render_width;
-  int dh = render_height;
-
-  if (!keep_aspect) {
-    if (1.0 * dw / dh > 1.0 * w / h) {
-      dh = (int)(1.0 * dw * h / w + 0.5);
-    } else {
-      dw = (int)(1.0 * dh * w / h + 0.5);
-    }
-  }
-  return std::make_tuple(dw, dh);
-}
-
-void _UpdateRenderSize(int width, int height) {
-  lua::GStateModule("yapre")
-      .Define("render_width", width)
-      .Define("render_height", height);
-}
-
-void SetRenderSize(int width, int height) {
-  render_width = width;
-  render_height = height;
+void SetPreferredResolution(int width, int height) {
+  preferred_resolution = std::make_tuple(width, height);
+  UpdateRenderResolution();
   window::ResetWindowSize();
-  _UpdateRenderSize(width, height);
 }
 
-void DrawSprite(const std::string &texture_filename, glm::vec3 position,
-                glm::vec2 size, float rotate, glm::vec3 color) {
-  std::shared_ptr<Texture> texture_ptr;
-  auto i = texture_map.find(texture_filename);
-  if (i != texture_map.end()) {
-    texture_ptr = i->second;
+void UpdateRenderResolution() {
+  if (keep_aspect) {
+    render_resolution = preferred_resolution;
   } else {
-    texture_ptr = std::make_shared<Texture>(texture_filename);
-    texture_map[texture_filename] = texture_ptr;
+    render_resolution = backbuffer_resolution;
   }
-  DrawSprite(texture_ptr.get(), position, size, rotate, color);
+
+  auto [w, h] = render_resolution;
+
+  lua::GStateModule("yapre")
+      .Define("render_width", w)
+      .Define("render_height", h);
+
+  const uint64_t tsFlags = 0 | BGFX_TEXTURE_RT | BGFX_SAMPLER_MIN_POINT |
+                           BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT |
+                           BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP;
+
+  if (isValid(scene_frame_buffer)) {
+    bgfx::destroy(scene_frame_buffer);
+  }
+  scene_frame_buffer = bgfx::createFrameBuffer(
+      uint16_t(w), uint16_t(h), bgfx::TextureFormat::RGBA8, tsFlags);
 }
 
-void DrawSprite(const std::string &texture_filename, int x, int y, int z,
-                int width, int height, float rotate, float R, float G,
-                float B) {
-  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height),
-             rotate, glm::vec3(R, G, B));
+void UpdateBackbufferResolution() {
+  auto [w, h] = window::GetDrawableSize();
+  auto [dw, dh] = GetPreferredResolution();
+
+  if (1.0 * dw / dh > 1.0 * w / h) {
+    dh = (int)(1.0 * dw * h / w + 0.5);
+  } else {
+    dw = (int)(1.0 * dh * w / h + 0.5);
+  }
+  backbuffer_resolution = std::make_tuple(dw, dh);
+
+  bgfx::reset(w, h, BGFX_RESET_VSYNC);
+
+  UpdateRenderResolution();
 }
 
 void DrawSprite(const std::string &texture_filename,
                 std::tuple<int, int, int> position, std::tuple<int, int> size,
                 float rotate, std::tuple<float, float, float> color) {
-  auto [x, y, z] = position;
-  auto [width, height] = size;
-  auto [R, G, B] = color;
-  DrawSprite(texture_filename, glm::vec3(x, y, z), glm::vec2(width, height),
-             rotate, glm::vec3(R, G, B));
+  auto texture_ptr = Texture::GetFromFile(texture_filename);
+  DrawSprite(texture_ptr.get(), position, size, rotate, color);
 }
 
-void DrawSprite(Texture *texture, glm::vec3 position, glm::vec2 size,
-                float rotate, glm::vec3 color) {
-
-  texture->UpdateData();
-
-  if (size.x < 0 || size.y < 0) {
-    size.x = texture->Width();
-    size.y = texture->Height();
-  }
-  int real_size = texture->RealSize();
-
-  position.z = position.z;
-  glm::mat4 model = glm::mat4(1.0f);
-  model = glm::translate(model, position);
-  model = glm::translate(
-      model, glm::vec3(0.5f * size.x, 0.5f * size.y,
-                       0.0f)); // move origin of rotation to center of quad
-  model = glm::rotate(model, glm::radians(rotate),
-                      glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
-  model = glm::translate(model, glm::vec3(-0.5f * size.x, -0.5f * size.y,
-                                          0.0f)); // move origin back
-
-  model = glm::scale(model, glm::vec3(real_size * size.x / texture->Width(),
-                                      real_size * size.y / texture->Height(),
-                                      1.0f)); // last scale
-
-  auto [w, h] = GetRealRenderSize();
-  glm::mat4 projection =
-      glm::ortho(0.0f, 1.f * w, 1.f * h, 0.0f, -kMaxZ, kMaxZ);
-  unsigned int draw_id = position.z * 1024 * 1024 + draw_count;
-  draw_count++;
-
-  draw_list.emplace_back(
-      std::make_tuple(draw_id, texture->TextureID(), model, projection, color));
-  return;
-}
-
-void DrawSprite(Texture *image_data, int x, int y, int z, int width, int height,
-                float rotate, float R, float G, float B) {
-  DrawSprite(image_data, glm::vec3(x, y, z), glm::vec2(width, height), rotate,
-             glm::vec3(R, G, B));
-}
-
-void DrawSprite(Texture *image_data, std::tuple<int, int, int> position,
+void DrawSprite(Texture *texture, std::tuple<int, int, int> position,
                 std::tuple<int, int> size, float rotate,
                 std::tuple<float, float, float> color) {
   auto [x, y, z] = position;
-  auto [width, height] = size;
   auto [R, G, B] = color;
-  DrawSprite(image_data, glm::vec3(x, y, z), glm::vec2(width, height), rotate,
-             glm::vec3(R, G, B));
+  auto r_color = std::make_tuple(R, G, B, 1.0f);
+  int draw_id = std::get<2>(position) * 1024 * 1024 + draw_count;
+  draw_count++;
+  draw_list.emplace_back(DrawData{draw_id, std::make_tuple(x, y, draw_count),
+                                  size, r_color, rotate, texture});
 }
 
-void DrawText(const std::string &text, float scale, glm::vec3 position,
-              glm::vec2 area, glm::vec3 color) {
+void Draw(DrawData draw_data) {
+  auto texture_ptr = draw_data.texture_ptr;
+  if (texture_ptr->Width() == 0 || texture_ptr->Height() == 0)
+    return;
+
+  auto [x, y, z] = draw_data.position;
+  auto [width, height] = draw_data.size;
+  auto [R, G, B, A] = draw_data.color;
+  auto real_size = texture_ptr->RealSize();
+
+  /*
+  float cam_rotation[16];
+  bx::mtxRotateXYZ(cam_rotation, 0.f, 0.f, 0.f);
+
+  float cam_translation[16];
+  bx::mtxTranslate(cam_translation, 0.0f, 0.0f, -5.0f);
+
+  float cam_transform[16];
+  bx::mtxMul(cam_transform, cam_translation, cam_rotation);
+
+  float view[16];
+  bx::mtxInverse(view, cam_transform);
+  */
+  auto [w, h] = GetPreferredResolution();
+
+  float model[16];
+  float model_translate[16];
+  float model_scale[16];
+
+  bx::mtxTranslate(model_translate, x, y, z);
+  bx::mtxScale(model_scale, width * real_size / texture_ptr->Width(),
+               height * real_size / texture_ptr->Height(), 1.0f);
+  bx::mtxMul(model, model_scale, model_translate);
+
+  bgfx::setTransform(model);
+
+  bgfx::setVertexBuffer(0, vert_buff_handler);
+  bgfx::setIndexBuffer(idx_buff_handler);
+  bgfx::setTexture(0, sprite_tex_sampler, texture_ptr->TextureHandler());
+
+  float spriteColorData[4] = {R, G, B, 1.f};
+  bgfx::setUniform(sprite_color_handler, spriteColorData);
+  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_DEPTH_TEST_ALWAYS |
+                 BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA,
+                                       BGFX_STATE_BLEND_INV_SRC_ALPHA));
+
+  bgfx::submit(scene_view_id, program);
+}
+
+void DrawText(const std::string &text, float scale,
+              std::tuple<int, int, int> position, std::tuple<int, int> area,
+              std::tuple<float, float, float> color) {
 
   char *str = (char *)text.c_str();  // utf-8 string
   char *str_i = str;                 // string iterator
   char *end = str + strlen(str) + 1; // end iterator
 
-  glm::vec3 o_pos(position);
+  auto [a_w, a_h] = area;
+  auto [o_x, o_y, o_z] = position;
+  auto [c_x, c_y, c_z] = position;
 
   do {
     uint32_t code = utf8::next(str_i, end); // get 32 bit code of a utf-8 symbol
@@ -215,73 +325,48 @@ void DrawText(const std::string &text, float scale, glm::vec3 position,
       continue;
 
     if (code == '\n') {
-      position.x = o_pos.x;
-      position.y += font::kFontSize * scale;
-      if (area.y > 0 && position.y > o_pos.y + area.y) {
+      c_x = o_x;
+      c_y += font::kFontSize * scale;
+      if (a_h > 0 && c_y > o_y + a_h) {
         break;
       }
       continue;
     }
 
-    glm::vec3 c_pos(position);
-    auto char_data = font::GetCharData(code);
-    char_data->texture->UpdateData();
+    int i_x = c_x;
+    int i_y = c_y;
+    int i_z = c_z++;
 
-    c_pos.x = c_pos.x + char_data->bearing_x * scale;
-    c_pos.y =
-        c_pos.y +
+    auto char_data = font::GetCharData(code);
+
+    i_x += char_data->bearing_x * scale;
+    i_y +=
         (font::GetCharData(0x9F8D)->bearing_y - char_data->bearing_y) * scale;
 
-    float w = char_data->width * scale;
-    float h = char_data->height * scale;
+    auto i_size =
+        std::make_tuple(char_data->width * scale, char_data->height * scale);
 
-    int real_size = char_data->texture->RealSize();
-
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, c_pos); // move origin back
-
-    model = glm::scale(model,
-                       glm::vec3(real_size * w / char_data->texture->Width(),
-                                 real_size * h / char_data->texture->Height(),
-                                 1.0f)); // last scale
-
-    auto [rw, rh] = GetRealRenderSize();
-    glm::mat4 projection =
-        glm::ortho(0.0f, 1.f * rw, 1.f * rh, 0.0f, -kMaxZ, kMaxZ);
-    unsigned int draw_id = position.z * 1024 * 1024 + draw_count;
-    draw_count++;
-
-    draw_list.emplace_back(std::make_tuple(
-        draw_id, char_data->texture->TextureID(), model, projection, color));
-
-    position.x += char_data->advance * scale;
-
-    if (area.x > 0 && position.x > o_pos.x + area.x) {
-      position.x = o_pos.x;
-      position.y += font::kFontSize * scale;
+    if (char_data->width > 0 && char_data->height > 0) {
+      DrawSprite(char_data->texture.get(), std::make_tuple(i_x, i_y, i_z),
+                 i_size, 0, color);
     }
 
-    if (area.y > 0 && position.y > o_pos.y + area.y) {
+    c_x += char_data->advance * scale;
+
+    if (a_w > 0 && c_x > o_x + a_w) {
+      c_x = o_x;
+      c_y += font::kFontSize * scale;
+    }
+
+    if (a_h > 0 && c_y > o_y + a_h) {
       break;
     }
-
   } while (str_i < end);
-}
-
-void DrawText(const std::string &text, float scale,
-              std::tuple<int, int, int> position, std::tuple<int, int> area,
-              std::tuple<float, float, float> color) {
-  auto [x, y, z] = position;
-  auto [width, height] = area;
-  auto [R, G, B] = color;
-  DrawText(text, scale, glm::vec3(x, y, z), glm::vec2(width, height),
-           glm::vec3(R, G, B));
 }
 
 std::tuple<int, int> CalculateTextRenderSize(const std::string &text,
                                              float scale,
                                              std::tuple<int, int> area) {
-
   auto [aw, ah] = area;
   int render_width = 0;
   int render_height = 0;
@@ -325,85 +410,120 @@ std::tuple<int, int> CalculateTextRenderSize(const std::string &text,
   return std::make_tuple(render_width, render_height);
 }
 
-void DrawAll() {
-  draw_count = 0;
+void DrawScene() {
+  auto [width, height] = GetRenderResolution();
 
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glEnableVertexAttribArray(0);
-  glActiveTexture(GL_TEXTURE0);
+  bgfx::setViewRect(scene_view_id, 0, 0, width, height);
+  bgfx::setViewMode(scene_view_id, bgfx::ViewMode::Sequential);
+  bgfx::setViewFrameBuffer(scene_view_id, scene_frame_buffer);
+  bgfx::setViewClear(scene_view_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
+                     clean_color, 0.0f, 0);
+  float proj[16];
+  bx::mtxOrtho(proj, 0.f, width, height, 0.f, -kMaxZ, kMaxZ, 0, true);
+  bgfx::setViewTransform(scene_view_id, NULL, proj);
 
   std::sort(draw_list.begin(), draw_list.end(),
-            [](const DrawData &a, const DrawData &b) {
-              return std::get<0>(a) < std::get<0>(b);
-            });
+            [](const DrawData &a, const DrawData &b) { return a.id < b.id; });
 
-  for (auto [draw_id, texture_id, model, projection, color] : draw_list) {
-    shader_sprite->Use();
-    shader_sprite->SetInteger("sprite", 0);
-    shader_sprite->SetMatrix4("projection", projection);
-    shader_sprite->SetMatrix4("model", model);
-    shader_sprite->SetVector3f("spriteColor", color);
-    glBindTexture(GL_TEXTURE_2D, texture_id);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+  for (const DrawData &draw_data : draw_list) {
+    Draw(draw_data);
   }
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
   draw_list.clear();
+  draw_count = 0;
 }
 
-void RefreshViewport() {
-  auto [w, h] = window::GetDrawableSize();
-  auto [dw, dh] = GetRealRenderSize();
-  int rx = 0;
-  int ry = 0;
+void DrawScreen() {
+  auto [w_w, w_h] = window::GetDrawableSize();
+  auto [r_w, r_h] = GetRenderResolution();
+  auto [b_w, b_h] = GetBackbufferResolution();
 
-  if (1.0 * dw / dh > 1.0 * w / h) {
-    int rh = w * dh / dw;
-    ry = (h - rh) / 2;
-    h = rh;
-  } else {
-    int rw = h * dw / dh;
-    rx = (w - rw) / 2;
-    w = rw;
-  }
+  float scale = b_w / r_w;
 
-  _UpdateRenderSize(dw, dh);
+  bgfx::setViewClear(backbuffer_view_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
+                     clean_color, 0.0f, 0);
+  float proj[16];
 
-  viewport_x = rx;
-  viewport_y = ry;
-  viewport_w = w;
-  viewport_h = h;
+#if defined(YAPRE_MAC) || defined(YAPRE_IOS)
+  bx::mtxOrtho(proj, 0.f, b_w, b_h, 0.f, -kMaxZ, kMaxZ, 0, true);
+#else
+  bx::mtxOrtho(proj, 0.f, b_w, 0.f, b_h, -kMaxZ, kMaxZ, 0, true);
+#endif
+
+  bgfx::setViewTransform(backbuffer_view_id, NULL, proj);
+  bgfx::setViewRect(backbuffer_view_id, 0, 0, (uint16_t)w_w, (uint16_t)w_h);
+
+  float model[16];
+  float model_translate[16];
+  float model_scale[16];
+
+  bx::mtxTranslate(model_translate, (b_w - r_w) / 2., (b_h - r_h) / 2., 0);
+  bx::mtxScale(model_scale, r_w, r_h, 1.0f);
+  bx::mtxMul(model, model_scale, model_translate);
+
+  bgfx::setTransform(model);
+
+  bgfx::setVertexBuffer(0, vert_buff_handler);
+  bgfx::setIndexBuffer(idx_buff_handler);
+  bgfx::setTexture(0, sprite_tex_sampler, bgfx::getTexture(scene_frame_buffer));
+
+  float spriteColorData[4] = {1.0f, 1.f, 1.f, 1.f};
+  bgfx::setUniform(sprite_color_handler, spriteColorData);
+  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_DEPTH_TEST_ALWAYS |
+                 BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA,
+                                       BGFX_STATE_BLEND_INV_SRC_ALPHA));
+
+  bgfx::submit(backbuffer_view_id, program);
 }
 
 void Update(int delta_ms) {
-  auto [w, h] = window::GetDrawableSize();
-  lua::GStateModule("yapre")
-      .Define("drawable_width", w)
-      .Define("drawable_height", h);
+  UpdateBackbufferResolution();
 
-  RefreshViewport();
-  glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
-  glClearColor(clean_color.r, clean_color.g, clean_color.b, clean_color.a);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  DrawScene();
+  DrawScreen();
 
-  DrawAll();
-  window::SwapWinodw();
+  bgfx::frame();
 }
 
 std::tuple<int, int> ConvertToViewport(int x, int y) {
-  auto [rw, rh] = GetRealRenderSize();
-  return std::make_tuple((x - viewport_x) * rw / viewport_w,
-                         (y - viewport_y) * rh / viewport_h);
+  auto [w_w, w_h] = window::GetDrawableSize();
+  auto [r_w, r_h] = GetRenderResolution();
+  auto [b_w, b_h] = GetBackbufferResolution();
+  std::cout << w_w << "," << w_h << std::endl;
+
+  float scale = 1.0 * w_w / b_w;
+
+  return std::make_tuple((x / scale - (b_w - r_w) / 2),
+                         (y / scale - (b_h - r_h) / 2));
 }
 
 void SetClearColor(float R, float G, float B, float A) {
-  clean_color.r = R;
-  clean_color.g = G;
-  clean_color.b = B;
-  clean_color.a = A;
+  clean_color = (int)(255 * R);
+  clean_color = (clean_color << 8) + (int)(255 * G);
+  clean_color = (clean_color << 8) + (int)(255 * B);
+  clean_color = (clean_color << 8) + (int)(255 * A);
 }
 
 void SetKeepAspect(bool keey_aspect_) { keep_aspect = keey_aspect_; }
+
+int OnWindowEvent(void *data, SDL_Event *event) {
+  if (event->type == SDL_WINDOWEVENT &&
+      event->window.event == SDL_WINDOWEVENT_RESIZED) {
+    SDL_Window *win = SDL_GetWindowFromID(event->window.windowID);
+    if (win == (SDL_Window *)data) {
+
+      auto [w_w, w_h] = window::GetDrawableSize();
+      auto [p_w, p_h] = GetPreferredResolution();
+      auto [r_w, r_h] = GetRenderResolution();
+      auto [b_w, b_h] = GetBackbufferResolution();
+
+      std::cout << w_w << "," << w_h << std::endl;
+      std::cout << p_w << "," << p_h << std::endl;
+      std::cout << r_w << "," << r_h << std::endl;
+      std::cout << b_w << "," << b_h << std::endl;
+    }
+  }
+  return 0;
+}
 
 } // namespace renderer
 } // namespace yapre

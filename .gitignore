@@ -36,6 +36,7 @@
 
 /build/
 /tools/emsdk
+/tools/bgfx/
 /compile_commands.json
 
 .cache

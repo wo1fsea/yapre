@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
+
 project(yapre)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -13,17 +14,14 @@ endfunction()
 option(YAPRE_BUILD_PLATFORM "Platform" "") 
 if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
     include(platform/emscripten/CMakeLists.txt)
-else()
-    option(SDL_SHARED FALSE)
-    set(SDL2_DIR "external/SDL")
-    add_subdirectory(${SDL2_DIR})
-    if(YAPRE_BUILD_PLATFORM STREQUAL "ios")
-        include(platform/ios/CMakeLists.txt)
-    endif()
+endif()
+if(YAPRE_BUILD_PLATFORM STREQUAL "ios")
+    include(platform/ios/CMakeLists.txt)
 endif()
 
-set(GLAD_DIR "external/glad")
-add_subdirectory(${GLAD_DIR})
+option(SDL_SHARED FALSE)
+set(SDL2_DIR "external/SDL")
+add_subdirectory(${SDL2_DIR})
 
 set(GLM_DIR "external/glm")
 add_subdirectory(${GLM_DIR})
@@ -51,6 +49,17 @@ add_subdirectory(${BOX2D_DIR})
 set(ASIO_DIR "external/asio")
 option(ASIO_NO_DEPRECATED ON)
 
+set(BGFX_CMAKE_DIR "external/bgfx.cmake")
+option(BGFX_BUILD_TOOLS ON)
+option(BGFX_BUILD_EXAMPLES OFF)
+option(BGFX_INSTALL OFF)
+option(BGFX_INSTALL_EXAMPLES OFF)
+option(BGFX_CUSTOM_TARGETS OFF)
+option(BGFX_AMALGAMATED OFF)
+option(BX_AMALGAMATED OFF)
+option(BGFX_CONFIG_RENDERER_WEBGPU OFF)
+add_subdirectory(${BGFX_CMAKE_DIR})
+
 # option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 # option(ASSIMP_BUILD_TESTS OFF)
 
@@ -63,7 +72,7 @@ include_directories(
     src/systems/
     src/systems/graphics/
     ${SDL2_DIR}/include
-    ${GLAD_DIR}/include
+    ${SDL2_DIR}/src
     ${ASSIMP_INCLUDE_DIRS} 
     ${GLM_DIR}
     ${STB_IMAGE_DIR}/include
@@ -85,7 +94,9 @@ file(GLOB_RECURSE PROJECT_INCLUDE
     )
 file(GLOB_RECURSE PROJECT_SRC 
     src/*.cpp
+    src/*.mm
     src/*/*.cpp
+    src/*/*.mm
     )
 
 file(GLOB PROJECT_CONFIG 
@@ -115,6 +126,7 @@ elseif(YAPRE_BUILD_PLATFORM STREQUAL "android")
 elseif(YAPRE_BUILD_PLATFORM STREQUAL "ios")
     add_compile_options(-DYAPRE_IOS)
 endif()
+
 add_executable(
     ${PROJECT_NAME} 
     ${PROJECT_INCLUDE} 
@@ -122,32 +134,20 @@ add_executable(
     ${PROJECT_RESOURCE}
     )
 
-
-if(YAPRE_BUILD_PLATFORM STREQUAL "emscripten")
-    target_link_libraries(
-        ${PROJECT_NAME} 
-        glad 
-        glm_static
-        std_image
-        lua
-        freetype
-        box2d
-        # assimp 
-        )
-else()
-    target_link_libraries(
-        ${PROJECT_NAME} 
-        SDL2main 
-        SDL2-static 
-        glad 
-        glm_static
-        std_image
-        lua
-        freetype
-        box2d
-        # assimp 
-        )
-endif()
+target_link_libraries(
+    ${PROJECT_NAME} 
+    SDL2main 
+    SDL2-static 
+    glm_static
+    std_image
+    lua
+    freetype
+    box2d
+    bgfx
+    bx
+    bimg
+    # assimp 
+    )
 
 set_target_properties(
     ${PROJECT_NAME} 

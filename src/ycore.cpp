@@ -1,5 +1,7 @@
 #include "ycore.h"
 
+#include "ysystems.inl"
+
 #include <SDL.h>
 #include <chrono>
 #include <iostream>
@@ -13,8 +15,6 @@
 
 #include "yluabind.hpp"
 #include "yscheduler.h"
-
-#include "ysystems.inl"
 
 namespace yapre {
 namespace core {
@@ -77,8 +77,8 @@ bool Init() {
 }
 
 void Deinit() {
-  DeinitSystems();
   scheduler::Deinit();
+  DeinitSystems();
 }
 
 void Update() { scheduler::Update(); }

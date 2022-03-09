@@ -3,9 +3,10 @@
 #include <emscripten/html5.h>
 #endif
 
+#include <SDL_main.h>
+
 #include "ycore.h"
 #include "ywindow.h"
-#include <SDL_main.h>
 
 int main(int argc, char *args[]) {
   if (!yapre::window::Init()) {

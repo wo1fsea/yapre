@@ -1,12 +1,9 @@
 [submodule "external/SDL"]
 	path = external/SDL
-	url = git@github.com:SDL-mirror/SDL.git
+	url = git@github.com:wo1fsea/SDL.git
 [submodule "external/glm"]
 	path = external/glm
 	url = git@github.com:g-truc/glm.git
-[submodule "external/glad"]
-	path = external/glad
-	url = git@github.com:Dav1dde/glad.git
 [submodule "external/assimp"]
 	path = external/assimp
 	url = git@github.com:assimp/assimp.git
@@ -25,3 +22,6 @@
 [submodule "external/box2d"]
 	path = external/box2d
 	url = git@github.com:erincatto/box2d.git
+[submodule "external/bgfx.cmake"]
+	path = external/bgfx.cmake
+	url = git@github.com:wo1fsea/bgfx.cmake.git

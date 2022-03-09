@@ -1,10 +1,26 @@
 #include "ytexture.h"
 
+#include "bgfx/bgfx.h"
 #include "stb_image.h"
 
 #include <cassert>
 
 namespace yapre {
+
+std::unordered_map<std::string, std::shared_ptr<Texture>>
+    Texture::texture_cache;
+
+std::shared_ptr<Texture> Texture::GetFromFile(const std::string &file_path) {
+  std::shared_ptr<Texture> texture_ptr;
+  auto i = Texture::texture_cache.find(file_path);
+  if (i != Texture::texture_cache.end()) {
+    texture_ptr = i->second;
+  } else {
+    texture_ptr = std::make_shared<Texture>(file_path);
+    Texture::texture_cache[file_path] = texture_ptr;
+  }
+  return texture_ptr;
+}
 
 Texture::Texture(const std::string &file_path) {
   int n_channel;
@@ -41,7 +57,10 @@ Texture::Texture(const std::string &file_path) {
   }
   stbi_image_free(file_data);
 
-  glGenTextures(1, &texture_id);
+  texture_handler = bgfx::createTexture2D(
+      (uint16_t)real_size, (uint16_t)real_size, false, 1,
+      bgfx::TextureFormat::RGBA8, BGFX_SAMPLER_UVW_CLAMP | BGFX_SAMPLER_POINT,
+      bgfx::makeRef(data_ptr.data(), data_ptr.size()));
 }
 
 Texture::Texture(unsigned int width_, unsigned int height_)
@@ -57,27 +76,12 @@ Texture::Texture(unsigned int width_, unsigned int height_)
     data_ptr[i] = 0;
   }
 
-  glGenTextures(1, &texture_id);
+  texture_handler = bgfx::createTexture2D(
+      (uint16_t)real_size, (uint16_t)real_size, false, 1,
+      bgfx::TextureFormat::RGBA8, BGFX_SAMPLER_UVW_CLAMP | BGFX_SAMPLER_POINT,
+      bgfx::makeRef(data_ptr.data(), data_ptr.size()));
 }
 
-Texture::~Texture() { glDeleteTextures(1, &texture_id); }
-
-void Texture::UpdateData() {
-  if (!changed) {
-    return;
-  }
-
-  changed = false;
-  glBindTexture(GL_TEXTURE_2D, texture_id);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, real_size, real_size, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, data_ptr.data());
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-}
+Texture::~Texture() { bgfx::destroy(texture_handler); }
 
 } // namespace yapre
