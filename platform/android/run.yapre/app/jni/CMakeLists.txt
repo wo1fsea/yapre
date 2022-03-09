@@ -115,7 +115,6 @@ target_link_libraries(
         ${PROJECT_NAME}
         SDL2main
         SDL2-static
-        glad
         glm_static
         std_image
         lua
