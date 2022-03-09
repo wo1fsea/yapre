@@ -94,10 +94,19 @@ file(GLOB_RECURSE PROJECT_INCLUDE
     )
 file(GLOB_RECURSE PROJECT_SRC 
     src/*.cpp
-    src/*.mm
     src/*/*.cpp
+    )
+
+
+
+if(YAPRE_BUILD_PLATFORM STREQUAL "mac" OR YAPRE_BUILD_PLATFORM STREQUAL "ios")
+file(GLOB_RECURSE PROJECT_SRC_MM
+    src/*.mm
     src/*/*.mm
     )
+list (APPEND PROJECT_SRC ${PROJECT_SRC_MM})
+endif()
+
 
 file(GLOB PROJECT_CONFIG 
     CMakeLists.txt
