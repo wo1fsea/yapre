@@ -25,10 +25,6 @@
 #include "emscripten/html5.h"
 #endif // BX_PLATFORM_EMSCRIPTEN
 
-#if BX_PLATFORM_IOS
-void *YapreSDLGetNwh(SDL_SysWMinfo wmi, SDL_Window *window);
-#endif
-
 namespace yapre {
 
 namespace renderer {

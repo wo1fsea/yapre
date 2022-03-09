@@ -12,6 +12,10 @@
 #include <emscripten/html5.h>
 #endif
 
+#if defined(YAPRE_IOS)
+void *YapreSDLGetNwh(SDL_SysWMinfo wmi, SDL_Window *window);
+#endif
+
 namespace yapre {
 namespace window {
 
