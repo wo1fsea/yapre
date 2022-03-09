@@ -123,6 +123,10 @@ target_link_libraries(
         bgfx
         bx
         bimg
+        log
+        GLESv1_CM
+        GLESv2
+        android
         # assimp
 )
 
