@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 
+# i do not know why but emscripten can not find these functions, but ... still working LOL
+add_definitions(
+    "-D'glDrawBuffer(...)= '"
+    "-D'glDrawBuffers(...)= '"
+    "-D'glReadBuffer(...) = '"
+    )
+
 function(platform_setup_target)
     set_target_properties(
         ${PROJECT_NAME} 
