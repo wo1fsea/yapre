@@ -147,4 +147,3 @@ yapre.UnbindMouseInputCallback(key)
 yapre.BindTouchInputCallback(key, callback_function)
 
 yapre.UnbindTouchInputCallback(key)
-
